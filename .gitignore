@@ -1,0 +1,13 @@
+backend/.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+node_modules/
+.npm-cache/
+.expo/
+dist/
+.env
+!.env.example
+tmp/
+.superpowers/

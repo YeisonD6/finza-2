@@ -1,0 +1,43 @@
+name: Quality
+on: [push, pull_request]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: finza
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: finza_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U finza -d finza_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://finza:ci-only-password@localhost:5432/finza_test
+      FINZA_PG_ADMIN_URL: postgresql+psycopg://finza:ci-only-password@localhost:5432/postgres
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.lock.txt
+      - run: ruff check app tests
+      - run: pytest -q
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run export:android

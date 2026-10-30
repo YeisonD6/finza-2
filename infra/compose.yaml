@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: finza
+      POSTGRES_DB: finza
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in infra/.env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - finza_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finza -d finza"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  migrate:
+    build: ../backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://finza:${POSTGRES_PASSWORD}@db:5432/finza
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    build: ../backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://finza:${POSTGRES_PASSWORD}@db:5432/finza
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  finza_pg:
