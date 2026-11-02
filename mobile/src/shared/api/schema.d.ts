@@ -89,6 +89,61 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/categories": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Categories */
+    get: operations["categories_api_v1_categories_get"];
+    put?: never;
+    /** Category Create */
+    post: operations["category_create_api_v1_categories_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/movements": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Movements */
+    get: operations["movements_api_v1_movements_get"];
+    put?: never;
+    /** Movement Create */
+    post: operations["movement_create_api_v1_movements_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/movements/{movement_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Movement Get */
+    get: operations["movement_get_api_v1_movements__movement_id__get"];
+    put?: never;
+    post?: never;
+    /** Movement Archive */
+    delete: operations["movement_archive_api_v1_movements__movement_id__delete"];
+    options?: never;
+    head?: never;
+    /** Movement Edit */
+    patch: operations["movement_edit_api_v1_movements__movement_id__patch"];
+    trace?: never;
+  };
   "/health/live": {
     parameters: {
       query?: never;
@@ -139,6 +194,33 @@ export interface components {
       /** Base Currency */
       base_currency: string;
     };
+    /** CategoryCreate */
+    CategoryCreate: {
+      /** Name */
+      name: string;
+      /**
+       * Movement Type
+       * @enum {string}
+       */
+      movement_type: "income" | "expense";
+    };
+    /** CategoryOut */
+    CategoryOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Name */
+      name: string;
+      /**
+       * Movement Type
+       * @enum {string}
+       */
+      movement_type: "income" | "expense";
+      /** Is System */
+      is_system: boolean;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -156,6 +238,103 @@ export interface components {
        * Format: password
        */
       password: string;
+    };
+    /** MovementCreate */
+    MovementCreate: {
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: "income" | "expense";
+      /** Amount */
+      amount: string;
+      /**
+       * Currency
+       * @default COP
+       * @constant
+       */
+      currency: "COP";
+      /**
+       * Occurred On
+       * Format: date
+       */
+      occurred_on: string;
+      /**
+       * Category Id
+       * Format: uuid
+       */
+      category_id: string;
+      /**
+       * Note
+       * @default
+       */
+      note: string;
+      /**
+       * Client Request Id
+       * Format: uuid
+       */
+      client_request_id: string;
+    };
+    /** MovementOut */
+    MovementOut: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Type
+       * @enum {string}
+       */
+      type: "income" | "expense";
+      /** Amount */
+      amount: string;
+      /**
+       * Currency
+       * @constant
+       */
+      currency: "COP";
+      /**
+       * Category Id
+       * Format: uuid
+       */
+      category_id: string;
+      /**
+       * Occurred On
+       * Format: date
+       */
+      occurred_on: string;
+      /** Note */
+      note: string;
+      /**
+       * Client Request Id
+       * Format: uuid
+       */
+      client_request_id: string;
+    };
+    /** MovementPage */
+    MovementPage: {
+      /** Items */
+      items: components["schemas"]["MovementOut"][];
+      /** Next Cursor */
+      next_cursor: string | null;
+      /** Month */
+      month: string;
+    };
+    /** MovementPatch */
+    MovementPatch: {
+      /** Type */
+      type?: ("income" | "expense") | null;
+      /** Amount */
+      amount?: string | null;
+      /** Currency */
+      currency?: "COP" | null;
+      /** Occurred On */
+      occurred_on?: string | null;
+      /** Category Id */
+      category_id?: string | null;
+      /** Note */
+      note?: string | null;
     };
     /** RefreshRequest */
     RefreshRequest: {
@@ -357,6 +536,233 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["AccountResponse"];
+        };
+      };
+    };
+  };
+  categories_api_v1_categories_get: {
+    parameters: {
+      query?: {
+        type?: ("income" | "expense") | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CategoryOut"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  category_create_api_v1_categories_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CategoryCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CategoryOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  movements_api_v1_movements_get: {
+    parameters: {
+      query?: {
+        month?: string | null;
+        limit?: number;
+        type?: ("income" | "expense") | null;
+        category_id?: string | null;
+        cursor?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovementPage"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  movement_create_api_v1_movements_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MovementCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovementOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  movement_get_api_v1_movements__movement_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        movement_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovementOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  movement_archive_api_v1_movements__movement_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        movement_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  movement_edit_api_v1_movements__movement_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        movement_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["MovementPatch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MovementOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

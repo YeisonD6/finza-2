@@ -62,6 +62,8 @@ Asignación propuesta, no afirmación de disponibilidad. Cada responsable toca U
 
 ### Tarea 3: Movimientos vertical
 
+**Estado 2026-11-02:** implementada y verificada automáticamente en backend/móvil; migración003, categorías privadas, auditoría transaccional y recibo idempotente. Resultados en progress.md. Prueba manual de dispositivo/lector pendiente, no certificada. Siguiente tarea funcional: dashboard (4).
+
 **Files:** modules/movements/{api,schemas,service,models,repository}.py; migrations/versions/002_movements.py; tests/security/test_ownership.py; tests/integration/test_movements.py; mobile/src/features/movements/{api/movementsApi.ts,screens/MovementForm.tsx,screens/MovementList.tsx}; app/(private)/movements/{index,new,[id]}.tsx.
 **Interfaces:** create_movement(account_id, CreateMovement)->Movement; list_movements(account_id,month,cursor,limit)->Page; update/archive requieren id+owner. CreateMovement: type income|expense, amount string, currency COP, occurred_on ISO date, category_id UUID, note <=500, client_request_id UUID; extras rechazados.
 

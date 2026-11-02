@@ -6,7 +6,9 @@ from alembic import context
 from sqlalchemy import create_engine
 
 from app.core.models import Base
+from app.modules.audit.models import AuditEvent  # noqa: F401
 from app.modules.identity.models import Account, RefreshSession  # noqa: F401
+from app.modules.movements.models import Category, Movement  # noqa: F401
 from app.modules.users.models import UserProfile  # noqa: F401
 
 metadata = Base.metadata

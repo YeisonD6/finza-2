@@ -9,12 +9,14 @@ from starlette.exceptions import HTTPException
 from app.core.database import database_ready
 from app.modules.identity.api import me_router
 from app.modules.identity.api import router as identity_router
+from app.modules.movements.api import router as movements_router
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Finza API", version="0.1.0")
     app.include_router(identity_router)
     app.include_router(me_router)
+    app.include_router(movements_router)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
@@ -34,7 +36,7 @@ def create_app() -> FastAPI:
         request.state.request_id = str(uuid4())
         response = await call_next(request)
         response.headers["x-request-id"] = request.state.request_id
-        if request.url.path.startswith("/api/v1/auth") or request.url.path == "/api/v1/me":
+        if request.url.path.startswith("/api/v1/"):
             response.headers["Cache-Control"] = "no-store"
         return response
 

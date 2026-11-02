@@ -12,24 +12,29 @@ export function AppButton({
   onPress,
   busy = false,
   disabled = false,
+  selected,
 }: {
   title: string;
   onPress(): void;
   busy?: boolean;
   disabled?: boolean;
+  selected?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={title}
-      accessibilityState={{ disabled: disabled || busy, busy }}
+      accessibilityState={{ disabled: disabled || busy, busy, selected }}
       disabled={disabled || busy}
       onPress={() => {
         onPress();
       }}
       style={styles.button}
     >
-      <Text style={styles.buttonText}>{busy ? "Procesando…" : title}</Text>
+      <Text style={styles.buttonText}>
+        {busy ? "Procesando…" : title}
+        {selected ? " ✓ Seleccionado" : ""}
+      </Text>
     </Pressable>
   );
 }
@@ -48,7 +53,7 @@ export const FormField = forwardRef<
         ref={ref}
         accessibilityLabel={label}
         accessibilityLabelledBy={label}
-        accessibilityHint={error}
+        accessibilityHint={error || props.accessibilityHint}
         style={styles.input}
       />
       {error ? (

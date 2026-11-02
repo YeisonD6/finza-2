@@ -1,5 +1,17 @@
 # Continuar Finza — 2 noviembre 2026
 
+## Último avance: Fase 2 / Tarea 3
+
+- Categorías de sistema y privadas + movimientos COP implementados en backend/BD/móvil. No rehacer autenticación. Migración vigente: **003_movements**; aplicar con Alembic antes de iniciar la API.
+- Endpoints privados: GET/POST /api/v1/categories; GET/POST /api/v1/movements; GET/PATCH/DELETE /api/v1/movements/{id}. UUID client_request_id obligatorio al crear; mismo usuario/clave/contenido devuelve recibo original (200), contenido distinto 409. Nunca reaparece un archivado por replay.
+- Filtrar por month=YYYY-MM, type=income|expense y category_id. Listado paginado con next_cursor; solo recursos propios activos. DELETE archiva y es repetible para el propietario.
+- Categorías existentes inmutables; se pueden añadir categorías privadas. Edición/archivo son operaciones de movimientos. Cuenta/perfil/logout existentes conservados.
+- Última suite: 87 backend PG reales sin omisiones (incluye puente y reinicio de API), 10 cliente/dominio, 11 UI/caché. Tipos, lint y export Android correctos. Ver progress.md para límites y decisiones.
+- Manual Android/TalkBack/teclado/Alert/foco/SecureStore, Apple y Docker pendientes. No afirmar auditoría accesible o prueba de APK realizadas. Lista en docs/accessibility/movements-checklist.md.
+- **Siguiente funcionalidad: Tarea 4, dashboard financiero.** No reconstruir categorías, movimientos ni sesiones.
+
+El estado de autenticación que sigue se conserva como referencia de Fase1; los contadores de pruebas anteriores quedan reemplazados por los de arriba.
+
 Rama: codex/finza-foundations. Leer este archivo y progress.md antes de trabajar.
 
 ## Estado actual
@@ -36,4 +48,4 @@ Para desarrollo: establecer DATABASE_URL de aplicación y JWT_SECRET aleatorio e
 
 ## Próximo trabajo acotado
 
-Validar manualmente registro/login/restauración/logout con SecureStore real y TalkBack, incluyendo modo avión y fallos recuperables; documentar evidencia por pantalla. Docker sigue pendiente. La siguiente funcionalidad es tarea 3: categorías y movimientos COP con autorización por propietario, idempotencia y archivo lógico; después dashboard (tarea 4). No reimplementar autenticación.
+Validar manualmente flujos de autenticación y movimientos con dispositivo real y TalkBack. Docker sigue pendiente. Desarrollar **Tarea4: dashboard financiero** con ingresos, gastos, flujo neto, comparación mensual y últimos cinco activos del mes; no confundir flujo neto con saldo o patrimonio. Reutilizar servicios/consultas de lectura del módulo de movimientos y tags Dashboard ya previstos. Mantener aislamiento por propietario y tratamiento de cero/negativo/sin mes anterior según revisión vinculante.

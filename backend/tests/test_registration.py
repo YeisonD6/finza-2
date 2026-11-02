@@ -9,14 +9,24 @@ from sqlalchemy.orm import Session
 from app.core.database import get_session
 from app.core.models import Base
 from app.main import create_app
-from app.modules.identity.models import Account, RefreshSession
+from app.modules.identity.models import Account, AuthBucket, RefreshSession, SessionFamily
 from app.modules.users.models import UserProfile
 
 
 @pytest.fixture
 def registration(tmp_path):
     engine = create_engine("sqlite:///" + str(tmp_path / "registration.db"))
-    Base.metadata.create_all(engine)
+    # Unit fixture owns only identity tables; financial migrations are tested on real PG.
+    Base.metadata.create_all(
+        engine,
+        tables=[
+            Account.__table__,
+            UserProfile.__table__,
+            SessionFamily.__table__,
+            RefreshSession.__table__,
+            AuthBucket.__table__,
+        ],
+    )
     app = create_app()
 
     def sessions():

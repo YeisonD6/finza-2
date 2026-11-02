@@ -1,0 +1,68 @@
+from datetime import date, datetime
+from uuid import UUID
+
+from sqlalchemy import or_, select, tuple_
+from sqlalchemy.orm import Session
+
+from app.modules.movements.models import Category, Movement
+
+
+def categories(session: Session, owner: UUID, movement_type: str | None = None):
+    statement = select(Category).where(or_(Category.owner_id.is_(None), Category.owner_id == owner))
+    if movement_type:
+        statement = statement.where(Category.movement_type == movement_type)
+    return session.scalars(statement.order_by(Category.name, Category.id)).all()
+
+
+def category(session: Session, owner: UUID, category_id: UUID):
+    return session.scalar(
+        select(Category).where(
+            Category.id == category_id, or_(Category.owner_id.is_(None), Category.owner_id == owner)
+        )
+    )
+
+
+def movement(session: Session, owner: UUID, movement_id: UUID, *, lock=False, archived=False):
+    statement = select(Movement).where(Movement.id == movement_id, Movement.owner_id == owner)
+    if not archived:
+        statement = statement.where(Movement.deleted_at.is_(None))
+    if lock:
+        statement = statement.with_for_update()
+    return session.scalar(statement)
+
+
+def request_record(session: Session, owner: UUID, key: UUID):
+    return session.scalar(
+        select(Movement).where(Movement.owner_id == owner, Movement.client_request_id == key)
+    )
+
+
+def page(
+    session: Session,
+    owner: UUID,
+    start: date,
+    end: date,
+    limit: int,
+    movement_type: str | None,
+    category_id: UUID | None,
+    position: tuple[date, datetime, UUID] | None,
+):
+    statement = select(Movement).where(
+        Movement.owner_id == owner,
+        Movement.deleted_at.is_(None),
+        Movement.occurred_on >= start,
+        Movement.occurred_on < end,
+    )
+    if movement_type:
+        statement = statement.where(Movement.type == movement_type)
+    if category_id:
+        statement = statement.where(Movement.category_id == category_id)
+    if position:
+        statement = statement.where(
+            tuple_(Movement.occurred_on, Movement.created_at, Movement.id) < tuple_(*position)
+        )
+    return session.scalars(
+        statement.order_by(Movement.occurred_on.desc(), Movement.created_at.desc(), Movement.id.desc()).limit(
+            limit + 1
+        )
+    ).all()

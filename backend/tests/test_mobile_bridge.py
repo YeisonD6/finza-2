@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import socket
@@ -20,13 +21,16 @@ def test_typescript_mobile_client_against_real_api_and_postgres(pg_identity):
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     url = f"http://127.0.0.1:{port}"
+
     # Same migrated disposable database and JWT settings as the test fixture.
-    process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    try:
+    def start():
+        return subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+    def ready(process):
         for _ in range(100):
             try:
                 with urllib.request.urlopen(url + "/health/live", timeout=1):
@@ -37,6 +41,10 @@ def test_typescript_mobile_client_against_real_api_and_postgres(pg_identity):
                 time.sleep(0.1)
         else:
             pytest.fail("Temporary API did not start")
+
+    process = start()
+    try:
+        ready(process)
         result = subprocess.run(
             [node, str(cli), str(root / "mobile/tests/backend-bridge.ts")],
             env={**os.environ, "FINZA_BRIDGE_URL": url},
@@ -47,6 +55,28 @@ def test_typescript_mobile_client_against_real_api_and_postgres(pg_identity):
         )
         assert result.returncode == 0, result.stdout + result.stderr
         assert "BRIDGE_OK" in result.stdout
-    finally:
         process.terminate()
         process.wait(timeout=15)
+        process = start()
+        ready(process)
+        login = urllib.request.Request(
+            url + "/api/v1/auth/login",
+            data=json.dumps({"email": "bridge-b@example.com", "password": "correct horse battery"}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(login, timeout=5) as response:
+            token = json.load(response)["access_token"]
+        request = urllib.request.Request(
+            url + "/api/v1/movements?month=2024-04", headers={"Authorization": "Bearer " + token}
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            saved = json.load(response)["items"]
+        assert (
+            len(saved) == 1
+            and saved[0]["note"] == "persist-after-restart"
+            and saved[0]["amount"] == "1234.50"
+        )
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            process.wait(timeout=15)

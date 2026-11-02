@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text, ScrollView, AccessibilityInfo } from "react-native";
+import { Text, AccessibilityInfo } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import type { RootState } from "../core/store";
@@ -7,6 +7,7 @@ import { auth } from "../features/auth/runtime";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { AppButton, styles } from "../shared/ui/AuthControls";
 import { useMeQuery } from "../shared/api/baseApi";
+import { MovementsScreen } from "../features/movements/MovementsScreen";
 
 export default function FoundationScreen() {
   const { profile, loading } = useSelector((s: RootState) => s.auth);
@@ -47,48 +48,27 @@ export default function FoundationScreen() {
       </>
     );
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={styles.title}>
-          Tu cuenta Finza
-        </Text>
-        <Text style={styles.label}>{data?.email ?? profile.email}</Text>
-        <Text style={styles.label}>Moneda: pesos colombianos (COP)</Text>
-        <Text style={styles.label}>
-          Sesión iniciada. Los movimientos y el dashboard se incorporarán en la
-          siguiente fase.
-        </Text>
-        {error ? (
-          <>
-            <Text accessibilityRole="alert">
-              No se pudo actualizar tu perfil.
-            </Text>
-            <AppButton
-              title="Reintentar"
-              onPress={() => {
-                void refetch();
-              }}
-            />
-          </>
-        ) : null}
-        <AppButton
-          title="Cerrar sesión"
-          busy={busy}
-          onPress={async () => {
-            setBusy(true);
-            try {
-              await auth.logout();
-              AccessibilityInfo.announceForAccessibility("Sesión cerrada");
-            } catch {
-              setMessage(
-                "Sesión cerrada localmente. No se pudo confirmar la revocación remota o el almacenamiento seguro; reintenta con conexión.",
-              );
-            } finally {
-              setBusy(false);
-            }
-          }}
-        />
-      </ScrollView>
-    </SafeAreaView>
+    <MovementsScreen
+      key={profile.id}
+      email={data?.email ?? profile.email}
+      profileError={!!error}
+      onRetryProfile={() => {
+        void refetch();
+      }}
+      logoutBusy={busy}
+      onLogout={async () => {
+        setBusy(true);
+        try {
+          await auth.logout();
+          AccessibilityInfo.announceForAccessibility("Sesión cerrada");
+        } catch {
+          setMessage(
+            "Sesión cerrada localmente. No se pudo confirmar la revocación remota o el almacenamiento seguro; reintenta con conexión.",
+          );
+        } finally {
+          setBusy(false);
+        }
+      }}
+    />
   );
 }
