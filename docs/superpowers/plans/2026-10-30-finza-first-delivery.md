@@ -84,17 +84,20 @@ Asignación propuesta, no afirmación de disponibilidad. Cada responsable toca U
 - [x] Ejecutar pytest completo, incluyendo tests/test_dashboard.py.
 - [x] Implementar agregados SQL y endpoint privado; cifras con semántica accesible y mensaje comparativo; etiqueta Flujo neto del mes.
 - [x] Ejecutar suite completa y pruebas UI de caché invalidada al crear/editar/archivar, error/reintento y mes vacío.
-- [x] Aceptación automática: dashboard actualizado tras movimiento sin recarga manual y solo datos del propietario. Recorrido nativo con lector pendiente en Tarea5.
+- [x] Aceptación automática: dashboard actualizado tras movimiento sin recarga manual y solo datos del propietario. Recorrido nativo con lector pendiente en Tarea 5.
 
 ### Tarea 5: Componentes y accesibilidad transversal
+
+**Estado 2026-11-02:** código implementado y verificado automáticamente (113 backend PG sin omisiones, 10 cliente/dominio y 41 UI/caché, TypeScript/Ruff/pip check y export Android). Conforme instrucción posterior del usuario, se desarrolló antes de verificar/corregir. Revisión corrigió foco antes de habilitar campos. **Aceptación nativa aún abierta:** TalkBack, teclado/foco, anuncio audible y texto 1.5x/2x; Apple según disponibilidad. Matriz/checklist: docs/accessibility/first-delivery.md. Siguiente trabajo: Tarea 6, conservando estos pendientes.
 
 **Files:** mobile/src/shared/ui/{AppButton,FormField,AmountInput,Screen}.tsx; mobile/src/shared/accessibility/announcements.ts; mobile/src/shared/ui/__tests__/forms.test.tsx; docs/accessibility/first-delivery.md.
 **Interfaces:** componentes propagan role/label/state/value; FormField identifica label/error; Screen permite foco al título; guardar anuncia éxito una vez. No agrupar controles hijos ocultando acciones.
 
-- [ ] Tests UI rojos: error sin monto asociado y foco recuperable, campos conservados, busy bloquea submit duplicado, controles con nombres únicos, importes no convertidos a float.
-- [ ] Implementar mínimos reutilizables y sustituir duplicaciones en pantallas.
-- [ ] npm test/typecheck; recorrido real TalkBack con 1.5x/teclado y Reduce Motion; medir contraste y target.
-- [ ] Aceptación por pantalla según tabla de revisión técnica. Registrar pendientes Apple explícitamente.
+- [x] Tests UI: error sin monto asociado, petición de foco después de habilitar, campos conservados, busy bloquea submit duplicado, controles con nombres únicos, importes como cadenas.
+- [x] Implementar mínimos reutilizables y sustituir duplicaciones en pantallas.
+- [x] Suite móvil/TypeScript; contraste de paleta y mínimos de targets por estilos comprobados automáticamente.
+- [ ] Recorrido real TalkBack con 1.5x/2x, teclado/rotación/foco, éxito audible y Reduce Motion; medir geometría/contraste efectivos.
+- [ ] Aceptación nativa por pantalla según tabla de revisión técnica. Apple explícitamente pendiente, sin inferir resultados desde Jest.
 
 ### Tarea 6: Integración y entrega reproducible
 

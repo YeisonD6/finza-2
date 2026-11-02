@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Text, AccessibilityInfo } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 import type { RootState } from "../core/store";
 import { auth } from "../features/auth/runtime";
 import { AuthScreen } from "../features/auth/AuthScreen";
-import { AppButton, styles } from "../shared/ui/AuthControls";
+import { Screen } from "../shared/ui/Screen";
+import { Feedback } from "../shared/ui/Feedback";
+import { announce } from "../shared/accessibility/announcements";
 import { useMeQuery } from "../shared/api/baseApi";
 import { FinancialHome } from "../features/dashboard/FinancialHome";
 
@@ -29,24 +29,12 @@ export default function FoundationScreen() {
   }, []);
   if (loading)
     return (
-      <SafeAreaView style={styles.screen}>
-        <Text accessibilityRole="header" style={styles.title}>
-          Recuperando sesión…
-        </Text>
-      </SafeAreaView>
+      <Screen title="Recuperando sesión…">
+        <Feedback message="Espera mientras se recupera la sesión." />
+      </Screen>
     );
   if (!profile)
-    return (
-      <>
-        {message ? (
-          <SafeAreaView>
-            <Text accessibilityRole="alert">{message}</Text>
-            <AppButton title="Reintentar sesión" onPress={restore} />
-          </SafeAreaView>
-        ) : null}
-        <AuthScreen />
-      </>
-    );
+    return <AuthScreen sessionMessage={message} onRetrySession={restore} />;
   return (
     <FinancialHome
       key={profile.id}
@@ -60,7 +48,7 @@ export default function FoundationScreen() {
         setBusy(true);
         try {
           await auth.logout();
-          AccessibilityInfo.announceForAccessibility("Sesión cerrada");
+          announce("Sesión cerrada");
         } catch {
           setMessage(
             "Sesión cerrada localmente. No se pudo confirmar la revocación remota o el almacenamiento seguro; reintenta con conexión.",

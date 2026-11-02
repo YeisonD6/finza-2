@@ -7,6 +7,7 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import { MovementForm } from "../MovementForm";
+import * as announcements from "../../../shared/accessibility/announcements";
 
 const mockCreate = jest.fn(),
   mockEdit = jest.fn(),
@@ -71,9 +72,91 @@ test("missing amount has accessible error and preserves valid fields", async () 
     screen.getByRole("button", { name: "Guardar movimiento" }),
   );
   expect(screen.getByText(/Ingresa un monto positivo/)).toBeTruthy();
+  expect(
+    screen.getByLabelText("Monto en pesos colombianos (COP)").props
+      .accessibilityHint,
+  ).toContain("Error:");
   expect(screen.getByLabelText("Nota (opcional)").props.value).toBe(
     "conservar",
   );
+});
+
+test("invalid category name has associated error and keeps the financial draft", async () => {
+  await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Nota (opcional)"),
+    "Conservar esta nota",
+  );
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Agregar categoría" }),
+  );
+  expect(
+    screen.getByLabelText("Nueva categoría (opcional)").props.accessibilityHint,
+  ).toContain("Error: El nombre de categoría");
+  expect(screen.getByLabelText("Nota (opcional)").props.value).toBe(
+    "Conservar esta nota",
+  );
+  expect(mockCategory).not.toHaveBeenCalled();
+});
+
+test("server category error focuses the category group and preserves canonical amount text", async () => {
+  const focus = jest
+    .spyOn(announcements, "focusAccessibility")
+    .mockImplementation(() => {});
+  mockCreate.mockImplementation(() => ({
+    unwrap: async () => {
+      throw {
+        data: {
+          message: "Revisa categoría",
+          field_errors: { category_id: "Categoría no disponible" },
+        },
+      };
+    },
+  }));
+  await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fill();
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Guardar movimiento" }),
+  );
+  await waitFor(() => expect(focus).toHaveBeenCalled());
+  expect(
+    screen.getByRole("button", { name: "Alimentación" }).props
+      .accessibilityHint,
+  ).toContain("Categoría no disponible");
+  expect(
+    screen.getByLabelText("Monto en pesos colombianos (COP)").props.value,
+  ).toBe("1234,50");
+  focus.mockRestore();
+});
+
+test("saving once announces success once even when submit is pressed twice", async () => {
+  let finish!: (value: { id: string }) => void;
+  const saved = jest.fn(),
+    speech = jest.spyOn(announcements, "announce");
+  mockCreate.mockImplementation(() => ({
+    unwrap: () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  }));
+  await render(<MovementForm onSaved={saved} onCancel={() => {}} />);
+  await fill();
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Guardar movimiento" }),
+  );
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Guardar movimiento" }),
+  );
+  expect(screen.getByRole("button", { name: "Cancelar" })).toBeDisabled();
+  await act(() => {
+    finish({ id: "saved" });
+  });
+  expect(mockCreate).toHaveBeenCalledTimes(1);
+  expect(saved).toHaveBeenCalledTimes(1);
+  expect(
+    speech.mock.calls.filter(([message]) => message === "Movimiento guardado"),
+  ).toHaveLength(1);
+  speech.mockRestore();
 });
 
 test("network retry preserves amount, note and the same idempotency key", async () => {

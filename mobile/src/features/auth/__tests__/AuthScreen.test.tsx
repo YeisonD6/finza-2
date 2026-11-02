@@ -13,6 +13,38 @@ jest.mock("../runtime", () => ({
 }));
 import { auth } from "../runtime";
 
+test("mode navigation clears passwords and visibility while preserving email and unique actions", async () => {
+  await render(<AuthScreen />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Correo electrónico"),
+    "keep@example.com",
+  );
+  await fireEvent.changeText(
+    screen.getByLabelText("Contraseña"),
+    "private-draft",
+  );
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Mostrar contraseña" }),
+  );
+  expect(screen.getByLabelText("Contraseña").props.secureTextEntry).toBe(false);
+  await fireEvent.press(screen.getByRole("button", { name: "Registrarme" }));
+  expect(screen.getByLabelText("Contraseña").props.value).toBe("");
+  expect(screen.getByLabelText("Contraseña").props.secureTextEntry).toBe(true);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Ya tengo cuenta" }),
+  );
+  expect(
+    screen.getByRole("header", { name: "Iniciar sesión en Finza" }),
+  ).toBeTruthy();
+  expect(screen.getByLabelText("Correo electrónico").props.value).toBe(
+    "keep@example.com",
+  );
+  const names = screen
+    .getAllByRole("button")
+    .map((b) => b.props.accessibilityLabel);
+  expect(new Set(names).size).toBe(names.length);
+});
+
 test("invalid fields retain email and expose a useful accessible error", async () => {
   await render(<AuthScreen />);
   await fireEvent.changeText(

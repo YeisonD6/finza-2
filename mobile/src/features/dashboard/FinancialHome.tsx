@@ -9,6 +9,7 @@ export function FinancialHome(props: AccountControls) {
     "dashboard",
   );
   const [month, setMonth] = useState(bogotaToday().slice(0, 7));
+  const [savedReturn, setSavedReturn] = useState(false);
   if (page !== "dashboard")
     return (
       <MovementsScreen
@@ -20,6 +21,7 @@ export function FinancialHome(props: AccountControls) {
           page === "new"
             ? (record) => {
                 setMonth(record.occurred_on.slice(0, 7));
+                setSavedReturn(true);
                 setPage("dashboard");
               }
             : undefined
@@ -30,9 +32,19 @@ export function FinancialHome(props: AccountControls) {
     <DashboardScreen
       {...props}
       month={month}
-      onMonthChange={setMonth}
-      onRegister={() => setPage("new")}
-      onOpenMovements={() => setPage("movements")}
+      silentInitialSummary={savedReturn}
+      onMonthChange={(value) => {
+        setMonth(value);
+        setSavedReturn(false);
+      }}
+      onRegister={() => {
+        setSavedReturn(false);
+        setPage("new");
+      }}
+      onOpenMovements={() => {
+        setSavedReturn(false);
+        setPage("movements");
+      }}
     />
   );
 }

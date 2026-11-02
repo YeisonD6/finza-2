@@ -8,6 +8,7 @@ Monolito modular: FastAPI + PostgreSQL y Expo/React Native + Redux Toolkit/RTK Q
 - [Revisión técnica vinculante](docs/architecture/technical-review.md): dinero, fechas, seguridad, accesibilidad y prioridades.
 - [Plan de la primera entrega](docs/superpowers/plans/2026-10-30-finza-first-delivery.md): archivos, responsables, pruebas y aceptación.
 - [Avance y limitaciones](docs/architecture/progress.md).
+- [Componentes y evidencia de accesibilidad](docs/accessibility/first-delivery.md): pruebas automáticas y recorridos nativos aún pendientes por pantalla.
 
 ## Desarrollo local (PowerShell)
 
@@ -56,6 +57,7 @@ cd backend
 .venv/Scripts/python -m pytest -q
 .venv/Scripts/python -m ruff check app tests
 cd ../mobile
+npm test
 npm run typecheck
 npm run export:android
 ```

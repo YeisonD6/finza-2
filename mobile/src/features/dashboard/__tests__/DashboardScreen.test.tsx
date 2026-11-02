@@ -1,5 +1,5 @@
 import React from "react";
-import { AccessibilityInfo } from "react-native";
+import * as announcements from "../../../shared/accessibility/announcements";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { DashboardScreen } from "../DashboardScreen";
 import type { DashboardSummary } from "../api";
@@ -56,10 +56,7 @@ beforeEach(() => {
 });
 
 test("readable financial summary, negative flow, comparison and actions", async () => {
-  const announcement = jest.spyOn(
-    AccessibilityInfo,
-    "announceForAccessibility",
-  );
+  const announcement = jest.spyOn(announcements, "announce");
   await render(<DashboardScreen {...props} />);
   expect(
     screen.getByRole("header", { name: "Dashboard financiero" }),

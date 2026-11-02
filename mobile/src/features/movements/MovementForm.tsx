@@ -1,16 +1,15 @@
 import { ElementRef, useRef, useState } from "react";
-import {
-  AccessibilityInfo,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  findNodeHandle,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, TextInput } from "react-native";
 import * as Crypto from "expo-crypto";
 import { AppButton, FormField, styles } from "../../shared/ui/AuthControls";
+import { AmountInput } from "../../shared/ui/AmountInput";
+import { Screen } from "../../shared/ui/Screen";
+import { Feedback } from "../../shared/ui/Feedback";
+import {
+  announce,
+  focusAccessibility,
+  useDeferredFocus,
+} from "../../shared/accessibility/announcements";
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -61,13 +60,26 @@ export function MovementForm({
   const [newCategory, setNewCategory] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [operation, setOperation] = useState<"save" | "category" | null>(null);
+  const busy = operation !== null;
+  const requestFocus = useDeferredFocus(busy);
   const locked = useRef(false);
   const key = useRef("");
   if (!key.current) key.current = Crypto.randomUUID();
   const amountRef = useRef<ElementRef<typeof TextInput>>(null);
   const dateRef = useRef<ElementRef<typeof TextInput>>(null);
   const categoryRef = useRef<ElementRef<typeof Text>>(null);
+  const categoryNameRef = useRef<ElementRef<typeof TextInput>>(null);
+  const noteRef = useRef<ElementRef<typeof TextInput>>(null);
+  const [categoryNameError, setCategoryNameError] = useState("");
+  function focusError(errors: Record<string, string>) {
+    requestFocus(() => {
+      if (errors.amount) amountRef.current?.focus();
+      else if (errors.occurred_on) dateRef.current?.focus();
+      else if (errors.category_id) focusAccessibility(categoryRef.current);
+      else if (errors.note) noteRef.current?.focus();
+    });
+  }
   const change = () => {
     key.current = Crypto.randomUUID();
     setFields({});
@@ -91,18 +103,12 @@ export function MovementForm({
     setFields(errors);
     setMessage("");
     if (Object.keys(errors).length) {
-      if (errors.amount) amountRef.current?.focus();
-      else if (errors.occurred_on) dateRef.current?.focus();
-      else if (errors.category_id) {
-        const handle = findNodeHandle(categoryRef.current);
-        if (typeof handle === "number")
-          AccessibilityInfo.setAccessibilityFocus(handle);
-      }
-      AccessibilityInfo.announceForAccessibility(Object.values(errors)[0]);
+      focusError(errors);
+      announce(Object.values(errors)[0]);
       return;
     }
     locked.current = true;
-    setBusy(true);
+    setOperation("save");
     const payload = {
       type,
       amount: canonical,
@@ -115,29 +121,34 @@ export function MovementForm({
       const result = initial
         ? await edit({ id: initial.id, changes: payload }).unwrap()
         : await create({ ...payload, client_request_id: key.current }).unwrap();
-      AccessibilityInfo.announceForAccessibility("Movimiento guardado");
+      announce("Movimiento guardado");
       onSaved(result);
     } catch (e) {
       const details = errorDetails(e);
       setFields(details.field_errors ?? {});
       setMessage(details.message);
-      AccessibilityInfo.announceForAccessibility(details.message);
-      if (details.field_errors?.amount) amountRef.current?.focus();
-      else if (details.field_errors?.occurred_on) dateRef.current?.focus();
+      announce(details.message);
+      focusError(details.field_errors ?? {});
     } finally {
       locked.current = false;
-      setBusy(false);
+      setOperation(null);
     }
   }
 
   async function saveCategory() {
     if (locked.current) return;
     if (!newCategory.trim() || newCategory.trim().length > 60) {
-      setMessage("El nombre de categoría debe tener entre 1 y 60 caracteres");
+      const message =
+        "El nombre de categoría debe tener entre 1 y 60 caracteres";
+      setCategoryNameError(message);
+      requestFocus(() => categoryNameRef.current?.focus());
+      announce(message);
       return;
     }
     locked.current = true;
-    setBusy(true);
+    setOperation("category");
+    setCategoryNameError("");
+    setMessage("");
     try {
       const result = await addCategory({
         name: newCategory.trim(),
@@ -146,147 +157,150 @@ export function MovementForm({
       change();
       setCategory(result.id);
       setNewCategory("");
-      AccessibilityInfo.announceForAccessibility(
-        "Categoría creada y seleccionada",
-      );
+      announce("Categoría creada y seleccionada");
     } catch (e) {
-      setMessage(errorDetails(e).message);
+      const message = errorDetails(e).message;
+      setCategoryNameError(message);
+      requestFocus(() => categoryNameRef.current?.focus());
+      announce(message);
     } finally {
       locked.current = false;
-      setBusy(false);
+      setOperation(null);
     }
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <Screen
+      title={initial ? "Editar movimiento" : "Registrar movimiento"}
+      onBack={onCancel}
+      backLabel="Cancelar"
+      backDisabled={busy}
+    >
+      <Text style={styles.label}>Tipo de movimiento</Text>
+      {(["expense", "income"] as const).map((kind) => (
+        <AppButton
+          key={kind}
+          title={kind === "expense" ? "Gasto" : "Ingreso"}
+          selected={type === kind}
+          disabled={busy}
+          onPress={() => {
+            change();
+            setType(kind);
+            setCategory("");
+          }}
+        />
+      ))}
+      <AmountInput
+        ref={amountRef}
+        value={amount}
+        onChangeText={(v) => {
+          change();
+          setAmount(v);
+        }}
+        error={fields.amount}
+        editable={!busy}
+      />
+      <FormField
+        ref={dateRef}
+        label="Fecha contable (YYYY-MM-DD)"
+        accessibilityHint="Fecha del movimiento, hasta hoy en Colombia."
+        value={date}
+        onChangeText={(v) => {
+          change();
+          setDate(v);
+        }}
+        error={fields.occurred_on}
+        maxLength={10}
+        editable={!busy}
+        autoCorrect={false}
+      />
+      <Text
+        ref={categoryRef}
+        accessibilityRole="header"
+        accessibilityLabel={
+          fields.category_id
+            ? `Categoría. Error: ${fields.category_id}`
+            : "Categoría"
+        }
+        style={styles.label}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.content}
-        >
-          <Text accessibilityRole="header" style={styles.title}>
-            {initial ? "Editar movimiento" : "Registrar movimiento"}
-          </Text>
-          <Text style={styles.label}>Tipo de movimiento</Text>
-          {(["expense", "income"] as const).map((kind) => (
-            <AppButton
-              key={kind}
-              title={kind === "expense" ? "Gasto" : "Ingreso"}
-              selected={type === kind}
-              disabled={busy}
-              onPress={() => {
-                change();
-                setType(kind);
-                setCategory("");
-              }}
-            />
-          ))}
-          <FormField
-            ref={amountRef}
-            label="Monto en pesos colombianos (COP)"
-            accessibilityHint="Mayor que cero. Usa coma o punto decimal, sin separadores de miles."
-            value={amount}
-            onChangeText={(v) => {
-              change();
-              setAmount(v);
-            }}
-            error={fields.amount}
-            keyboardType="decimal-pad"
-            maxLength={32}
-            editable={!busy}
-          />
-          <FormField
-            ref={dateRef}
-            label="Fecha contable (YYYY-MM-DD)"
-            accessibilityHint="Fecha del movimiento, hasta hoy en Colombia."
-            value={date}
-            onChangeText={(v) => {
-              change();
-              setDate(v);
-            }}
-            error={fields.occurred_on}
-            maxLength={10}
-            editable={!busy}
-            autoCorrect={false}
-          />
-          <Text
-            ref={categoryRef}
-            accessibilityRole="header"
-            style={styles.label}
-          >
-            Categoría
-          </Text>
-          {isLoading ? (
-            <Text accessibilityLiveRegion="polite">Cargando categorías…</Text>
-          ) : null}
-          {categoryError ? (
-            <>
-              <Text accessibilityRole="alert">
-                No se pudieron cargar las categorías.
-              </Text>
-              <AppButton
-                title="Reintentar categorías"
-                onPress={() => {
-                  void refetch();
-                }}
-              />
-            </>
-          ) : null}
-          {categories
-            .filter((c) => c.movement_type === type)
-            .map((c) => (
-              <AppButton
-                key={c.id}
-                title={c.is_system ? c.name : `Personal: ${c.name}`}
-                selected={category === c.id}
-                disabled={busy}
-                onPress={() => {
-                  change();
-                  setCategory(c.id);
-                }}
-              />
-            ))}
-          {fields.category_id ? (
-            <Text accessibilityRole="alert" style={styles.error}>
-              {fields.category_id}
-            </Text>
-          ) : null}
-          <FormField
-            label="Nueva categoría (opcional)"
-            value={newCategory}
-            onChangeText={setNewCategory}
-            maxLength={60}
-            editable={!busy}
+        Categoría
+      </Text>
+      <Feedback message={isLoading ? "Cargando categorías…" : ""} />
+      {categoryError ? (
+        <>
+          <Feedback
+            message="No se pudieron cargar las categorías."
+            tone="error"
           />
           <AppButton
-            title="Agregar categoría"
-            onPress={saveCategory}
-            disabled={busy}
-          />
-          <FormField
-            label="Nota (opcional)"
-            value={note}
-            onChangeText={(v) => {
-              change();
-              setNote(v);
+            title="Reintentar categorías"
+            onPress={() => {
+              void refetch();
             }}
-            error={fields.note}
-            multiline
-            maxLength={500}
-            editable={!busy}
           />
-          {message ? (
-            <Text accessibilityRole="alert" style={styles.error}>
-              {message}
-            </Text>
-          ) : null}
-          <AppButton title="Guardar movimiento" busy={busy} onPress={submit} />
-          <AppButton title="Cancelar" disabled={busy} onPress={onCancel} />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </>
+      ) : null}
+      {categories
+        .filter((c) => c.movement_type === type)
+        .map((c) => (
+          <AppButton
+            key={c.id}
+            title={c.is_system ? c.name : `Personal: ${c.name}`}
+            selected={category === c.id}
+            accessibilityHint={
+              fields.category_id ? `Error: ${fields.category_id}` : undefined
+            }
+            disabled={busy}
+            onPress={() => {
+              change();
+              setCategory(c.id);
+            }}
+          />
+        ))}
+      {fields.category_id ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {fields.category_id}
+        </Text>
+      ) : null}
+      <FormField
+        ref={categoryNameRef}
+        label="Nueva categoría (opcional)"
+        value={newCategory}
+        onChangeText={(value) => {
+          setNewCategory(value);
+          setCategoryNameError("");
+        }}
+        error={categoryNameError}
+        maxLength={60}
+        editable={!busy}
+      />
+      <AppButton
+        title="Agregar categoría"
+        onPress={saveCategory}
+        disabled={busy && operation !== "category"}
+        busy={operation === "category"}
+      />
+      <FormField
+        ref={noteRef}
+        label="Nota (opcional)"
+        value={note}
+        onChangeText={(v) => {
+          change();
+          setNote(v);
+        }}
+        error={fields.note}
+        multiline
+        maxLength={500}
+        editable={!busy}
+      />
+      <Feedback message={message} tone="error" announce={false} />
+      <AppButton
+        title="Guardar movimiento"
+        busy={operation === "save"}
+        disabled={operation === "category"}
+        onPress={submit}
+      />
+    </Screen>
   );
 }

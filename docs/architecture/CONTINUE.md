@@ -1,13 +1,22 @@
 # Continuar Finza — 2 noviembre 2026
 
-## Último avance: Fase 3 / Tarea 4
+## Último avance: Fase 4 / Tarea 5
+
+- Componentes y accesibilidad transversal implementados y verificados automáticamente: shared/ui AppButton, FormField, AmountInput, Screen, Feedback y styles; AuthControls conserva exports compatibles. Reutilizados en login/registro, movimientos y dashboard.
+- Identificadores de label únicos, errores/hints asociados, COP en cadenas, estados/foco visibles, selección textual, Atrás de Android con bloqueo durante guardado y cabecera de lista desplazable. Contraseña/visibilidad reiniciadas al cambiar modo. Una solicitud de anuncio por éxito; lectura nativa pendiente.
+- Revisión detectó foco ignorado con editable=false: useDeferredFocus espera render habilitado y siguiente frame. Mantener esta regla en errores nuevos, sin llamar focus mientras busy/operation bloquee el campo.
+- Resultados: **113 backend PostgreSQL reales sin omisiones**, **10 cliente/dominio**, **41 UI/caché**; TypeScript, Prettier, Ruff y pip check correctos; export Android/Hermes final 1184 módulos. Revisión independiente confirmó corrección del foco, sin otros hallazgos críticos/importantes concretos. PostgreSQL de pruebas detenido al terminar. Sin cambios de backend, BD, contrato o dependencias. No reconstruir identidad, movimientos, dashboard o componentes.
+- Manual pendiente y matriz por pantalla: docs/accessibility/first-delivery.md; Android/TalkBack, texto 1.5x/2x/rotación/teclado/foco/anuncios reales, SecureStore e iOS. Docker/ADB no disponibles en PATH; contenedores, APK y CI remoto no comprobados. No declarar conformidad WCAG completa.
+- **Siguiente: Tarea 6 — Integración y entrega reproducible.** Partir de migración003, pruebas PG/puente/recorridos UI ya existentes; completar lo pendiente de README/comandos/Compose/E2E nativo y evidencias reales del equipo.
+
+## Referencia anterior: Fase 3 / Tarea4
 
 - Dashboard backend/móvil implementado y verificado automáticamente. GET /api/v1/dashboard/summary?month=YYYY-MM: income/expense/net COP como cadenas, comparación con delta/percent/reason y cinco movimientos activos propios del mes. Mes por defecto Bogotá; no confundir flujo neto con saldo/patrimonio.
 - Pantalla inicial privada = FinancialHome/DashboardScreen. Registrar abre el formulario existente y vuelve al dashboard actualizado del mes contable guardado; Ver movimientos permite edición/archivo y retorno. RTK Query invalida Dashboard en todas las mutaciones; logout resetea datos privados.
 - Sin migración adicional: head **003_movements**. Agregados y últimos cinco comparten snapshot de una única sentencia SQL. Reutiliza scope/DTO de movimientos y dominio dinero/fechas/comparación. No reconstruir identidad ni movimientos.
 - Resultados de esta tarea: **113 backend PostgreSQL reales sin omisiones**, **10 cliente/dominio**, **22 UI/caché**; TypeScript, Ruff y pip check verdes; export Android/Hermes 1177 módulos. Puente real TypeScript→HTTP→PG con reinicio comprueba también dashboard. Ver progress.md para detalles y limitaciones.
 - Checklist manual pendiente: docs/accessibility/dashboard-checklist.md. TalkBack/Android/Apple, SecureStore, teclado/foco y Docker siguen sin comprobar en dispositivo/contenedor. No declarar conformidad WCAG completa.
-- **Siguiente tarea: 5 — componentes y accesibilidad transversal**, después 6 — integración y entrega reproducible. La Tarea4 no debe reimplementarse.
+- Tarea 5 ya está implementada automáticamente en la actualización superior; el cierre manual sigue pendiente y continúa con Tarea 6.
 
 ## Referencia anterior: Fase 2 / Tarea 3
 
@@ -19,7 +28,7 @@
 - Manual Android/TalkBack/teclado/Alert/foco/SecureStore, Apple y Docker pendientes. No afirmar auditoría accesible o prueba de APK realizadas. Lista en docs/accessibility/movements-checklist.md.
 - La siguiente funcionalidad de ese momento era Tarea4; ya implementada en la actualización superior.
 
-El estado de autenticación que sigue se conserva como referencia de Fase1; los contadores anteriores quedan reemplazados por los de Tarea4.
+El estado de autenticación que sigue se conserva como referencia de Fase1; los contadores anteriores quedan reemplazados por los de Tarea 5.
 
 Rama: codex/finza-foundations. Leer este archivo y progress.md antes de trabajar.
 
@@ -57,4 +66,4 @@ Para desarrollo: establecer DATABASE_URL de aplicación y JWT_SECRET aleatorio e
 
 ## Próximo trabajo acotado
 
-Continuar **Tarea5 — componentes y accesibilidad transversal**, respetando technical-review.md y la estructura existente. Reutilizar AppButton/FormField y completar solo lo que falte. Validar manualmente autenticación, movimientos y dashboard con Android/TalkBack cuando haya dispositivo; Apple según disponibilidad. Docker/Compose y CI remoto siguen pendientes. Para reanudar: «Continúa FINZA 2 en codex/finza-foundations con la Tarea5 del plan; lee CONTINUE.md, progress.md y technical-review.md. No reimplementes identidad, movimientos ni dashboard. Verifica lo desarrollado y registra límites reales. Sin push ni despliegue».
+Continuar **Tarea 6 — integración y entrega reproducible**, respetando technical-review.md. Reutilizar migraciones/pruebas PG, puente HTTP real y pruebas UI/componentes; completar README/comandos y recorrido nativo de primera entrega, incluidos fallos de red recuperables. Docker/Compose desde base vacía y CI remoto siguen sin ejecutar. Validar Android/TalkBack real cuando haya dispositivo y Apple según disponibilidad. Para reanudar: «Continúa FINZA 2 en codex/finza-foundations con Tarea 6. Lee CONTINUE.md, progress.md, technical-review.md y el plan vigente. No reimplementes identidad, movimientos, dashboard ni componentes. Completa integración reproducible, ejecuta verificaciones disponibles y documenta bloqueos/evidencia reales. Sin push ni despliegue».

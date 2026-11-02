@@ -11,6 +11,7 @@ import { FinancialHome } from "../FinancialHome";
 import { store } from "../../../core/store";
 import { baseApi } from "../../../shared/api/baseApi";
 import { auth } from "../../auth/runtime";
+import * as announcements from "../../../shared/accessibility/announcements";
 import type { Movement } from "../../movements/types";
 
 beforeAll(() => {
@@ -23,6 +24,7 @@ afterAll(() => {
 });
 
 test("dashboard → real movement form → save → dashboard of accounting month with invalidated cache", async () => {
+  const speech = jest.spyOn(announcements, "announce");
   let saved: Movement | undefined;
   const request = jest
     .spyOn(auth, "request")
@@ -94,6 +96,12 @@ test("dashboard → real movement form → save → dashboard of accounting mont
     ).toBeTruthy();
     expect(screen.getByText("Resumen de 2024-02 en COP")).toBeTruthy();
     expect(saved?.amount).toBe("1234.50");
+    expect(
+      speech.mock.calls.filter(
+        ([message]) => message === "Movimiento guardado",
+      ),
+    ).toHaveLength(1);
+    expect(screen.getByText("Movimiento guardado.")).toBeTruthy();
     await fireEvent.press(
       screen.getByRole("button", { name: "Ver movimientos" }),
     );
@@ -106,5 +114,6 @@ test("dashboard → real movement form → save → dashboard of accounting mont
   } finally {
     store.dispatch(baseApi.util.resetApiState());
     request.mockRestore();
+    speech.mockRestore();
   }
 });
