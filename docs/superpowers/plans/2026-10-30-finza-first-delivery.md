@@ -75,14 +75,16 @@ Asignación propuesta, no afirmación de disponibilidad. Cada responsable toca U
 
 ### Tarea 4: Dashboard vertical
 
+**Estado 2026-11-02:** implementada y verificada automáticamente (113 backend PG reales sin omisiones, 10 cliente/dominio y 22 UI/caché; puente real y export Android correctos). Se siguió la instrucción posterior del usuario: desarrollar primero, verificar y corregir después. Archivos reales mantienen el estilo del proyecto: backend/tests/test_dashboard.py y mobile/src/features/dashboard/{api.ts,DashboardScreen.tsx,FinancialHome.tsx}. Sin migración nueva. Manual Android/TalkBack/Apple pendiente; ver progress.md y docs/accessibility/dashboard-checklist.md. Próxima tarea: 5.
+
 **Files:** modules/dashboard/{api,schemas,service,repository}.py; tests/integration/test_dashboard.py; mobile/src/features/dashboard/{api/dashboardApi.ts,screens/DashboardScreen.tsx}; app/(private)/index.tsx.
 **Interfaces:** GET summary?month=YYYY-MM -> {month,currency,income,expense,net,comparison:{delta,percent,reason},recent_movements}; importes strings, delta/percent nullable; repositorio filtra dueño/moneda/deleted_at/DATE antes de agregar.
 
-- [ ] Tests rojos con A/B y fechas: ingresos 1000/gastos 250→750; anterior 500→250/50%; anterior cero/negativo/sin datos; mes vacío; archivados; cinco recientes del mes en orden determinista; fecha fuera del mes excluida.
-- [ ] Ejecutar pytest tests/integration/test_dashboard.py.
-- [ ] Implementar agregados SQL y endpoint privado; tarjetas accesibles y mensaje comparativo; no llamar saldo a net.
-- [ ] Ejecutar suite completa y pruebas UI de caché invalidada al crear/editar/archivar, error/reintento y mes vacío.
-- [ ] Aceptación: dashboard actualizado tras movimiento sin recarga manual y solo datos del propietario.
+- [x] Pruebas PostgreSQL con A/B y fechas: ingresos 1000/gastos 250→750; anterior 500→250/50%; anterior cero/negativo/sin datos; mes vacío; archivados; cinco recientes del mes en orden determinista; fecha fuera del mes excluida.
+- [x] Ejecutar pytest completo, incluyendo tests/test_dashboard.py.
+- [x] Implementar agregados SQL y endpoint privado; cifras con semántica accesible y mensaje comparativo; etiqueta Flujo neto del mes.
+- [x] Ejecutar suite completa y pruebas UI de caché invalidada al crear/editar/archivar, error/reintento y mes vacío.
+- [x] Aceptación automática: dashboard actualizado tras movimiento sin recarga manual y solo datos del propietario. Recorrido nativo con lector pendiente en Tarea5.
 
 ### Tarea 5: Componentes y accesibilidad transversal
 

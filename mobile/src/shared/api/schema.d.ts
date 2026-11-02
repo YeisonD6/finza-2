@@ -144,6 +144,23 @@ export interface paths {
     patch: operations["movement_edit_api_v1_movements__movement_id__patch"];
     trace?: never;
   };
+  "/api/v1/dashboard/summary": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Dashboard Summary */
+    get: operations["dashboard_summary_api_v1_dashboard_summary_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/health/live": {
     parameters: {
       query?: never;
@@ -220,6 +237,42 @@ export interface components {
       movement_type: "income" | "expense";
       /** Is System */
       is_system: boolean;
+    };
+    /** DashboardComparison */
+    DashboardComparison: {
+      /** Delta */
+      delta: string | null;
+      /** Percent */
+      percent: string | null;
+      /**
+       * Reason
+       * @enum {string}
+       */
+      reason:
+        | "comparable"
+        | "zero_baseline"
+        | "negative_baseline"
+        | "no_previous_data";
+    };
+    /** DashboardSummary */
+    DashboardSummary: {
+      /** Month */
+      month: string;
+      /**
+       * Currency
+       * @default COP
+       * @constant
+       */
+      currency: "COP";
+      /** Income */
+      income: string;
+      /** Expense */
+      expense: string;
+      /** Net */
+      net: string;
+      comparison: components["schemas"]["DashboardComparison"];
+      /** Recent Movements */
+      recent_movements: components["schemas"]["MovementOut"][];
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -754,6 +807,37 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["MovementOut"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  dashboard_summary_api_v1_dashboard_summary_get: {
+    parameters: {
+      query?: {
+        month?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DashboardSummary"];
         };
       };
       /** @description Validation Error */

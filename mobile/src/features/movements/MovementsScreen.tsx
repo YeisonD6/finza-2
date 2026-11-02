@@ -24,19 +24,29 @@ export function MovementsScreen({
   logoutBusy,
   profileError,
   onRetryProfile,
+  initialMonth,
+  initialForm = false,
+  onBack,
+  onCreated,
 }: {
   email: string;
   onLogout(): void;
   logoutBusy: boolean;
   profileError?: boolean;
   onRetryProfile?(): void;
+  initialMonth?: string;
+  initialForm?: boolean;
+  onBack?(): void;
+  onCreated?(record: Movement): void;
 }) {
-  const [month, setMonth] = useState(bogotaToday().slice(0, 7));
+  const [month, setMonth] = useState(initialMonth ?? bogotaToday().slice(0, 7));
   const [inputMonth, setInputMonth] = useState(month);
   const [type, setType] = useState<MovementType | undefined>();
   const [category, setCategory] = useState<string | undefined>();
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
-  const [form, setForm] = useState<Movement | "new" | null>(null);
+  const [form, setForm] = useState<Movement | "new" | null>(
+    initialForm ? "new" : null,
+  );
   const heading = useRef<ElementRef<typeof Text>>(null);
   useEffect(() => {
     if (!form) {
@@ -96,8 +106,12 @@ export function MovementsScreen({
     return (
       <MovementForm
         initial={form === "new" ? undefined : form}
-        onCancel={() => setForm(null)}
+        onCancel={() => (initialForm && onBack ? onBack() : setForm(null))}
         onSaved={(saved) => {
+          if (initialForm && onCreated) {
+            onCreated(saved);
+            return;
+          }
           setForm(null);
           setMonth(saved.occurred_on.slice(0, 7));
           setInputMonth(saved.occurred_on.slice(0, 7));
@@ -120,6 +134,13 @@ export function MovementsScreen({
               Movimientos
             </Text>
             <Text style={styles.label}>{email}</Text>
+            {onBack ? (
+              <AppButton
+                title="Volver al dashboard"
+                onPress={onBack}
+                disabled={archiving}
+              />
+            ) : null}
             {profileError ? (
               <>
                 <Text accessibilityRole="alert">

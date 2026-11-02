@@ -7,7 +7,7 @@ import { auth } from "../features/auth/runtime";
 import { AuthScreen } from "../features/auth/AuthScreen";
 import { AppButton, styles } from "../shared/ui/AuthControls";
 import { useMeQuery } from "../shared/api/baseApi";
-import { MovementsScreen } from "../features/movements/MovementsScreen";
+import { FinancialHome } from "../features/dashboard/FinancialHome";
 
 export default function FoundationScreen() {
   const { profile, loading } = useSelector((s: RootState) => s.auth);
@@ -48,7 +48,7 @@ export default function FoundationScreen() {
       </>
     );
   return (
-    <MovementsScreen
+    <FinancialHome
       key={profile.id}
       email={data?.email ?? profile.email}
       profileError={!!error}

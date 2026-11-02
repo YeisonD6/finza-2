@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException
 
 from app.core.database import database_ready
+from app.modules.dashboard.api import router as dashboard_router
 from app.modules.identity.api import me_router
 from app.modules.identity.api import router as identity_router
 from app.modules.movements.api import router as movements_router
@@ -17,6 +18,7 @@ def create_app() -> FastAPI:
     app.include_router(identity_router)
     app.include_router(me_router)
     app.include_router(movements_router)
+    app.include_router(dashboard_router)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):

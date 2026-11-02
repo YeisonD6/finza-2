@@ -601,6 +601,61 @@
         }
       }
     },
+    "/api/v1/dashboard/summary": {
+      "get": {
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Dashboard Summary",
+        "operationId": "dashboard_summary_api_v1_dashboard_summary_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 7
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "summary": "Live",
@@ -723,6 +778,95 @@
           "is_system"
         ],
         "title": "CategoryOut"
+      },
+      "DashboardComparison": {
+        "properties": {
+          "delta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          },
+          "percent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "comparable",
+              "zero_baseline",
+              "negative_baseline",
+              "no_previous_data"
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delta",
+          "percent",
+          "reason"
+        ],
+        "title": "DashboardComparison"
+      },
+      "DashboardSummary": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "currency": {
+            "type": "string",
+            "const": "COP",
+            "title": "Currency",
+            "default": "COP"
+          },
+          "income": {
+            "type": "string",
+            "title": "Income"
+          },
+          "expense": {
+            "type": "string",
+            "title": "Expense"
+          },
+          "net": {
+            "type": "string",
+            "title": "Net"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/DashboardComparison"
+          },
+          "recent_movements": {
+            "items": {
+              "$ref": "#/components/schemas/MovementOut"
+            },
+            "type": "array",
+            "title": "Recent Movements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "income",
+          "expense",
+          "net",
+          "comparison",
+          "recent_movements"
+        ],
+        "title": "DashboardSummary"
       },
       "HTTPValidationError": {
         "properties": {

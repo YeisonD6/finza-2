@@ -76,6 +76,14 @@ def test_typescript_mobile_client_against_real_api_and_postgres(pg_identity):
             and saved[0]["note"] == "persist-after-restart"
             and saved[0]["amount"] == "1234.50"
         )
+        request = urllib.request.Request(
+            url + "/api/v1/dashboard/summary?month=2024-04", headers={"Authorization": "Bearer " + token}
+        )
+        with urllib.request.urlopen(request, timeout=5) as response:
+            dashboard = json.load(response)
+        assert dashboard["net"] == "-1234.50"
+        assert dashboard["recent_movements"][0]["id"] == saved[0]["id"]
+        assert dashboard["comparison"]["reason"] == "no_previous_data"
     finally:
         if process.poll() is None:
             process.terminate()

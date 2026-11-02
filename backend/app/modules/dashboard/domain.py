@@ -12,5 +12,7 @@ def compare_net(current: Decimal, previous: Decimal | None) -> dict:
         context.prec = 38
         delta = current - previous
         percent = rounded(delta / previous * 100) if previous > 0 else None
+        if percent == "-0.00":
+            percent = "0.00"
         reason = "comparable" if previous > 0 else "zero_baseline" if previous == 0 else "negative_baseline"
         return {"delta": rounded(delta), "percent": percent, "reason": reason}

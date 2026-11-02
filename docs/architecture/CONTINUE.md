@@ -1,6 +1,15 @@
 # Continuar Finza — 2 noviembre 2026
 
-## Último avance: Fase 2 / Tarea 3
+## Último avance: Fase 3 / Tarea 4
+
+- Dashboard backend/móvil implementado y verificado automáticamente. GET /api/v1/dashboard/summary?month=YYYY-MM: income/expense/net COP como cadenas, comparación con delta/percent/reason y cinco movimientos activos propios del mes. Mes por defecto Bogotá; no confundir flujo neto con saldo/patrimonio.
+- Pantalla inicial privada = FinancialHome/DashboardScreen. Registrar abre el formulario existente y vuelve al dashboard actualizado del mes contable guardado; Ver movimientos permite edición/archivo y retorno. RTK Query invalida Dashboard en todas las mutaciones; logout resetea datos privados.
+- Sin migración adicional: head **003_movements**. Agregados y últimos cinco comparten snapshot de una única sentencia SQL. Reutiliza scope/DTO de movimientos y dominio dinero/fechas/comparación. No reconstruir identidad ni movimientos.
+- Resultados de esta tarea: **113 backend PostgreSQL reales sin omisiones**, **10 cliente/dominio**, **22 UI/caché**; TypeScript, Ruff y pip check verdes; export Android/Hermes 1177 módulos. Puente real TypeScript→HTTP→PG con reinicio comprueba también dashboard. Ver progress.md para detalles y limitaciones.
+- Checklist manual pendiente: docs/accessibility/dashboard-checklist.md. TalkBack/Android/Apple, SecureStore, teclado/foco y Docker siguen sin comprobar en dispositivo/contenedor. No declarar conformidad WCAG completa.
+- **Siguiente tarea: 5 — componentes y accesibilidad transversal**, después 6 — integración y entrega reproducible. La Tarea4 no debe reimplementarse.
+
+## Referencia anterior: Fase 2 / Tarea 3
 
 - Categorías de sistema y privadas + movimientos COP implementados en backend/BD/móvil. No rehacer autenticación. Migración vigente: **003_movements**; aplicar con Alembic antes de iniciar la API.
 - Endpoints privados: GET/POST /api/v1/categories; GET/POST /api/v1/movements; GET/PATCH/DELETE /api/v1/movements/{id}. UUID client_request_id obligatorio al crear; mismo usuario/clave/contenido devuelve recibo original (200), contenido distinto 409. Nunca reaparece un archivado por replay.
@@ -8,9 +17,9 @@
 - Categorías existentes inmutables; se pueden añadir categorías privadas. Edición/archivo son operaciones de movimientos. Cuenta/perfil/logout existentes conservados.
 - Última suite: 87 backend PG reales sin omisiones (incluye puente y reinicio de API), 10 cliente/dominio, 11 UI/caché. Tipos, lint y export Android correctos. Ver progress.md para límites y decisiones.
 - Manual Android/TalkBack/teclado/Alert/foco/SecureStore, Apple y Docker pendientes. No afirmar auditoría accesible o prueba de APK realizadas. Lista en docs/accessibility/movements-checklist.md.
-- **Siguiente funcionalidad: Tarea 4, dashboard financiero.** No reconstruir categorías, movimientos ni sesiones.
+- La siguiente funcionalidad de ese momento era Tarea4; ya implementada en la actualización superior.
 
-El estado de autenticación que sigue se conserva como referencia de Fase1; los contadores de pruebas anteriores quedan reemplazados por los de arriba.
+El estado de autenticación que sigue se conserva como referencia de Fase1; los contadores anteriores quedan reemplazados por los de Tarea4.
 
 Rama: codex/finza-foundations. Leer este archivo y progress.md antes de trabajar.
 
@@ -48,4 +57,4 @@ Para desarrollo: establecer DATABASE_URL de aplicación y JWT_SECRET aleatorio e
 
 ## Próximo trabajo acotado
 
-Validar manualmente flujos de autenticación y movimientos con dispositivo real y TalkBack. Docker sigue pendiente. Desarrollar **Tarea4: dashboard financiero** con ingresos, gastos, flujo neto, comparación mensual y últimos cinco activos del mes; no confundir flujo neto con saldo o patrimonio. Reutilizar servicios/consultas de lectura del módulo de movimientos y tags Dashboard ya previstos. Mantener aislamiento por propietario y tratamiento de cero/negativo/sin mes anterior según revisión vinculante.
+Continuar **Tarea5 — componentes y accesibilidad transversal**, respetando technical-review.md y la estructura existente. Reutilizar AppButton/FormField y completar solo lo que falte. Validar manualmente autenticación, movimientos y dashboard con Android/TalkBack cuando haya dispositivo; Apple según disponibilidad. Docker/Compose y CI remoto siguen pendientes. Para reanudar: «Continúa FINZA 2 en codex/finza-foundations con la Tarea5 del plan; lee CONTINUE.md, progress.md y technical-review.md. No reimplementes identidad, movimientos ni dashboard. Verifica lo desarrollado y registra límites reales. Sin push ni despliegue».

@@ -49,6 +49,8 @@ Para Android emulado, API en http://10.0.2.2:8000. En teléfono físico, EXPO_PU
 
 ## Verificación
 
+Tras iniciar sesión, la app abre el dashboard mensual. Permite registrar un movimiento y volver al resumen actualizado, o abrir el listado para editar/archivar. En Swagger usar Authorize y `GET /api/v1/dashboard/summary?month=2024-02` para consultar el mismo resumen. Importes COP como cadenas, comparación con el mes calendario anterior y cinco últimos activos propios del mes. Lista de comprobaciones manuales: [dashboard/TalkBack](docs/accessibility/dashboard-checklist.md).
+
 ```powershell
 cd backend
 .venv/Scripts/python -m pytest -q

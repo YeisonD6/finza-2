@@ -37,6 +37,17 @@ def request_record(session: Session, owner: UUID, key: UUID):
     )
 
 
+def active_month_conditions(owner: UUID, start: date, end: date):
+    """Shared read scope for movement lists and the financial dashboard."""
+    return (
+        Movement.owner_id == owner,
+        Movement.deleted_at.is_(None),
+        Movement.currency == "COP",
+        Movement.occurred_on >= start,
+        Movement.occurred_on < end,
+    )
+
+
 def page(
     session: Session,
     owner: UUID,
@@ -47,12 +58,7 @@ def page(
     category_id: UUID | None,
     position: tuple[date, datetime, UUID] | None,
 ):
-    statement = select(Movement).where(
-        Movement.owner_id == owner,
-        Movement.deleted_at.is_(None),
-        Movement.occurred_on >= start,
-        Movement.occurred_on < end,
-    )
+    statement = select(Movement).where(*active_month_conditions(owner, start, end))
     if movement_type:
         statement = statement.where(Movement.type == movement_type)
     if category_id:

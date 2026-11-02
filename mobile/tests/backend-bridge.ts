@@ -1,6 +1,7 @@
 /** Run against the disposable API started by pytest, not a production URL. */
 import assert from "node:assert/strict";
 import { AuthClient, type Profile } from "../src/features/auth/client";
+import type { DashboardSummary } from "../src/features/dashboard/api";
 
 async function main() {
   const url = process.env.FINZA_BRIDGE_URL!;
@@ -59,6 +60,12 @@ async function main() {
     body: JSON.stringify(input),
   });
   assert.equal(repeated.id, created.id);
+  const february = await a.request<DashboardSummary>(
+    "/api/v1/dashboard/summary?month=2024-02",
+  );
+  assert.equal(february.net, "-1234.50");
+  assert.equal(february.recent_movements.length, 1);
+  assert.equal(february.comparison.reason, "no_previous_data");
   await a.request(`/api/v1/movements/${created.id}`, {
     method: "PATCH",
     body: JSON.stringify({ occurred_on: "2024-03-01", amount: "250.00" }),
@@ -77,6 +84,15 @@ async function main() {
     "250.00",
   );
   await a.request(`/api/v1/movements/${created.id}`, { method: "DELETE" });
+  const march = await a.request<DashboardSummary>(
+    "/api/v1/dashboard/summary?month=2024-03",
+  );
+  assert.equal(march.net, "0.00");
+  assert.equal(march.recent_movements.length, 0);
+  const emptyFebruary = await a.request<DashboardSummary>(
+    "/api/v1/dashboard/summary?month=2024-02",
+  );
+  assert.equal(emptyFebruary.net, "0.00");
   assert.equal(
     (await a.request<{ items: unknown[] }>("/api/v1/movements?month=2024-03"))
       .items.length,
@@ -93,7 +109,7 @@ async function main() {
   });
   await a.logout();
   console.log(
-    "BRIDGE_OK registration/login/me/restore/rotation/logout/account-switch",
+    "BRIDGE_OK registration/login/me/restore/rotation/logout/account-switch/movements/dashboard",
   );
 }
 main().catch(() => {
