@@ -1,10 +1,33 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi, BaseQueryFn } from "@reduxjs/toolkit/query/react";
+import { auth } from "../../features/auth/runtime";
+import { ApiError } from "../../features/auth/client";
+
+const query: BaseQueryFn<
+  string,
+  unknown,
+  { status: number; data: { message: string } }
+> = async (path, api) => {
+  try {
+    return { data: await auth.request(path, { signal: api.signal }) };
+  } catch (error) {
+    return {
+      error: {
+        status: error instanceof ApiError ? error.status : 0,
+        data: {
+          message: error instanceof Error ? error.message : "Error de conexión",
+        },
+      },
+    };
+  }
+};
 
 export const baseApi = createApi({
-  reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000' }),
+  reducerPath: "api",
+  baseQuery: query,
   endpoints: (builder) => ({
-    health: builder.query<{ status: string }, void>({ query: () => '/health/live' }),
+    me: builder.query<import("../../features/auth/client").Profile, void>({
+      query: () => "/api/v1/me",
+    }),
   }),
 });
-export const { useHealthQuery } = baseApi;
+export const { useMeQuery } = baseApi;

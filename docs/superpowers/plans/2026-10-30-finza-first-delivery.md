@@ -49,6 +49,8 @@ Asignación propuesta, no afirmación de disponibilidad. Cada responsable toca U
 
 ### Tarea 2: Identidad vertical
 
+**Estado 2026-11-02:** código backend/móvil implementado y verificado automáticamente (61 backend, 8 cliente, 4 UI/caché; puente real con PG). Migración adicional 002_sessions para familias y límites distribuidos. Cierre manual TalkBack/SecureStore en dispositivo pendiente por falta de SDK/ADB/hardware; ver progress.md. El orden de implementación/pruebas siguió la instrucción posterior del usuario de desarrollar primero y verificar/corregir después.
+
 **Files:** backend/app/modules/identity/{api,schemas,service,models,repository}.py; modules/users/{models,service}.py; core/security.py; migrations/versions/001_identity.py; tests/security/test_sessions.py; mobile/src/features/auth/{api/authApi.ts,session.ts,screens/LoginScreen.tsx,screens/RegisterScreen.tsx}; mobile/app/(auth)/{login,register}.tsx.
 **Interfaces:** register(email,password)->Account; login(email,password)->TokenPair; refresh(token)->TokenPair; logout(session_id)->None; current_account()->Account. TokenPair access_token, refresh_token, expires_in; /me devuelve id/email/base_currency COP, nunca hash.
 

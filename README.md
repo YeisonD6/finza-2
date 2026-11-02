@@ -62,10 +62,12 @@ La prueba de readiness PostgreSQL se omite si DATABASE_URL no está definida. La
 
 La migración `001_identity` crea accounts, user_profiles y refresh_sessions. Compose prepara primero la base, luego ejecuta Alembic y finalmente arranca API. Docker/Compose todavía no se pudieron ejecutar en esta máquina; la conexión y migración sí se verificaron directamente contra PostgreSQL 18 instalado localmente.
 
-El backend ofrece `POST /api/v1/auth/register` con JSON `{"email":"laura@example.com","password":"una contraseña larga"}`. Devuelve id, email normalizado y moneda COP; no inicia sesión. Login, refresh, logout y límites de intentos están pendientes; no desplegar el registro públicamente hasta completarlos.
+El backend ofrece `POST /api/v1/auth/register` con JSON `{"email":"laura@example.com","password":"una contraseña larga"}`. Devuelve id, email normalizado y moneda COP; no inicia sesión. Login (`POST /api/v1/auth/login`) recibe las mismas credenciales y devuelve access_token/refresh_token. Refresh y logout reciben `{"refresh_token":"..."}`; `GET /api/v1/me` requiere Bearer access_token.
 
-Regenerar contrato desde backend: `.venv/Scripts/python -m scripts.export_openapi`; luego desde mobile: `npm run api:types`. El contrato inicial solo contiene health; endpoints privados se agregan con sus módulos.
+Antes de usar auth, establecer JWT_SECRET aleatorio de al menos 32 bytes en la terminal; puede generarse con `backend/.venv/Scripts/python -c "import secrets; print(secrets.token_urlsafe(48))"`. Guardarlo localmente fuera de Git. backend/.env.example documenta variables; la API lee el entorno y no carga archivos .env sola. Para Compose definir JWT_SECRET también en infra/.env. No hay clave insegura por defecto.
+
+Regenerar contrato desde backend: `.venv/Scripts/python -m scripts.export_openapi`; luego desde mobile: `npm run api:types`. Incluye auth y /me. TypeScript se mantiene en 5.9 por compatibilidad del generador OpenAPI7; es la única exclusión explícita de la comprobación de versiones Expo.
 
 ## Límites actuales
 
-La base prepara API health, primitivas de dinero/fecha/comparación y shell móvil. Registro backend y tablas de identidad probados; login, persistencia financiera, aislamiento HTTP de recursos privados y dashboard conectado pendientes. No ingresar datos financieros reales hasta completar seguridad y pruebas de la entrega vertical.
+Autenticación backend/móvil implementada y probada automáticamente, incluyendo cliente TypeScript contra API/PG reales y aislamiento de sesiones/caché. Desde mobile ejecutar `npm test`, `npm run typecheck` y `npm run export:android`. La prueba hardware Android/TalkBack/SecureStore y Apple sigue pendiente. Movimientos y dashboard conectado pertenecen a la siguiente fase. Ver CONTINUE.md y progress.md para resultados y límites de dependencias.

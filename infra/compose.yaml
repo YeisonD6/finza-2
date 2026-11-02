@@ -26,6 +26,7 @@ services:
     build: ../backend
     environment:
       DATABASE_URL: postgresql+psycopg://finza:${POSTGRES_PASSWORD}@db:5432/finza
+      JWT_SECRET: ${JWT_SECRET:?Set a random JWT_SECRET of at least 32 bytes}
     ports:
       - "8000:8000"
     depends_on:

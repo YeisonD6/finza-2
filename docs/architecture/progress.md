@@ -1,5 +1,27 @@
 # Avance de Finza — 30 octubre 2026
 
+## Actualización 2 noviembre 2026 — Fase 1 autenticación
+
+Implementados login, access JWT (iss/aud/sub/sid/exp/nbf/iat/type/jti), refresh opaco con SHA-256 persistido, familias bloqueadas con SELECT FOR UPDATE, expiración absoluta, replay con revocación de familia y logout que invalida access existentes. /me valida familia y cuenta activa; no acepta propietario desde cliente. Límites atómicos en PostgreSQL: registro 5/h/IP, login 5 intentos fallidos/15min por IP+email (se reserva antes de verificar y se limpia tras éxito), refresh 30/min/familia. Identificadores de buckets en HMAC, sin IP/email en claro; ventanas desde primer intento. JWT_SECRET obligatorio sin valor por defecto. Respuestas privadas de auth y /me no-store.
+
+Móvil: pantallas de registro/login y perfil privado; formularios con labels/autofill, texto escalable, controles >=48, errores anunciados/foco y doble envío bloqueado. Refresh en SecureStore y access solo en memoria; Redux conserva perfil/estado, nunca tokens/contraseñas. Refresh single-flight, generación de sesión para descartar respuestas antiguas, cancelación de queries/mutations y resetApiState al salir/cambiar cuenta. Restore al inicio y logout local incluso sin conexión; la UI informa cuando no logra confirmar revocación remota/almacenamiento. Si no hay red, la revocación de servidor no se puede garantizar hasta que expire la familia o se revoque con conexión.
+
+Migración 002_sessions crea session_families/auth_buckets y FK de tokens; Compose requiere JWT_SECRET e incluye migración antes de API. El grafo aún carece de símbolos de estos archivos (Tier2, cobertura not_tracked), por lo que se revisó fuente directa.
+
+Resultado final: **61 pruebas backend pasaron, 0 omitidas**, con PostgreSQL18 real y puente TypeScript→HTTP FastAPI→PG. Incluye migraciones upgrade/downgrade/check, 401 JWT malformado/expirado/algoritmo/firma/issuer/audience/tipo/identidad incorrectos, cuenta deshabilitada, refresh absoluto/replay/concurrente, aislamiento A/B, logout y límites 429. **8 pruebas del cliente de sesión y 4 de UI/caché pasaron**; TypeScript, Ruff, pip check y compatibilidad Expo pasaron (exclusión TypeScript documentada). Export Android final: 1163 módulos, bundle Hermes generado; no APK ni prueba de dispositivo. Generación OpenAPI actualizada y revisión independiente corregida.
+
+El lockfile se reinstaló con `npm ci --ignore-scripts` sin conflictos de peer dependencies. No se modificó Node global; se usó Node24 del runtime. El PostgreSQL de pruebas ya estaba ejecutándose al comenzar y no se detuvo una instancia preexistente del usuario; cada prueba eliminó solo su base temporal finza_test_<uuid>.
+
+Revisión independiente encontró que un fallo al borrar SecureStore evitaba revocación remota. Se reprodujo con test rojo, se corrigió para intentar ambas operaciones y el test pasó. Pruebas UI ajustadas a la API asíncrona de Testing Library14; Jest usa entradas CJS para immer/react-redux y limpia timers de RTK al terminar.
+
+Decisión de herramientas: TypeScript 5.9, porque openapi-typescript7 requiere ^5.x; Expo recomienda 6 pero no lo exige para ejecutar. Se intentó la actualización y se revirtió ante peer incompatible; exclusión explícita solo de TypeScript en expo.install.exclude. Router alineado con la matriz nueva. Sin cambios de arquitectura ni instalación global Node. Código móvil formateado con Prettier.
+
+Seguridad de dependencias: npm audit fix sin --force corrigió los avisos altos detectados (zod/cadena Expo). Quedan 33 paquetes señalados (32 moderate, 1 low), principalmente glob/minimatch/deepmerge y herramientas; npm sugiere downgrade incompatible a Expo51 para varios de ellos, no aplicado. No se afirma que el árbol esté libre de vulnerabilidades. TestClient/httpx conserva aviso de deprecación.
+
+Pendientes reales para cierre manual: SDK Android/ADB y dispositivo/emulador no disponibles; SecureStore nativo, TalkBack, texto ampliado, teclado y Apple no probados en hardware. Docker/Compose y CI remoto tampoco ejecutados. Registro/login/perfil/logout ya tienen implementación y pruebas automáticas; no confundir ese resultado con conformidad WCAG ni prueba de binario Android.
+
+Fuentes primarias de implementación: [FastAPI/JWT](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/) y [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/). Las duraciones, rate limits y revocación por familia son decisiones propias de Finza.
+
 ## Actualización más reciente: identidad backend
 
 Se verificó PostgreSQL 18.4 local en instancia aislada: readiness FastAPI, migración 001_identity, comparación de metadata Alembic, downgrade y nueva subida. Registro de usuarios probado con Argon2id, perfil COP, validaciones, secreto no expuesto y duplicados simultáneos (201/409, una cuenta y un perfil). Suite: 43 passed, 0 skipped, warning TestClient conocido; ruff/pip check sin errores. Docker no disponible: Compose modificado con servicio migrate pero no ejecutado. Contrato OpenAPI/tipos regenerados. Ver CONTINUE.md para reanudar. Las notas anteriores de identidad no implementada y PG pendiente quedan superadas solo para registro/tablas/conexión; login, refresh/logout y aislamiento de recursos privados siguen pendientes.

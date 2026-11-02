@@ -1,1 +1,11 @@
-{"expo":{"name":"Finza","slug":"finza","scheme":"finza","version":"0.1.0","plugins":["expo-router"],"android":{"package":"co.edu.unisabana.finza"},"ios":{"bundleIdentifier":"co.edu.unisabana.finza"}}}
+{
+  "expo": {
+    "name": "Finza",
+    "slug": "finza",
+    "scheme": "finza",
+    "version": "0.1.0",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "android": { "package": "co.edu.unisabana.finza" },
+    "ios": { "bundleIdentifier": "co.edu.unisabana.finza" }
+  }
+}
