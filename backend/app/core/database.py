@@ -7,9 +7,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 
+def _connect_args(url: str) -> dict:
+    if url.startswith("sqlite"):
+        return {"timeout": 3}
+    return {"connect_timeout": 3}
+
+
 @lru_cache(maxsize=4)
 def get_engine(url: str):
-    return create_engine(url, pool_pre_ping=True, connect_args={"connect_timeout": 3})
+    return create_engine(url, pool_pre_ping=True, connect_args=_connect_args(url))
 
 
 def get_session():
@@ -28,7 +34,7 @@ def database_ready(url: str | None) -> bool:
         return False
     engine = None
     try:
-        engine = create_engine(url, connect_args={"connect_timeout": 3})
+        engine = create_engine(url, connect_args=_connect_args(url))
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         return True

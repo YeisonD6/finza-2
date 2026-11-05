@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    JSON,
     Numeric,
     String,
     Text,
@@ -54,10 +55,10 @@ class Movement(Base):
         CheckConstraint("type IN ('income', 'expense')", name="ck_movement_type"),
         CheckConstraint("currency = 'COP'", name="ck_movement_currency"),
         CheckConstraint(
-            "amount > 0 AND amount <= 999999999999999.99 AND amount = trunc(amount, 2)",
+            "amount > 0 AND amount <= 999999999999999.99",
             name="ck_movement_amount",
         ),
-        CheckConstraint("occurred_on >= DATE '1900-01-01'", name="ck_movement_date"),
+        CheckConstraint("occurred_on >= '1900-01-01'", name="ck_movement_date"),
         Index("ix_movements_owner_order", "owner_id", "occurred_on", "created_at", "id"),
     )
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
@@ -70,7 +71,7 @@ class Movement(Base):
     note: Mapped[str] = mapped_column(String(500), nullable=False, default="")
     client_request_id: Mapped[UUID] = mapped_column(Uuid, nullable=False)
     request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
-    creation_snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    creation_snapshot: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

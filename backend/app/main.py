@@ -1,10 +1,10 @@
 import os
 from uuid import uuid4
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException as FastAPIHTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from starlette.exceptions import HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import database_ready
 from app.modules.dashboard.api import router as dashboard_router
@@ -23,13 +23,17 @@ def create_app() -> FastAPI:
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
         # Never echo input values, passwords or validator contexts.
+        # NOTE: use getattr with default because exception_handlers run before the
+        # request_id middleware, so request.state.request_id may not exist yet
+        # and accessing it directly raises AttributeError -> 500 instead of 422.
         return JSONResponse(
             status_code=422,
             content={
                 "code": "validation_error",
                 "message": "Revisa los campos indicados",
+                "detail": "Revisa los campos indicados",
                 "field_errors": {str(e["loc"][-1]): e["msg"] for e in exc.errors()},
-                "request_id": request.state.request_id,
+                "request_id": getattr(request.state, "request_id", None),
             },
         )
 
@@ -42,16 +46,18 @@ def create_app() -> FastAPI:
             response.headers["Cache-Control"] = "no-store"
         return response
 
-    @app.exception_handler(HTTPException)
-    async def http_error(request: Request, exc: HTTPException):
+    @app.exception_handler(FastAPIHTTPException)
+    @app.exception_handler(StarletteHTTPException)
+    async def http_error(request: Request, exc: StarletteHTTPException):
         return JSONResponse(
             status_code=exc.status_code,
-            headers=exc.headers,
+            headers=getattr(exc, "headers", None),
             content={
                 "code": "http_error",
                 "message": str(exc.detail),
-                "field_errors": {},
-                "request_id": request.state.request_id,
+                "detail": str(exc.detail),
+                "field_errors": getattr(exc, "field_errors", {}),
+                "request_id": getattr(request.state, "request_id", None),
             },
         )
 
@@ -68,8 +74,9 @@ def create_app() -> FastAPI:
             content={
                 "code": "database_unavailable",
                 "message": "Servicio temporalmente no disponible",
+                "detail": "Servicio temporalmente no disponible",
                 "field_errors": {},
-                "request_id": request.state.request_id,
+                "request_id": getattr(request.state, "request_id", None),
             },
         )
 

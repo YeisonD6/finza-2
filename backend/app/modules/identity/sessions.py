@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.core.security import password_hasher
 from app.modules.identity.models import Account, RefreshSession, SessionFamily
-from app.modules.identity.tokens import ACCESS_SECONDS, access_token, digest, new_refresh, utcnow
+from app.modules.identity.tokens import ACCESS_SECONDS, access_token, digest, new_refresh
+from app.shared.time import ensure_utc, utcnow
 
 # A real hash makes unknown and known-account password checks use the same KDF.
 DUMMY_HASH = password_hasher.hash("finza-dummy-password-not-a-credential")
@@ -79,7 +80,7 @@ def rotate(session: Session, raw: str) -> dict:
     account = session.get(Account, family.account_id)
     if (
         family.revoked_at
-        or family.expires_at <= utcnow()
+        or ensure_utc(family.expires_at) <= utcnow()
         or token.revoked_at
         or not account
         or account.status != "active"
@@ -105,7 +106,7 @@ def active_family(session: Session, account_id: UUID, family_id: UUID) -> Sessio
     if (
         not family
         or family.revoked_at
-        or family.expires_at <= utcnow()
+        or ensure_utc(family.expires_at) <= utcnow()
         or not account
         or account.status != "active"
     ):

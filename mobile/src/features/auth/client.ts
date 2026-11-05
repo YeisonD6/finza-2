@@ -61,7 +61,7 @@ export class AuthClient {
       const body = await response.json().catch(() => ({}));
       throw new ApiError(
         response.status,
-        body.message ?? "No se pudo completar la solicitud",
+        body.message ?? body.detail ?? "No se pudo completar la solicitud",
         body.field_errors,
       );
     }

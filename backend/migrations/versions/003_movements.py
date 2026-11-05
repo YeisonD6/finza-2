@@ -29,13 +29,23 @@ def upgrade():
         sa.UniqueConstraint("owner_id", "name_key", "movement_type", name="uq_category_owner_name_type"),
     )
     op.create_index("ix_categories_owner_id", "categories", ["owner_id"])
-    op.create_index(
-        "uq_category_system_name_type",
-        "categories",
-        ["name_key", "movement_type"],
-        unique=True,
-        postgresql_where=sa.text("owner_id IS NULL"),
-    )
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.create_index(
+            "uq_category_system_name_type",
+            "categories",
+            ["name_key", "movement_type"],
+            unique=True,
+            postgresql_where=sa.text("owner_id IS NULL"),
+        )
+    else:
+        op.create_index(
+            "uq_category_system_name_type",
+            "categories",
+            ["name_key", "movement_type"],
+            unique=True,
+            sqlite_where=sa.text("owner_id IS NULL"),
+        )
     names = [
         ("Salario", "income"),
         ("Otros ingresos", "income"),
@@ -70,7 +80,11 @@ def upgrade():
         sa.Column("note", sa.String(500), nullable=False),
         sa.Column("client_request_id", sa.Uuid(), nullable=False),
         sa.Column("request_hash", sa.String(64), nullable=False),
-        sa.Column("creation_snapshot", postgresql.JSONB(), nullable=False),
+        sa.Column(
+            "creation_snapshot",
+            sa.JSON().with_variant(postgresql.JSONB(), "postgresql"),
+            nullable=False,
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.Column("deleted_at", sa.DateTime(timezone=True)),
@@ -78,10 +92,14 @@ def upgrade():
         sa.CheckConstraint("type IN ('income', 'expense')", name="ck_movement_type"),
         sa.CheckConstraint("currency = 'COP'", name="ck_movement_currency"),
         sa.CheckConstraint(
-            "amount > 0 AND amount <= 999999999999999.99 AND amount = trunc(amount, 2)",
+            "amount > 0 AND amount <= 999999999999999.99"
+            + (" AND amount = trunc(amount, 2)" if bind.dialect.name == "postgresql" else ""),
             name="ck_movement_amount",
         ),
-        sa.CheckConstraint("occurred_on >= DATE '1900-01-01'", name="ck_movement_date"),
+        sa.CheckConstraint(
+            "occurred_on >= DATE '1900-01-01'" if bind.dialect.name == "postgresql" else "occurred_on >= '1900-01-01'",
+            name="ck_movement_date",
+        ),
     )
     op.create_index("ix_movements_owner_order", "movements", ["owner_id", "occurred_on", "created_at", "id"])
     op.create_table(

@@ -21,9 +21,16 @@ def upgrade():
     op.execute(
         "INSERT INTO session_families (id, account_id, expires_at) SELECT family_id, account_id, min(expires_at) FROM refresh_sessions GROUP BY family_id, account_id"
     )
-    op.create_foreign_key(
-        "fk_refresh_family", "refresh_sessions", "session_families", ["family_id"], ["id"], ondelete="CASCADE"
-    )
+    bind = op.get_bind()
+    if bind.dialect.name == "sqlite":
+        with op.batch_alter_table("refresh_sessions") as batch_op:
+            batch_op.create_foreign_key(
+                "fk_refresh_family", "session_families", ["family_id"], ["id"], ondelete="CASCADE"
+            )
+    else:
+        op.create_foreign_key(
+            "fk_refresh_family", "refresh_sessions", "session_families", ["family_id"], ["id"], ondelete="CASCADE"
+        )
     op.create_table(
         "auth_buckets",
         sa.Column("key", sa.String(64), primary_key=True),
@@ -35,5 +42,10 @@ def upgrade():
 
 def downgrade():
     op.drop_table("auth_buckets")
-    op.drop_constraint("fk_refresh_family", "refresh_sessions", type_="foreignkey")
+    bind = op.get_bind()
+    if bind.dialect.name == "sqlite":
+        with op.batch_alter_table("refresh_sessions") as batch_op:
+            batch_op.drop_constraint("fk_refresh_family", type_="foreignkey")
+    else:
+        op.drop_constraint("fk_refresh_family", "refresh_sessions", type_="foreignkey")
     op.drop_table("session_families")

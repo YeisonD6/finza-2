@@ -11,3 +11,7 @@ dist/
 !.env.example
 tmp/
 .superpowers/
+*.db
+*.sqlite
+*.sqlite3
+.vscode/
