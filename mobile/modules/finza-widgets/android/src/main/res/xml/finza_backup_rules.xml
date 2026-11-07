@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and lower. Same as expo-secure-store's rules, plus the widget snapshot:
+     month totals must not reach cloud backups or be restored on another device. -->
+<full-backup-content>
+  <include domain="sharedpref" path="." />
+  <exclude domain="sharedpref" path="SecureStore" />
+  <exclude domain="sharedpref" path="SecureStore.xml" />
+  <exclude domain="sharedpref" path="finza_widgets.xml" />
+</full-backup-content>

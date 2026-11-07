@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Sprout,
   Trash2,
+  LayoutGrid,
 } from "lucide-react-native";
 import { SettingsGroup, SettingsRow } from "../../shared/ui/SettingsRow";
 import { colors } from "../../shared/theme/tokens";
@@ -139,6 +140,12 @@ export default function Profile() {
         />
       </SettingsGroup>
       <SettingsGroup title="Preferencias">
+        <SettingsRow
+          icon={LayoutGrid}
+          title="Widgets"
+          detail="Tu mes en la pantalla de inicio"
+          onPress={() => router.push("/widgets")}
+        />
         <SettingsRow
           icon={Accessibility}
           title="Accesibilidad"

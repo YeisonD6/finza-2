@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/finza_widget_bg_surface"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:padding="8dp">
+
+  <LinearLayout
+    android:id="@+id/finza_action_expense"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:minHeight="48dp"
+    
+    android:layout_weight="1"
+    android:background="@drawable/finza_widget_btn_primary"
+    android:contentDescription="Registrar un gasto"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <ImageView
+      android:layout_width="20dp"
+      android:layout_height="20dp"
+      android:importantForAccessibility="no"
+      android:src="@drawable/finza_widget_ic_minus" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="6dp"
+      android:ellipsize="end"
+      android:fontFamily="sans-serif-medium"
+      android:importantForAccessibility="no"
+      android:maxLines="1"
+      android:text="Gasto"
+      android:textColor="@color/finza_widget_on_accent"
+      android:textSize="14sp" />
+  </LinearLayout>
+
+  <LinearLayout
+    android:id="@+id/finza_action_income"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:minHeight="48dp"
+    android:layout_marginStart="8dp"
+    android:layout_weight="1"
+    android:background="@drawable/finza_widget_btn_soft"
+    android:contentDescription="Registrar un ingreso"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <ImageView
+      android:layout_width="20dp"
+      android:layout_height="20dp"
+      android:importantForAccessibility="no"
+      android:src="@drawable/finza_widget_ic_plus" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="6dp"
+      android:ellipsize="end"
+      android:fontFamily="sans-serif-medium"
+      android:importantForAccessibility="no"
+      android:maxLines="1"
+      android:text="Ingreso"
+      android:textColor="@color/finza_widget_accent"
+      android:textSize="14sp" />
+  </LinearLayout>
+
+  <LinearLayout
+    android:id="@+id/finza_action_list"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:minHeight="48dp"
+    android:layout_marginStart="8dp"
+    android:layout_weight="1"
+    android:background="@drawable/finza_widget_btn_soft"
+    android:contentDescription="Ver tus movimientos"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <ImageView
+      android:layout_width="20dp"
+      android:layout_height="20dp"
+      android:importantForAccessibility="no"
+      android:src="@drawable/finza_widget_ic_list" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="6dp"
+      android:ellipsize="end"
+      android:fontFamily="sans-serif-medium"
+      android:importantForAccessibility="no"
+      android:maxLines="1"
+      android:text="Historial"
+      android:textColor="@color/finza_widget_accent"
+      android:textSize="14sp" />
+  </LinearLayout>
+</LinearLayout>

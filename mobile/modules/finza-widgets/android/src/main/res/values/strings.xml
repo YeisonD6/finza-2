@@ -1,0 +1,8 @@
+<resources>
+  <string name="finza_widget_summary_label">Resumen del mes</string>
+  <string name="finza_widget_summary_description">Balance, ingresos y gastos del mes en curso.</string>
+  <string name="finza_widget_budget_label">Presupuesto</string>
+  <string name="finza_widget_budget_description">El presupuesto más cerca de su límite.</string>
+  <string name="finza_widget_actions_label">Atajos</string>
+  <string name="finza_widget_actions_description">Registra un gasto o un ingreso en un toque.</string>
+</resources>

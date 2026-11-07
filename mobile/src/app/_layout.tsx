@@ -6,10 +6,12 @@ import { store, type RootState } from "../core/store";
 import { useAppFonts } from "../shared/theme/fonts";
 import { SessionProvider } from "../features/auth/SessionProvider";
 import { FinancialProvider } from "../features/dashboard/FinancialProvider";
+import { useWidgetSync } from "../features/widgets/useWidgetSync";
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 function Navigation() {
   const { profile, loading } = useSelector((s: RootState) => s.auth);
   const [fonts, error] = useAppFonts();
+  useWidgetSync();
   useEffect(() => {
     if ((fonts || error) && !loading)
       void SplashScreen.hideAsync().catch(() => {});

@@ -10,6 +10,8 @@ module.exports = ({ config }) => {
       ? ["@react-native-google-signin/google-signin", { iosUrlScheme }]
       : "@react-native-google-signin/google-signin",
   );
+  // Home-screen widgets (modules/finza-widgets). iOS App Group only via env.
+  plugins.push("./modules/finza-widgets/app.plugin.js");
   return {
     ...config,
     plugins,
