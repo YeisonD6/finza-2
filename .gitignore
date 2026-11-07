@@ -15,3 +15,6 @@ tmp/
 *.sqlite
 *.sqlite3
 .vscode/
+
+# Impeccable local design tooling
+.impeccable/

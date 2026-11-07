@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;font-family:Manrope,sans-serif;background:#F1F3EF;color:#173A2C;font-variant-numeric:tabular-nums}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:54px 22px 0;font-weight:700;font-size:15px}
+.bar span{font-size:12px;letter-spacing:.08em;color:#6E8F7A}
+.ring{position:relative;width:300px;height:300px;margin:18px auto 0}
+.ring svg{position:absolute;inset:0}
+.in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.in p{font-size:13px;color:#4C6658}
+.in h1{font-size:46px;font-weight:800;letter-spacing:-.03em;margin:4px 0}
+.in b{font-size:13px;color:#173A2C;background:#E2E9E2;padding:5px 10px;border-radius:10px}
+.pair{display:flex;margin:10px 22px 0;border-top:1px solid #C9D3CB;border-bottom:1px solid #C9D3CB}
+.pair div{flex:1;padding:12px 0}
+.pair div+div{border-left:1px solid #C9D3CB;padding-left:14px}
+.pair span{font-size:12px;color:#4C6658}
+.pair strong{display:block;font-size:19px}
+.list{margin:16px 22px 0}
+.list h2{font-size:15px;font-weight:700;margin-bottom:6px}
+.li{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #DCE3DD;font-size:14px;font-weight:600}
+.li em{font-style:normal;font-size:12px;color:#4C6658;display:block;font-weight:500}
+.li .ex{color:#8C3A4E}
+.tab{position:absolute;bottom:0;left:0;right:0;height:80px;background:#173A2C;display:flex;justify-content:space-around;align-items:center;color:#9FB8A8;font-size:11px;font-weight:600}
+.tab .on{color:#fff}
+.tab .p{width:52px;height:52px;border-radius:26px;background:#C9A86A;color:#173A2C;display:grid;place-items:center;font-size:26px}
+</style></head><body>
+<div class="bar">FINZA <span>NOVIEMBRE 2026</span></div>
+<div class="ring">
+ <svg viewBox="0 0 300 300" fill="none" stroke="#6E8F7A" stroke-width=".6">
+  <circle cx="150" cy="150" r="146"/><circle cx="150" cy="150" r="140"/><circle cx="150" cy="150" r="134"/>
+  <circle cx="150" cy="150" r="128" stroke="#C9A86A"/><circle cx="150" cy="150" r="122"/>
+  <path d="M150 4a146 146 0 0 1 120 228" stroke="#173A2C" stroke-width="4" stroke-linecap="round"/>
+ </svg>
+ <div class="in"><p>Flujo neto del mes</p><h1>$1.245.000</h1><b>▲ 18 % frente a octubre</b></div>
+</div>
+<div class="pair"><div><span>Ingresos</span><strong>$ 3.200.000</strong></div><div><span>Gastos</span><strong>$ 1.955.000</strong></div></div>
+<div class="list"><h2>Últimos movimientos</h2>
+ <div class="li"><div>Mercado Éxito<em>Alimentación · hoy</em></div><span class="ex">− $ 86.400</span></div>
+ <div class="li"><div>TransMilenio<em>Transporte · ayer</em></div><span class="ex">− $ 3.200</span></div>
+ <div class="li"><div>Salario noviembre<em>Salario · 1 nov</em></div><span>+ $ 3.200.000</span></div>
+</div>
+<div class="tab"><span class="on">Inicio</span><span>Movimientos</span><span class="p">+</span><span>Metas</span><span>Perfil</span></div>
+</body></html>
