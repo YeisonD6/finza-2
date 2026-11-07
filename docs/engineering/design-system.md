@@ -11,28 +11,35 @@ Reglas que nacen de la dirección:
 
 ## 1. Color
 
-Fuente única: `mobile/src/shared/theme/tokens.ts`. Contrastes calculados con la fórmula de luminancia relativa WCAG 2.x.
+Fuente única: `mobile/src/shared/theme/tokens.ts` (v2, 7 nov 2026). Contrastes calculados con la fórmula de luminancia relativa WCAG 2.x. v2 cambia el fondo salvia por **papel cálido** para que el verde sea acento y no ambiente, y añade un bosque profundo para el héroe de bienvenida.
 
 | Token | Hex | Uso | Contraste verificado |
 |---|---|---|---|
+| `forest950` | `#10291D` | Fondo del héroe de bienvenida | `onForest` 14.32:1 · `mint` 11.48:1 |
 | `forest900` | `#163828` | Presionado de primario | — |
-| `forest700` | `#1E4634` | Primario, encabezado, pestaña activa, foco | 10.6:1 sobre blanco · 9.36:1 sobre `ground` |
-| `forest600` | `#2D5E46` | Texto de ingresos | 7.5:1 sobre blanco |
-| `progress` | `#5E8B6A` | Relleno de barra-tallo | 3.25:1 sobre `track` (gráfico ≥3:1) |
+| `forest700` | `#1E4634` | Primario, encabezado, pestaña activa, foco | 10.60:1 blanco · 9.56:1 `ground` · 8.67:1 `sage100` |
+| `forest600` | `#2D5E46` | Texto de ingresos, iconos de validación | 7.50:1 blanco |
+| `progress` | `#5E8B6A` | Relleno de barra-tallo | 3.08:1 sobre `track` (gráfico ≥3:1) |
+| `mint` | `#CFE3D2` | Anillos de crecimiento del héroe | Decorativo |
 | `sage300` | `#A8BFA3` | Avatar, decoración (eco del cuerpo de Monedin) | Decorativo, nunca texto |
-| `sage100` | `#E3EBE0` | Mosaico de icono, chips en reposo | `forest700` encima: 8.7:1 |
-| `track` | `#E6ECE3` | Pista de barras | — |
-| `ground` | `#EEF2EC` | Fondo de la app (gris salvia, eco del fondo de la referencia) | — |
-| `surface` | `#FFFFFF` | Tarjetas, hojas, barra de pestañas | — |
-| `cream` | `#F3E6DE` | Tarjeta de Monedin (cara de Monedin) | `#3B2F2A` encima: 10.57:1 |
+| `sage100` | `#E2EBDF` | Mosaicos de icono, avisos suaves (confirmar correo, consejos) | `inkMuted` 5.65:1 · `forest700` 8.67:1 |
+| `track` | `#E8E4DA` | Pista de barras | — |
+| `ground` | `#F5F3EE` | Fondo de la app (papel cálido) | — |
+| `surface` | `#FFFFFF` | Tarjetas, hojas, inputs, barra de pestañas | — |
+| `cream` / `creamInk` | `#F3E6DE` / `#3B2F2A` | Tarjeta de Monedin | 10.57:1 |
 | `cheek` | `#E8A9A2` | Acento decorativo mínimo (mejillas) | Decorativo |
-| `ink` | `#17261E` | Texto principal | 15.76:1 blanco · 13.92:1 `ground` |
-| `inkMuted` | `#4F6157` | Texto secundario | 6.6:1 blanco · 5.83:1 `ground` · 5.4:1 `cream` |
-| `onForest` | `#F4F7F2` | Texto sobre encabezado | 9.81:1 |
-| `onForestMuted` | `#C9D8C6` | Secundario sobre encabezado | 7.13:1 |
-| `expense` / `danger` | `#8C3A4E` | Gastos, excedido, errores | 7.42:1 blanco · 6.55:1 `ground` |
-| `warning` | `#8A5A00` | Presupuesto cerca del límite | 5.93:1 blanco |
-| `border` | `#D5DDD2` | Separadores e inputs en reposo | Input enfocado usa `forest700` 2 px |
+| `ink` | `#141D18` | Texto principal | 17.23:1 blanco · 15.54:1 `ground` |
+| `inkMuted` | `#545C56` | Texto secundario | 6.90:1 blanco · 6.22:1 `ground` |
+| `inkSubtle` | `#6B716C` | Metadatos de baja prioridad (solo ≥ 13 px) | 5.00:1 blanco · 4.50:1 `ground` |
+| `onForest` / `onForestMuted` | `#F4F7F2` / `#C9D8C6` | Texto sobre bosque | 9.81 / 7.13:1 sobre `forest700` |
+| `expense` / `danger` | `#8C3A4E` | Gastos, excedido, errores | 7.42:1 blanco · 6.69:1 `ground` |
+| `warning` | `#8A5A00` | Presupuesto cerca del límite | 5.93:1 blanco · 5.34:1 `ground` |
+| `border` | `#D9D4C8` | Separadores (no identifica controles) | Decorativo |
+| `borderStrong` | `#848780` | Borde de inputs y botón secundario (WCAG 1.4.11) | 3.65:1 blanco · 3.29:1 `ground` |
+
+En v2 `borderStrong` pasó de `#8E918A` a `#848780`: el primero daba 2.88:1 sobre `ground`, por debajo del 3:1 exigido para identificar controles.
+
+**Marcas de terceros:** el logotipo «G» de Google conserva sus cuatro colores oficiales y el botón de Apple es el componente del sistema (`AppleAuthenticationButton`); ambos están exentos de los tokens por las guías de marca de cada proveedor.
 
 **Nunca solo color:** gasto lleva signo «−» y la palabra «Gasto» en la etiqueta accesible; presupuestos dicen «Al día», «Cerca del límite» o «Excedido por $…»; la comparación usa flecha + texto «más/menos que octubre».
 
@@ -42,6 +49,7 @@ Fuente única: `mobile/src/shared/theme/tokens.ts`. Contrastes calculados con la
 
 | Variante | Tamaño/alto de línea | Peso | Uso |
 |---|---|---|---|
+| `hero` | 34/40 | 800 (`Manrope_800ExtraBold`), tracking −0.8 | Titular de bienvenida y de pantallas de acceso |
 | `display` | 40/48 | 800, tracking −0.5 | Flujo neto del mes |
 | `title` | 28/36 | 700 | Título de pantalla |
 | `heading` | 20/28 | 700 | Secciones |
@@ -55,7 +63,8 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en montos ni etiq
 ## 3. Espacio, forma y profundidad
 
 - Escala de 4: `xs 4 · sm 8 · md 12 · lg 16 · xl 20 · 2xl 24 · 3xl 32 · 4xl 40 · 5xl 56`. Margen lateral de pantalla 20.
-- Radios: `sm 8` (chips) · `md 12` (inputs, mosaicos de icono) · `lg 20` (tarjetas) · `xl 28` (base del encabezado) · `pill 999`.
+- Radios: `sm 8` (chips) · `md 12` (mosaicos de icono) · `control 16` (inputs y botones) · `lg 24` (tarjetas) · `xl 32` (base del encabezado, hoja de bienvenida) · `pill 999`.
+- Controles: inputs de 56 dp de alto con relleno lateral 16 y borde `borderStrong`; botones de 52 dp. El borde enfocado es `forest700` de 2 px.
 - Sombra de tarjeta: color `ink`, offset (0, 6), opacidad 0.06, radio 16, `elevation 2`. Botón flotante «+»: offset (0, 6), opacidad 0.3 de `forest700`, radio 16, `elevation 6`.
 - Áreas táctiles: mínimo 48×48 dp; controles visualmente menores amplían con `hitSlop`.
 
@@ -86,8 +95,8 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en montos ni etiq
 ## 6. Monedin
 
 - Recurso: `mobile/assets/brand/monedin{,@2x,@3x}.png`, recortado sin alterar la referencia `assets/brand/monedin-reference.jpg`.
-- Tamaños: `hero` 200 (onboarding), `md` 120 (vacíos, celebraciones), `sm` 56 (tarjeta de consejo).
-- Momentos: bienvenida (3 pasos), primer uso sin movimientos, lista vacía, meta creada/completada, presupuesto excedido (consejo amable, nunca regaño), consejo del mes en Inicio (máximo una tarjeta).
+- Tamaños: `hero` 200 (bienvenida), `md` 120 (vacíos, celebraciones), `sm` 56 (cabecera de acceso, consejos, avisos).
+- Momentos: bienvenida (héroe con anillos de crecimiento), recorrido de 4 pasos (meta de ejemplo), cabecera de acceso y recuperación (pequeño, en reposo), correo enviado y contraseña restablecida, correo confirmado (celebra), primer uso sin movimientos, lista vacía, meta creada/completada, presupuesto excedido (consejo amable, nunca regaño), consejo del mes en Inicio (máximo una tarjeta).
 - Voz: tú, cercano y breve. Ej.: «Vas muy bien. Te quedan $ 180.000 para comida.» / «Te pasaste $ 18.000 en transporte. ¿Ajustamos el presupuesto?»
 
 ## 7. Movimiento
@@ -98,6 +107,9 @@ Herramienta: `Animated` de React Native con `useNativeDriver: true` (solo `trans
 |---|---|---|---|
 | Presión de botón | Decenas al día / feedback | `scale 1→0.97`, 120 ms `easeOut`; vuelta 160 ms | Sin escala; solo cambio de color |
 | Cambio de pestaña | Decenas al día | **Sin animación** (cambio instantáneo) | — |
+| Entrada de pantalla de acceso | Ocasional / continuidad | Bloques (cabecera, formulario, pie) con `opacity 0→1` + `translateY 12→0`, 320 ms `easeOut`, escalonado 40 ms (`useEntrance`) | Solo opacidad 150 ms |
+| Héroe de bienvenida | Raro / primera vez | Anillos `scale 0.86→1` + opacidad 900 ms; Monedin aparece y queda en reposo; la hoja de papel sube `translateY 32→0` en 420 ms | Estado final; hoja con opacidad 150 ms |
+| Recorrido de bienvenida | Raro | Desplazamiento horizontal paginado animado | Salto directo de página |
 | Navegación a modal/pantalla | Ocasional / continuidad espacial | Transición nativa de la plataforma (stack) | Transición nativa (el SO la reduce) |
 | Cambio de mes en Inicio | Ocasional / evitar salto brusco | Contenido `opacity 0→1` + `translateY 8→0`, 220 ms `easeOut` | Solo opacidad 150 ms |
 | Cifras | Lectura de datos | **Sin conteo animado**: los datos que se leen no se mueven por estilo | — |

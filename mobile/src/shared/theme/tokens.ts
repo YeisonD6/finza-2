@@ -27,7 +27,7 @@ export const colors = {
   danger: "#8C3A4E",
   warning: "#8A5A00",
   border: "#D9D4C8",
-  borderStrong: "#8E918A",
+  borderStrong: "#848780",
   transparent: "transparent",
   forestGlass: "rgba(244,247,242,0.08)",
 } as const;
