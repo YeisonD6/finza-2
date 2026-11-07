@@ -4,6 +4,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi import HTTPException as FastAPIHTTPException
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -24,6 +25,18 @@ def create_app() -> FastAPI:
     app.include_router(dashboard_router)
     app.include_router(budgets_router)
     app.include_router(goals_router)
+
+    # Development-only browser preview (Expo web). Mobile clients do not use CORS and it never
+    # replaces authorization; with FINZA_CORS_ORIGINS unset no CORS headers are sent at all.
+    origins = [o.strip() for o in os.getenv("FINZA_CORS_ORIGINS", "").split(",") if o.strip()]
+    if origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            allow_headers=["Authorization", "Content-Type"],
+            expose_headers=["x-request-id"],
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):

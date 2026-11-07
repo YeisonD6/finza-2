@@ -100,3 +100,20 @@ def test_unknown_route_has_stable_error():
         assert response.status_code == 404
         assert set(response.json()) == {"code", "message", "detail", "field_errors", "request_id"}
         assert response.json()["detail"] == response.json()["message"]
+
+
+def test_cors_disabled_by_default_and_limited_to_configured_origins(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    monkeypatch.delenv("FINZA_CORS_ORIGINS", raising=False)
+    plain = TestClient(create_app()).get("/health/live", headers={"Origin": "http://localhost:8081"})
+    assert "access-control-allow-origin" not in plain.headers
+
+    monkeypatch.setenv("FINZA_CORS_ORIGINS", "http://localhost:8081")
+    client = TestClient(create_app())
+    allowed = client.get("/health/live", headers={"Origin": "http://localhost:8081"})
+    assert allowed.headers["access-control-allow-origin"] == "http://localhost:8081"
+    other = client.get("/health/live", headers={"Origin": "http://evil.example"})
+    assert "access-control-allow-origin" not in other.headers
