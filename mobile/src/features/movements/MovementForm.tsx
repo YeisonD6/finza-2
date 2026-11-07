@@ -9,9 +9,10 @@ import { SegmentedControl } from "../../shared/ui/SegmentedControl";
 import { CategoryPicker } from "./components/CategoryPicker";
 import { AccountingDateField } from "./components/AccountingDateField";
 import { useMovementDraft } from "./components/useMovementDraft";
-import type { Movement } from "./types";
+import type { Movement, MovementType } from "./types";
 export function MovementForm({
   initial,
+  initialType,
   onSaved,
   onCancel,
   onArchived,
@@ -19,13 +20,19 @@ export function MovementForm({
   onBusyChange,
 }: {
   initial?: Movement;
+  initialType?: MovementType;
   onSaved(record: Movement): void;
   onCancel(): void;
   onArchived?(): void;
   onAccountingMonth?(month: string): void;
   onBusyChange?(busy: boolean): void;
 }) {
-  const f = useMovementDraft({ initial, onSaved, onAccountingMonth });
+  const f = useMovementDraft({
+    initial,
+    initialType,
+    onSaved,
+    onAccountingMonth,
+  });
   useEffect(() => {
     onBusyChange?.(f.busy);
   }, [f.busy, onBusyChange]);

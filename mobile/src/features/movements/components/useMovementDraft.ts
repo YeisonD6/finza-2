@@ -38,10 +38,13 @@ function errorDetails(error: unknown): {
 
 export function useMovementDraft({
   initial,
+  initialType,
   onSaved,
   onAccountingMonth,
 }: {
   initial?: Movement;
+  /** Preselected type for a new movement (e.g. from a widget shortcut). */
+  initialType?: MovementType;
   onSaved(record: Movement): void;
   onAccountingMonth?(month: string): void;
 }) {
@@ -55,7 +58,9 @@ export function useMovementDraft({
   const [edit] = useEditMovementMutation();
   const [archive] = useArchiveMovementMutation();
   const [addCategory] = useCreateCategoryMutation();
-  const [type, setType] = useState<MovementType>(initial?.type ?? "expense");
+  const [type, setType] = useState<MovementType>(
+    initial?.type ?? initialType ?? "expense",
+  );
   const [amount, setAmount] = useState(initial?.amount.replace(".", ",") ?? "");
   const [date, setDate] = useState(initial?.occurred_on ?? bogotaToday());
   const [category, setCategory] = useState(initial?.category_id ?? "");

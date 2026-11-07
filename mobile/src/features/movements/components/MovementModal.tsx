@@ -7,8 +7,14 @@ import { useDashboardQuery } from "../../dashboard/api";
 import { useFinancial } from "../../dashboard/FinancialProvider";
 import { MovementForm } from "../MovementForm";
 import { bogotaToday, validMonth } from "../domain";
-import type { Movement } from "../types";
-export function MovementModal({ initial }: { initial?: Movement }) {
+import type { Movement, MovementType } from "../types";
+export function MovementModal({
+  initial,
+  initialType,
+}: {
+  initial?: Movement;
+  initialType?: MovementType;
+}) {
   const profile = useSelector((s: RootState) => s.auth.profile);
   const financial = useFinancial();
   const [month, setMonth] = useState(
@@ -33,8 +39,10 @@ export function MovementModal({ initial }: { initial?: Movement }) {
   };
   return (
     <MovementForm
-      key={`${profile.id}:${initial?.id ?? "new"}`}
+      // A widget shortcut can reopen this screen with another type: start a fresh form.
+      key={`${profile.id}:${initial?.id ?? "new"}:${initialType ?? ""}`}
       initial={initial}
+      initialType={initialType}
       onAccountingMonth={setMonth}
       onBusyChange={setBusy}
       onCancel={close}
