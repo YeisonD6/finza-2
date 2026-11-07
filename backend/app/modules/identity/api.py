@@ -1,16 +1,19 @@
 from typing import Annotated
 
+from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_session
+from app.core.security import password_hasher
 from app.modules.identity import external, limits, passwords, sessions, verification
 from app.modules.identity.dependencies import current_family
 from app.modules.identity.models import Account, ExternalIdentity, SessionFamily
 from app.modules.identity.schemas import (
     AccountResponse,
     ChangePasswordRequest,
+    DeleteAccountRequest,
     ExternalSignInRequest,
     ForgotPasswordRequest,
     LoginRequest,
@@ -172,4 +175,28 @@ def change_password(
     account = session.get(Account, family.account_id)
     current = data.current_password.get_secret_value() if data.current_password else None
     passwords.change(session, account, family.id, current, data.new_password.get_secret_value())
+    return Response(status_code=204)
+
+
+@me_router.delete("/api/v1/me", status_code=204)
+def delete_account(
+    data: DeleteAccountRequest,
+    family: Annotated[SessionFamily, Depends(current_family)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    """Permanently deletes the account and, by cascade, every movement, budget, goal and session."""
+    limits.consume(session, "delete-account", str(family.account_id), 5, 900)
+    account = session.get(Account, family.account_id)
+    if data.confirm_email != account.email:
+        raise HTTPException(400, "Escribe tu correo tal como aparece en tu perfil")
+    if account.password_hash is not None:
+        secret = data.password.get_secret_value() if data.password else ""
+        try:
+            valid = bool(secret) and password_hasher.verify(account.password_hash, secret)
+        except (VerificationError, InvalidHashError):
+            valid = False
+        if not valid:
+            raise HTTPException(400, "La contraseña no es correcta")
+    session.delete(account)
+    session.commit()
     return Response(status_code=204)

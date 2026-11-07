@@ -174,7 +174,11 @@ export interface paths {
         get: operations["me_api_v1_me_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Account
+         * @description Permanently deletes the account and, by cascade, every movement, budget, goal and session.
+         */
+        delete: operations["delete_account_api_v1_me_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -620,6 +624,16 @@ export interface components {
             recent_movements: components["schemas"]["MovementOut"][];
             /** Expense By Category */
             expense_by_category?: components["schemas"]["ExpenseByCategory"][];
+        };
+        /**
+         * DeleteAccountRequest
+         * @description Password for accounts that have one; otherwise the typed e-mail confirms intent.
+         */
+        DeleteAccountRequest: {
+            /** Password */
+            password?: string | null;
+            /** Confirm Email */
+            confirm_email: string;
         };
         /** ExpenseByCategory */
         ExpenseByCategory: {
@@ -1227,6 +1241,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+        };
+    };
+    delete_account_api_v1_me_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

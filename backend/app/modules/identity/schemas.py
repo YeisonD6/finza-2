@@ -150,3 +150,25 @@ class ChangePasswordRequest(BaseModel):
     @classmethod
     def new_password_length(cls, value):
         return _new_password(value)
+
+
+class DeleteAccountRequest(BaseModel):
+    """Password for accounts that have one; otherwise the typed e-mail confirms intent."""
+
+    model_config = ConfigDict(extra="forbid")
+    password: SecretStr | None = None
+    confirm_email: str
+
+    @field_validator("password", mode="before")
+    @classmethod
+    def bounded_password(cls, value):
+        if value is not None and (not isinstance(value, str) or not 1 <= len(value) <= 128):
+            raise ValueError("Ingresa una contraseña válida")
+        return value
+
+    @field_validator("confirm_email")
+    @classmethod
+    def normalize_confirmation(cls, value: str) -> str:
+        if len(value) > 320:
+            raise ValueError("Escribe tu correo tal como aparece en tu perfil")
+        return value.strip().lower()

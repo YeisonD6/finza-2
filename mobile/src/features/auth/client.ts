@@ -208,6 +208,18 @@ export class AuthClient {
     this.onChange(profile, false);
   }
 
+  /** Permanent: the server deletes the account and every record it owns. */
+  async deleteAccount(confirmEmail: string, password: string | null) {
+    await this.request("/api/v1/me", {
+      method: "DELETE",
+      body: JSON.stringify({
+        confirm_email: confirmEmail,
+        ...(password ? { password } : {}),
+      }),
+    });
+    await this.clear();
+  }
+
   async changePassword(current: string | null, newPassword: string) {
     await this.request("/api/v1/me/password", {
       method: "POST",

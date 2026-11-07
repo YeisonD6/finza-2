@@ -368,6 +368,44 @@
             "HTTPBearer": []
           }
         ]
+      },
+      "delete": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Delete Account",
+        "description": "Permanently deletes the account and, by cascade, every movement, budget, goal and session.",
+        "operationId": "delete_account_api_v1_me_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/me/email/verification": {
@@ -1916,6 +1954,34 @@
           "recent_movements"
         ],
         "title": "DashboardSummary"
+      },
+      "DeleteAccountRequest": {
+        "properties": {
+          "password": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "password",
+                "writeOnly": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "confirm_email": {
+            "type": "string",
+            "title": "Confirm Email"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirm_email"
+        ],
+        "title": "DeleteAccountRequest",
+        "description": "Password for accounts that have one; otherwise the typed e-mail confirms intent."
       },
       "ExpenseByCategory": {
         "properties": {
