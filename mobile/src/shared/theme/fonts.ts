@@ -6,6 +6,7 @@ import {
   Manrope_800ExtraBold,
 } from "@expo-google-fonts/manrope";
 export const fontFamily = {
+  hero: "Manrope_800ExtraBold",
   display: "Manrope_800ExtraBold",
   title: "Manrope_700Bold",
   heading: "Manrope_700Bold",
