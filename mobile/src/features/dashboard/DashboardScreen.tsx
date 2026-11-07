@@ -18,6 +18,8 @@ import { useDashboardQuery } from "./api";
 import { SummaryHeader } from "./components/SummaryHeader";
 import { MonthTransition } from "./components/MonthTransition";
 import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
+import { QuickActions } from "./components/QuickActions";
+import { router } from "expo-router";
 export function DashboardScreen({
   month,
   onMonthChange,
@@ -114,6 +116,11 @@ export function DashboardScreen({
         </MonthTransition>
       </View>
       <View style={{ paddingHorizontal: 20, gap: 20 }}>
+        <QuickActions
+          onRegister={onRegister}
+          onBudgets={() => router.push("/budgets")}
+          onNewGoal={() => router.push("/goal/new")}
+        />
         {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
         <Banner
           message={
@@ -149,16 +156,20 @@ export function DashboardScreen({
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  flexWrap: "wrap",
                   gap: 8,
                 }}
               >
-                <AppText variant="heading" accessibilityRole="header">
-                  Últimos movimientos
+                <AppText
+                  variant="heading"
+                  accessibilityRole="header"
+                  style={{ flex: 1 }}
+                >
+                  Tus movimientos
                 </AppText>
                 <AppButton
                   title="Ver todos"
                   variant="ghost"
+                  size="sm"
                   onPress={onOpenMovements}
                 />
               </View>

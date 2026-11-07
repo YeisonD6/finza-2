@@ -6,6 +6,14 @@ import { DashboardInsights } from "../components/DashboardInsights";
 import type { DashboardSummary } from "../api";
 import type { Budget } from "../../budgets/components/BudgetProgress";
 let mockBudgets: Budget[] = [];
+let mockGoals: unknown[] = [];
+jest.mock("../../goals/api", () => ({
+  useGoalsQuery: () => ({
+    currentData: mockGoals,
+    isFetching: false,
+    isError: false,
+  }),
+}));
 jest.mock("../../budgets/api", () => ({
   useBudgetsQuery: () => ({
     currentData: { items: mockBudgets },

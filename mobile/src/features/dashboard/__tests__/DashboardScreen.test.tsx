@@ -13,6 +13,14 @@ let mockQuery: {
   refetch: typeof mockRefetch;
 };
 jest.mock("../api", () => ({ useDashboardQuery: () => mockQuery }));
+let mockGoals: unknown[] = [];
+jest.mock("../../goals/api", () => ({
+  useGoalsQuery: () => ({
+    currentData: mockGoals,
+    isFetching: false,
+    isError: false,
+  }),
+}));
 jest.mock("../../budgets/api", () => ({
   useBudgetsQuery: () => ({
     currentData: { items: [] },

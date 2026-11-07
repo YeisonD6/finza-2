@@ -1,3 +1,4 @@
+import { View } from "react-native";
 import { router } from "expo-router";
 import type { DashboardSummary } from "../api";
 import type { Category } from "../../movements/types";
@@ -5,6 +6,7 @@ import { useBudgetsQuery } from "../../budgets/api";
 import { BudgetProgress } from "../../budgets/components/BudgetProgress";
 import { monedinTip } from "../monedinTip";
 import { CategorySpending } from "./CategorySpending";
+import { GoalsGlance } from "./GoalsGlance";
 import { Card } from "../../../shared/ui/Card";
 import { AppText } from "../../../shared/ui/AppText";
 import { AppButton } from "../../../shared/ui/AppButton";
@@ -25,6 +27,21 @@ export function DashboardInsights({
   const tip = budgets && allowMascot ? monedinTip(data, budgets) : null;
   return (
     <>
+      {tip ? (
+        <Card style={{ backgroundColor: colors.cream }}>
+          <View style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
+            <Monedin size="sm" />
+            <AppText style={{ flex: 1, color: colors.creamInk }}>
+              {tip.message}
+            </AppText>
+          </View>
+          <AppButton
+            title={tip.action}
+            variant="ghost"
+            onPress={() => router.push(tip.destination)}
+          />
+        </Card>
+      ) : null}
       <Card>
         <AppText variant="heading" accessibilityRole="header">
           Presupuestos del mes
@@ -41,10 +58,18 @@ export function DashboardInsights({
             {[...budgets]
               .sort((a, b) => Number(b.percent) - Number(a.percent))
               .slice(0, 3)
-              .map((b) => (
-                <Card key={b.category_id}>
+              .map((b, index) => (
+                <View
+                  key={b.category_id}
+                  style={{
+                    gap: 8,
+                    paddingTop: index ? 16 : 0,
+                    borderTopWidth: index ? 1 : 0,
+                    borderTopColor: colors.border,
+                  }}
+                >
                   <BudgetProgress budget={b} />
-                </Card>
+                </View>
               ))}
             <AppButton
               title="Ver todos"
@@ -61,21 +86,11 @@ export function DashboardInsights({
           />
         ) : null}
       </Card>
+      <GoalsGlance />
       <CategorySpending
         items={data.expense_by_category ?? []}
         categories={categories}
       />
-      {tip ? (
-        <Card style={{ backgroundColor: colors.cream }}>
-          <Monedin size="sm" />
-          <AppText>{tip.message}</AppText>
-          <AppButton
-            title={tip.action}
-            variant="ghost"
-            onPress={() => router.push(tip.destination)}
-          />
-        </Card>
-      ) : null}
     </>
   );
 }
