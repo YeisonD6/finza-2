@@ -39,6 +39,22 @@ Fuente única: `mobile/src/shared/theme/tokens.ts` (v2, 7 nov 2026). Contrastes 
 
 En v2 `borderStrong` pasó de `#8E918A` a `#848780`: el primero daba 2.88:1 sobre `ground`, por debajo del 3:1 exigido para identificar controles.
 
+### Colores de categoría (v3, 7 nov 2026)
+
+Una familia terrosa y apagada por categoría, para que las listas y el gráfico se lean más rápido sin competir con el verde bosque. Fuente: `categoryPalette` en `tokens.ts` y `categoryTone()` en `shared/ui/categoryTheme.ts`. Las categorías del sistema tienen un tono fijo; las personales reciben uno estable derivado de su id. **El color nunca va solo**: siempre acompaña al nombre de la categoría y a su icono.
+
+| Familia | Categoría | `tint` (fondo del icono) | `ink` (icono/texto) | `chart` (dona y barras) | `ink`/`tint` | `chart`/blanco |
+|---|---|---|---|---|---|---|
+| salary | Salario | `#E2EBDF` | `#1E4634` | `#2D5E46` | 8.67:1 | 7.50:1 |
+| income | Otros ingresos | `#DCEBE7` | `#1D5247` | `#2F7464` | 7.27:1 | 5.52:1 |
+| food | Alimentación | `#F7E2D8` | `#8A3A20` | `#B5532F` | 6.22:1 | 4.95:1 |
+| transport | Transporte | `#DFE7F0` | `#284766` | `#47698F` | 7.71:1 | 5.70:1 |
+| services | Servicios | `#F5EAD0` | `#6E4E00` | `#A57A12` | 6.38:1 | 3.89:1 |
+| other | Otros gastos | `#EEE2EC` | `#673660` | `#8C5683` | 7.36:1 | 5.56:1 |
+| custom | Sin tono asignado | `#ECE8DF` | `#4A514B` | `#7A7F78` | 6.68:1 | 4.09:1 |
+
+`chart` supera 3:1 sobre blanco (WCAG 1.4.11, gráficos). `expenseTint` `#F4E4E7` es el fondo de iconos de gasto y filas de riesgo (`expense` encima: 6.04:1). `forestGlassStrong` (blanco al 18 %) es la pista de barras sobre bosque. El avatar usa `forest900` sobre `sage300` (6.53:1).
+
 **Marcas de terceros:** el logotipo «G» de Google conserva sus cuatro colores oficiales y el botón de Apple es el componente del sistema (`AppleAuthenticationButton`); ambos están exentos de los tokens por las guías de marca de cada proveedor.
 
 **Nunca solo color:** gasto lleva signo «−» y la palabra «Gasto» en la etiqueta accesible; presupuestos dicen «Al día», «Cerca del límite» o «Excedido por $…»; la comparación usa flecha + texto «más/menos que octubre».
@@ -81,15 +97,17 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en montos ni etiq
 | `IconButton` | Acción solo icono | `accessibilityLabel` obligatorio, 48 dp |
 | `Card` | Superficie blanca con radio y sombra | Agrupa contenido relacionado (`accessible` cuando es un solo dato) |
 | `AmountText` | Formatea COP desde cadena, signo y color semántico | Etiqueta hablada «Gasto de 86 mil 400 pesos» |
-| `SproutProgress` | Barra-tallo con brote en la punta, estado textual | role `progressbar`, `accessibilityValue {min,max,now,text}` |
+| `SproutProgress` | Barra-tallo con brote en la punta, estado textual; `caption` opcional más corto cuando la fila ya nombra el elemento | role `progressbar`, `accessibilityValue {min,max,now,text}` (el texto hablado conserva el nombre) |
 | `MonthSwitcher` | ‹ Mes › con límites | Botones con etiqueta «Mes anterior: octubre 2026» |
-| `SegmentedControl` | Gasto / Ingreso | role `tab`/`radio`, `selected` |
-| `CategoryChip` | Selección de categoría con icono | role `radio`, `selected`, marca visual + texto |
+| `SegmentedControl` | Pista salvia con el segmento elegido elevado en blanco: borde bosque (10.6:1), check y negrita, nunca solo el relleno | role `tab`, `selected` |
+| `CategoryChip` | Selección de categoría; sin elegir es blanco con icono del color de su categoría, elegido es bosque con check | role `radio`, `selected`, marca visual + texto |
 | `TextField` / `AmountField` | Campos con etiqueta persistente, error asociado | label, hint con error, foco al primer inválido |
 | `ListRow` / `MovementRow` | Fila de movimiento (icono, nombre, fecha, monto) | Un solo foco con resumen completo |
 | `EmptyState` | Monedin + mensaje + acción | Imagen decorativa oculta; texto significativo |
 | `Banner` | Éxito/error/información en línea | Anuncio una sola vez + háptico |
-| `TabBar` | Barra inferior con botón central «+» | role `tab`, `selected`, etiqueta «Registrar movimiento» |
+| `TabBar` | Barra inferior con botón central «+»; etiquetas completas a 12 px (el anillo de foco va en la píldora, no resta ancho) | role `tab`, `selected`, etiqueta «Registrar movimiento» |
+| `SettingsRow` | Fila de ajustes con mosaico de icono; `palette` le da su propio tono | Un solo foco con título y detalle |
+| `Screen` | Pantalla con título; «volver» es un chevrón de 48 dp (`IconButton`) sobre el título; el título de los modales se ajusta en varias líneas | Etiqueta de volver explícita |
 | `Monedin` | Mascota (imagen recortada de la referencia) con estados de movimiento | Decorativa (`accessible={false}`) salvo cuando lleva mensaje |
 
 ## 6. Monedin
@@ -123,3 +141,17 @@ Herramienta: `Animated` de React Native con `useNativeDriver: true` (solo `trans
 ## 8. Voz y contenido
 
 Español de Colombia, tú. Montos `$ 1.245.000` (punto de miles, sin decimales cuando son ,00; dos decimales si existen). Fechas «7 nov 2026», «Hoy», «Ayer». Nunca «saldo» para el flujo neto. Errores dicen qué pasó y cómo seguir.
+
+## 9. Composición por pantalla (v3, 7 nov 2026)
+
+Referencias revisadas: Copilot Money y YNAB (desglose por categoría en dona con leyenda textual, color solo donde informa) y patrones de tarjetas de resumen de apps financieras. FINZA toma la idea, no el aspecto: tonos terrosos propios, brote y anillos de crecimiento.
+
+- **Inicio:** encabezado bosque con anillos de crecimiento estáticos en la esquina (sin movimiento: se ve muchas veces al día), avatar salvia y respeto del área segura superior. Los atajos se montan sobre el borde inferior del encabezado. Movimientos con iconos de color por categoría. Presupuestos con porcentaje y estado en color + texto. **Gasto por categoría**: dona de partes del todo (decorativa, oculta al lector) + total gastado + leyenda con monto, porcentaje y barra a escala compartida.
+- **Movimientos:** totales exactos del mes (ingresos/gastos) tomados del resumen compartido con Inicio, filtros más livianos.
+- **Metas:** tarjeta bosque con el total ahorrado de las metas activas, barra menta y la acción «Nueva meta»; cada tarjeta de meta es un solo botón (porcentaje, fecha, barra-tallo, Ahorrado/Meta/Faltan). El detalle lista los aportes como filas con acción de eliminar.
+- **Presupuestos:** tarjeta bosque con lo gastado frente al total de límites y cuántos están en alerta; categorías sin presupuesto en filas compactas con «Definir».
+- **Perfil:** cada ajuste con su tono; la zona de riesgo usa `expenseTint`.
+- **Acceso y bienvenida:** anillos de crecimiento discretos en la esquina (recortados al ancho de la pantalla), Monedin sobre un disco salvia; los pasos de la bienvenida se apoyan en un disco salvia con anillos.
+- **Widgets:** vista previa en vivo del widget de resumen que respeta «Ocultar montos».
+
+Reglas que se mantienen: el verde bosque solo en acción o dato principal; el brote solo en progreso; Monedin solo en momentos con intención; ninguna cifra se anima.
