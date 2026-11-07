@@ -1,62 +1,24 @@
 import { useEffect, useState } from "react";
+import { Redirect } from "expo-router";
 import { useSelector } from "react-redux";
 import type { RootState } from "../core/store";
-import { auth } from "../features/auth/runtime";
-import { AuthScreen } from "../features/auth/AuthScreen";
-import { Screen } from "../shared/ui/Screen";
-import { Feedback } from "../shared/ui/Feedback";
-import { announce } from "../shared/accessibility/announcements";
-import { useMeQuery } from "../shared/api/baseApi";
-import { FinancialHome } from "../features/dashboard/FinancialHome";
-
-export default function FoundationScreen() {
+import { hasOnboarded } from "../features/auth/storage";
+export default function Index() {
   const { profile, loading } = useSelector((s: RootState) => s.auth);
-  const [message, setMessage] = useState("");
-  const [busy, setBusy] = useState(false);
-  const { data, error, refetch } = useMeQuery(undefined, { skip: !profile });
-  async function restore() {
-    try {
-      setMessage("");
-      await auth.restore();
-    } catch (e) {
-      setMessage(
-        e instanceof Error ? e.message : "No se pudo recuperar la sesión",
-      );
-    }
-  }
+  const [seen, setSeen] = useState<boolean | null>(null);
   useEffect(() => {
-    void restore();
+    let live = true;
+    void hasOnboarded().then((value) => {
+      if (live) setSeen(value);
+    });
+    return () => {
+      live = false;
+    };
   }, []);
-  if (loading)
-    return (
-      <Screen title="Recuperando sesión…">
-        <Feedback message="Espera mientras se recupera la sesión." />
-      </Screen>
-    );
-  if (!profile)
-    return <AuthScreen sessionMessage={message} onRetrySession={restore} />;
+  if (loading || seen === null) return null;
   return (
-    <FinancialHome
-      key={profile.id}
-      email={data?.email ?? profile.email}
-      profileError={!!error}
-      onRetryProfile={() => {
-        void refetch();
-      }}
-      logoutBusy={busy}
-      onLogout={async () => {
-        setBusy(true);
-        try {
-          await auth.logout();
-          announce("Sesión cerrada");
-        } catch {
-          setMessage(
-            "Sesión cerrada localmente. No se pudo confirmar la revocación remota o el almacenamiento seguro; reintenta con conexión.",
-          );
-        } finally {
-          setBusy(false);
-        }
-      }}
+    <Redirect
+      href={profile ? "/(tabs)" : seen ? "/(auth)/login" : "/(auth)/welcome"}
     />
   );
 }

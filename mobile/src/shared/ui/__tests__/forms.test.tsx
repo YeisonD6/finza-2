@@ -40,7 +40,12 @@ test("button forwards label, hint, role, value and selection; busy blocks activa
   expect(button.props.accessibilityHint).toBe("Guarda los cambios");
   expect(button.props.accessibilityValue.text).toBe("COP");
   expect(button.props.accessibilityState.selected).toBe(true);
-  expect(screen.getByText("Guardar ✓ Seleccionado")).toBeTruthy();
+  expect(
+    screen.getByRole("button", { name: "Guardar" }).props.accessibilityState
+      .selected,
+  ).toBe(true);
+  expect(screen.getByText("Guardar")).toBeTruthy();
+  expect(screen.queryByText(/Seleccionado/)).toBeNull();
   expect(button).toHaveStyle({ minHeight: 48, minWidth: 48 });
   await view.rerender(<AppButton title="Guardar" onPress={press} busy />);
   expect(
@@ -64,7 +69,7 @@ test("button exposes keyboard focus visually and propagates native events", asyn
   );
   await fireEvent(screen.getByRole("button"), "focus", {});
   expect(screen.getByRole("button")).toHaveStyle({
-    borderColor: colors.background,
+    borderColor: colors.text,
   });
   expect(screen.getByText("Volver")).toHaveStyle({
     textDecorationLine: "underline",

@@ -1,11 +1,41 @@
+import { useEffect } from "react";
 import { Stack } from "expo-router";
-import { Provider } from "react-redux";
-import { store } from "../core/store";
-
+import { Provider, useSelector } from "react-redux";
+import * as SplashScreen from "expo-splash-screen";
+import { store, type RootState } from "../core/store";
+import { useAppFonts } from "../shared/theme/fonts";
+import { SessionProvider } from "../features/auth/SessionProvider";
+import { FinancialProvider } from "../features/dashboard/FinancialProvider";
+void SplashScreen.preventAutoHideAsync().catch(() => {});
+function Navigation() {
+  const { profile, loading } = useSelector((s: RootState) => s.auth);
+  const [fonts, error] = useAppFonts();
+  useEffect(() => {
+    if ((fonts || error) && !loading)
+      void SplashScreen.hideAsync().catch(() => {});
+  }, [fonts, error, loading]);
+  if ((!fonts && !error) || loading) return null;
+  return (
+    <FinancialProvider key={profile?.id ?? "guest"}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="movement/new"
+          options={{ presentation: "modal", gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="movement/[id]"
+          options={{ presentation: "modal", gestureEnabled: false }}
+        />
+      </Stack>
+    </FinancialProvider>
+  );
+}
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <SessionProvider>
+        <Navigation />
+      </SessionProvider>
     </Provider>
   );
 }

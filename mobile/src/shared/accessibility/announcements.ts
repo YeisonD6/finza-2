@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Platform, findNodeHandle } from "react-native";
 
 export function announce(message: string) {
-  if (!message) return;
+  if (!message || Platform.OS === "web") return;
   if (Platform.OS === "ios")
     AccessibilityInfo.announceForAccessibilityWithOptions(message, {
       queue: true,
@@ -22,6 +22,7 @@ export function useAnnouncement(message: string) {
 export function focusAccessibility(
   target: Parameters<typeof findNodeHandle>[0],
 ) {
+  if (Platform.OS === "web") return;
   const handle = findNodeHandle(target);
   if (typeof handle === "number")
     AccessibilityInfo.setAccessibilityFocus(handle);

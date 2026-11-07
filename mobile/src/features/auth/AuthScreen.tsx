@@ -1,5 +1,11 @@
 import { useRef, useState, ElementRef } from "react";
-import { TextInput } from "react-native";
+import { TextInput, View } from "react-native";
+import { Eye, EyeOff } from "lucide-react-native";
+import { Monedin } from "../../shared/brand/Monedin";
+import { AppText } from "../../shared/ui/AppText";
+import { IconButton } from "../../shared/ui/IconButton";
+import { fontFamily } from "../../shared/theme/fonts";
+import { error as errorHaptic } from "../../shared/theme/haptics";
 import { auth } from "./runtime";
 import { ApiError } from "./client";
 import { AppButton, FormField } from "../../shared/ui/AuthControls";
@@ -12,9 +18,14 @@ import {
 
 export function AuthScreen({
   sessionMessage = "",
+  initialRegister = false,
   onRetrySession,
-}: { sessionMessage?: string; onRetrySession?(): void } = {}) {
-  const [register, setRegister] = useState(false);
+}: {
+  sessionMessage?: string;
+  initialRegister?: boolean;
+  onRetrySession?(): void;
+} = {}) {
+  const [register, setRegister] = useState(initialRegister);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -49,6 +60,7 @@ export function AuthScreen({
       requestFocus(() =>
         (errors.email ? emailRef : passwordRef).current?.focus(),
       );
+      void errorHaptic();
       announce(Object.values(errors)[0]);
       return;
     }
@@ -57,11 +69,17 @@ export function AuthScreen({
     try {
       if (register) {
         await auth.register(email.trim(), password);
-        setRegister(false);
-        setPassword("");
-        setShow(false);
-        setMessage("Cuenta creada. Ahora inicia sesión.");
-        announce("Cuenta creada. Ahora inicia sesión.");
+        try {
+          await auth.login(email.trim(), password);
+          announce("Cuenta creada. Te damos la bienvenida a FINZA.");
+        } catch {
+          setRegister(false);
+          setPassword("");
+          setShow(false);
+          setMessage("Cuenta creada. Ahora inicia sesión.");
+          announce("Cuenta creada. Ahora inicia sesión.");
+          requestFocus(() => emailRef.current?.focus());
+        }
       } else {
         await auth.login(email.trim(), password);
       }
@@ -72,6 +90,7 @@ export function AuthScreen({
           : "No se pudo completar la solicitud";
       setMessage(text);
       if (error instanceof ApiError) setFields(error.fields ?? {});
+      void errorHaptic();
       announce(text);
       if (error instanceof ApiError && error.fields?.email)
         requestFocus(() => emailRef.current?.focus());
@@ -86,9 +105,24 @@ export function AuthScreen({
 
   return (
     <Screen
-      title={register ? "Crear cuenta en Finza" : "Iniciar sesión en Finza"}
+      title={register ? "Crea tu cuenta" : "Inicia sesión"}
+      headerLeading={
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Monedin size="sm" />
+          <AppText
+            variant="label"
+            style={{
+              fontFamily: fontFamily.heading,
+              fontWeight: "700",
+              letterSpacing: 1,
+            }}
+          >
+            FINZA
+          </AppText>
+        </View>
+      }
       onBack={register ? () => switchMode(false) : undefined}
-      backLabel="Ya tengo cuenta"
+      showBackAction={false}
       backDisabled={busy}
     >
       <Feedback message={sessionMessage} tone="error" />
@@ -116,18 +150,25 @@ export function AuthScreen({
         value={password}
         onChangeText={setPassword}
         error={fields.password}
+        hint={register ? "Usa entre 12 y 128 caracteres." : undefined}
         secureTextEntry={!show}
         autoCapitalize="none"
         autoCorrect={false}
         autoComplete={register ? "new-password" : "current-password"}
         textContentType={register ? "newPassword" : "password"}
         editable={!busy}
+        trailing={
+          <IconButton
+            icon={show ? EyeOff : Eye}
+            accessibilityLabel={
+              show ? "Ocultar contraseña" : "Mostrar contraseña"
+            }
+            onPress={() => setShow(!show)}
+            disabled={busy}
+            accessibilityState={{ checked: show }}
+          />
+        }
         onSubmitEditing={submit}
-      />
-      <AppButton
-        title={show ? "Ocultar contraseña" : "Mostrar contraseña"}
-        onPress={() => setShow(!show)}
-        disabled={busy}
       />
       <Feedback
         message={message}
@@ -139,13 +180,16 @@ export function AuthScreen({
         onPress={submit}
         busy={busy}
       />
-      {!register ? (
-        <AppButton
-          title="Registrarme"
-          onPress={() => switchMode(true)}
-          disabled={busy}
-        />
-      ) : null}
+      <AppButton
+        title={
+          register
+            ? "¿Ya tienes cuenta? Inicia sesión"
+            : "¿No tienes cuenta? Crea una"
+        }
+        variant="ghost"
+        disabled={busy}
+        onPress={() => switchMode(!register)}
+      />
     </Screen>
   );
 }
