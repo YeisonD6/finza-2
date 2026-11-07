@@ -13,6 +13,7 @@ export default function Home() {
   return (
     <DashboardScreen
       email={profile?.email ?? ""}
+      emailUnconfirmed={profile?.email_verified === false}
       month={financial.month}
       categories={categories.data}
       onMonthChange={financial.setMonth}

@@ -5,6 +5,6 @@ export default function AuthLayout() {
   const pathname = usePathname();
   const { profile, loading } = useSelector((s: RootState) => s.auth);
   if (loading) return null;
-  if (profile && pathname !== "/welcome") return <Redirect href="/(tabs)" />;
+  if (profile && pathname !== "/onboarding") return <Redirect href="/(tabs)" />;
   return <Stack screenOptions={{ headerShown: false }} />;
 }

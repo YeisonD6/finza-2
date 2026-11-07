@@ -54,6 +54,15 @@ export default function Profile() {
         onPress={() => router.push("/budgets")}
       />
       <AppButton
+        title={
+          profile?.has_password === false
+            ? "Crear contraseña"
+            : "Cambiar contraseña"
+        }
+        variant="ghost"
+        onPress={() => router.push("/security/password")}
+      />
+      <AppButton
         title="Privacidad y seguridad"
         variant="ghost"
         onPress={() => setInformation("privacy")}
@@ -69,7 +78,7 @@ export default function Profile() {
         onPress={() => {
           void storage
             .remove("finza.onboarded")
-            .then(() => router.push("/(auth)/welcome"))
+            .then(() => router.push("/(auth)/onboarding"))
             .catch(() =>
               setWelcomeError("No se pudo reiniciar la bienvenida. Reintenta."),
             );

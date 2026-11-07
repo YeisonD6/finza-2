@@ -17,6 +17,7 @@ import type { Category, Movement } from "../movements/types";
 import { useDashboardQuery } from "./api";
 import { SummaryHeader } from "./components/SummaryHeader";
 import { MonthTransition } from "./components/MonthTransition";
+import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
 export function DashboardScreen({
   month,
   onMonthChange,
@@ -29,6 +30,7 @@ export function DashboardScreen({
   silentInitialSummary = false,
   firstMovement = false,
   active = true,
+  emailUnconfirmed = false,
 }: {
   month: string;
   onMonthChange(month: string): void;
@@ -41,6 +43,8 @@ export function DashboardScreen({
   silentInitialSummary?: boolean;
   firstMovement?: boolean;
   active?: boolean;
+  /** Shows the confirm-your-email reminder (never blocks the dashboard). */
+  emailUnconfirmed?: boolean;
 }) {
   const skipSummary = useRef(silentInitialSummary),
     silenced = useRef(false);
@@ -110,6 +114,7 @@ export function DashboardScreen({
         </MonthTransition>
       </View>
       <View style={{ paddingHorizontal: 20, gap: 20 }}>
+        {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
         <Banner
           message={
             silentInitialSummary

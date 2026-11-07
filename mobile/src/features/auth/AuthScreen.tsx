@@ -1,20 +1,41 @@
-import { useRef, useState, ElementRef } from "react";
-import { TextInput, View } from "react-native";
-import { Eye, EyeOff } from "lucide-react-native";
-import { Monedin } from "../../shared/brand/Monedin";
+import { useEffect, useRef, useState, type ElementRef } from "react";
+import { Pressable, Switch, TextInput, View } from "react-native";
+import { router } from "expo-router";
+import { CircleCheck, Eye, EyeOff } from "lucide-react-native";
 import { AppText } from "../../shared/ui/AppText";
 import { IconButton } from "../../shared/ui/IconButton";
-import { fontFamily } from "../../shared/theme/fonts";
-import { error as errorHaptic } from "../../shared/theme/haptics";
-import { auth } from "./runtime";
-import { ApiError } from "./client";
+import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
 import { AppButton, FormField } from "../../shared/ui/AuthControls";
-import { Screen } from "../../shared/ui/Screen";
 import { Feedback } from "../../shared/ui/Feedback";
+import { colors } from "../../shared/theme/tokens";
+import {
+  error as errorHaptic,
+  success as successHaptic,
+} from "../../shared/theme/haptics";
 import {
   announce,
   useDeferredFocus,
 } from "../../shared/accessibility/announcements";
+import { auth } from "./runtime";
+import {
+  ApiError,
+  type ExternalProvider,
+  type ServerProviders,
+} from "./client";
+import {
+  SocialCancelled,
+  appleIdToken,
+  googleIdToken,
+  socialAvailability,
+  type SocialAvailability,
+} from "./social";
+import { AuthShell } from "./components/AuthShell";
+import { AuthDivider } from "./components/AuthDivider";
+import { PasswordRequirement } from "./components/PasswordRequirement";
+import { SocialButtons } from "./components/SocialButtons";
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+type Busy = "email" | ExternalProvider | null;
 
 export function AuthScreen({
   sessionMessage = "",
@@ -29,13 +50,54 @@ export function AuthScreen({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const requestFocus = useDeferredFocus(busy);
-  const locked = useRef(false);
-  const [message, setMessage] = useState("");
+  const [remember, setRemember] = useState(true);
+  const [busy, setBusy] = useState<Busy>(null);
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [fields, setFields] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState("");
+  const [server, setServer] = useState<ServerProviders | null>(null);
+  const [social, setSocial] = useState<SocialAvailability>({
+    google: false,
+    apple: false,
+  });
+  const requestFocus = useDeferredFocus(busy !== null);
+  const locked = useRef(false);
   const emailRef = useRef<ElementRef<typeof TextInput>>(null);
   const passwordRef = useRef<ElementRef<typeof TextInput>>(null);
+
+  useEffect(() => {
+    let live = true;
+    auth
+      .providers()
+      .catch(() => null)
+      .then(async (providers) => {
+        const available = await socialAvailability(providers);
+        if (!live) return;
+        setServer(providers);
+        setSocial(available);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const emailValid = EMAIL.test(email.trim());
+  const passwordValid = register
+    ? password.length >= 12 && password.length <= 128
+    : password.length > 0;
+  // Live validation once a field has been left, never while the person is still typing it the first time.
+  const emailError =
+    fields.email ??
+    (touched.email && !emailValid
+      ? "Escribe un correo como nombre@dominio.com"
+      : undefined);
+  const passwordError =
+    fields.password ??
+    (touched.password && !passwordValid
+      ? register
+        ? "Usa al menos 12 caracteres"
+        : "Escribe tu contraseña"
+      : undefined);
 
   function switchMode(value: boolean) {
     setRegister(value);
@@ -43,153 +105,278 @@ export function AuthScreen({
     setShow(false);
     setFields({});
     setMessage("");
+    setTouched({ email: touched.email, password: false });
+  }
+
+  function fail(text: string, focus: "email" | "password" | null) {
+    setMessage(text);
+    void errorHaptic();
+    announce(text);
+    if (focus)
+      requestFocus(() =>
+        (focus === "email" ? emailRef : passwordRef).current?.focus(),
+      );
   }
 
   async function submit() {
     if (locked.current) return;
-    const errors: Record<string, string> = {};
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      errors.email = "Ingresa un correo válido";
-    if (password.length < (register ? 12 : 1) || password.length > 128)
-      errors.password = register
-        ? "La contraseña debe tener entre 12 y 128 caracteres"
-        : "Ingresa tu contraseña";
-    setFields(errors);
+    setTouched({ email: true, password: true });
+    setFields({});
     setMessage("");
-    if (Object.keys(errors).length) {
-      requestFocus(() =>
-        (errors.email ? emailRef : passwordRef).current?.focus(),
+    if (!emailValid || !passwordValid) {
+      const first = !emailValid ? "email" : "password";
+      fail(
+        !emailValid
+          ? "Revisa tu correo electrónico"
+          : register
+            ? "La contraseña necesita al menos 12 caracteres"
+            : "Escribe tu contraseña",
+        first,
       );
-      void errorHaptic();
-      announce(Object.values(errors)[0]);
       return;
     }
     locked.current = true;
-    setBusy(true);
+    setBusy("email");
+    auth.setRemember(remember);
     try {
       if (register) {
         await auth.register(email.trim(), password);
         try {
           await auth.login(email.trim(), password);
+          void successHaptic();
           announce("Cuenta creada. Te damos la bienvenida a FINZA.");
         } catch {
           setRegister(false);
           setPassword("");
-          setShow(false);
           setMessage("Cuenta creada. Ahora inicia sesión.");
           announce("Cuenta creada. Ahora inicia sesión.");
-          requestFocus(() => emailRef.current?.focus());
+          requestFocus(() => passwordRef.current?.focus());
         }
       } else {
         await auth.login(email.trim(), password);
+        void successHaptic();
+        announce("Sesión iniciada");
       }
     } catch (error) {
       const text =
         error instanceof Error
           ? error.message
           : "No se pudo completar la solicitud";
-      setMessage(text);
-      if (error instanceof ApiError) setFields(error.fields ?? {});
-      void errorHaptic();
-      announce(text);
-      if (error instanceof ApiError && error.fields?.email)
-        requestFocus(() => emailRef.current?.focus());
-      else if (error instanceof ApiError && error.fields?.password)
-        requestFocus(() => passwordRef.current?.focus());
-      else requestFocus(() => emailRef.current?.focus());
+      const serverFields =
+        error instanceof ApiError ? (error.fields ?? {}) : {};
+      setFields(serverFields);
+      fail(text, serverFields.password ? "password" : "email");
     } finally {
       locked.current = false;
-      setBusy(false);
+      setBusy(null);
     }
   }
 
+  async function withProvider(provider: ExternalProvider) {
+    if (locked.current) return;
+    locked.current = true;
+    setBusy(provider);
+    setMessage("");
+    auth.setRemember(remember);
+    try {
+      const { idToken, nonce } =
+        provider === "google"
+          ? { ...(await googleIdToken()), nonce: undefined }
+          : await appleIdToken();
+      await auth.loginWithProvider(provider, idToken, nonce);
+      void successHaptic();
+      announce("Sesión iniciada");
+    } catch (error) {
+      if (!(error instanceof SocialCancelled))
+        fail(
+          error instanceof Error ? error.message : "No se pudo iniciar sesión",
+          null,
+        );
+    } finally {
+      locked.current = false;
+      setBusy(null);
+    }
+  }
+
+  const working = busy !== null;
+  const hasSocial = social.apple || social.google;
   return (
-    <Screen
-      title={register ? "Crea tu cuenta" : "Inicia sesión"}
-      headerLeading={
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Monedin size="sm" />
-          <AppText
-            variant="label"
-            style={{
-              fontFamily: fontFamily.heading,
-              fontWeight: "700",
-              letterSpacing: 1,
-            }}
-          >
-            FINZA
-          </AppText>
-        </View>
+    <AuthShell
+      title={register ? "Crea tu cuenta" : "Hola de nuevo"}
+      subtitle={
+        register
+          ? "Empieza en menos de un minuto. Tus datos son solo tuyos."
+          : "Entra para ver cómo va tu mes."
       }
-      onBack={register ? () => switchMode(false) : undefined}
-      showBackAction={false}
-      backDisabled={busy}
+      onBack={() =>
+        router.canGoBack() ? router.back() : router.replace("/(auth)/welcome")
+      }
+      backDisabled={working}
+      footer={
+        <AppButton
+          title={
+            register
+              ? "¿Ya tienes cuenta? Inicia sesión"
+              : "¿No tienes cuenta? Crea una"
+          }
+          variant="ghost"
+          disabled={working}
+          onPress={() => switchMode(!register)}
+        />
+      }
     >
       <Feedback message={sessionMessage} tone="error" />
       {sessionMessage && onRetrySession ? (
-        <AppButton title="Reintentar sesión" onPress={onRetrySession} />
+        <AppButton
+          title="Reintentar sesión"
+          variant="secondary"
+          onPress={onRetrySession}
+        />
       ) : null}
+      <SocialButtons
+        available={social}
+        busy={busy === "google" || busy === "apple" ? busy : null}
+        disabled={working}
+        onApple={() => void withProvider("apple")}
+        onGoogle={() => void withProvider("google")}
+      />
+      {hasSocial ? <AuthDivider label="o con tu correo" /> : null}
       <FormField
         ref={emailRef}
         label="Correo electrónico"
         value={email}
-        onChangeText={setEmail}
-        error={fields.email}
+        onChangeText={(value) => {
+          setEmail(value);
+          if (fields.email) setFields(({ email: _, ...rest }) => rest);
+        }}
+        onBlur={() =>
+          setTouched((t) => ({ ...t, email: email.length > 0 || t.email }))
+        }
+        error={emailError}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
         autoComplete="email"
-        textContentType="emailAddress"
-        editable={!busy}
+        textContentType={register ? "username" : "emailAddress"}
+        editable={!working}
         returnKeyType="next"
         onSubmitEditing={() => passwordRef.current?.focus()}
-      />
-      <FormField
-        ref={passwordRef}
-        label="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        error={fields.password}
-        hint={register ? "Usa entre 12 y 128 caracteres." : undefined}
-        secureTextEntry={!show}
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete={register ? "new-password" : "current-password"}
-        textContentType={register ? "newPassword" : "password"}
-        editable={!busy}
         trailing={
-          <IconButton
-            icon={show ? EyeOff : Eye}
-            accessibilityLabel={
-              show ? "Ocultar contraseña" : "Mostrar contraseña"
-            }
-            onPress={() => setShow(!show)}
-            disabled={busy}
-            accessibilityState={{ checked: show }}
-          />
+          touched.email && emailValid && !fields.email ? (
+            <View style={{ paddingHorizontal: 14 }}>
+              <DecorativeIcon
+                icon={CircleCheck}
+                size={20}
+                color={colors.forest600}
+              />
+            </View>
+          ) : undefined
         }
-        onSubmitEditing={submit}
       />
+      <View style={{ gap: 8 }}>
+        <FormField
+          ref={passwordRef}
+          label="Contraseña"
+          value={password}
+          onChangeText={(value) => {
+            setPassword(value);
+            if (fields.password) setFields(({ password: _, ...rest }) => rest);
+          }}
+          onBlur={() =>
+            setTouched((t) => ({
+              ...t,
+              password: password.length > 0 || t.password,
+            }))
+          }
+          error={passwordError}
+          secureTextEntry={!show}
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete={register ? "new-password" : "current-password"}
+          textContentType={register ? "newPassword" : "password"}
+          editable={!working}
+          returnKeyType="go"
+          onSubmitEditing={submit}
+          trailing={
+            <IconButton
+              icon={show ? EyeOff : Eye}
+              accessibilityLabel={
+                show ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+              onPress={() => setShow(!show)}
+              disabled={working}
+              accessibilityState={{ checked: show }}
+            />
+          }
+        />
+        {register ? (
+          <PasswordRequirement
+            met={password.length >= 12}
+            label="Al menos 12 caracteres"
+          />
+        ) : server?.password_reset ? (
+          <View style={{ alignItems: "flex-end" }}>
+            <AppButton
+              title="¿Olvidaste tu contraseña?"
+              variant="ghost"
+              size="sm"
+              disabled={working}
+              onPress={() =>
+                router.push({
+                  pathname: "/(auth)/forgot",
+                  params: emailValid ? { email: email.trim() } : {},
+                })
+              }
+            />
+          </View>
+        ) : null}
+      </View>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityState={{ checked: remember, disabled: working }}
+        accessibilityLabel="Mantener la sesión iniciada"
+        accessibilityHint="Si lo desactivas, tendrás que iniciar sesión cada vez que abras FINZA"
+        disabled={working}
+        onPress={() => setRemember(!remember)}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          minHeight: 48,
+          gap: 12,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <AppText variant="label">Mantener la sesión iniciada</AppText>
+          <AppText variant="caption" style={{ color: colors.inkMuted }}>
+            En este teléfono, guardada de forma segura.
+          </AppText>
+        </View>
+        <View
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+        >
+          <Switch
+            value={remember}
+            onValueChange={setRemember}
+            disabled={working}
+            trackColor={{ false: colors.borderStrong, true: colors.forest700 }}
+            thumbColor={colors.surface}
+            // react-native-web ignores thumbColor while on and falls back to teal.
+            {...({ activeThumbColor: colors.surface } as object)}
+          />
+        </View>
+      </Pressable>
       <Feedback
         message={message}
         tone={message.startsWith("Cuenta creada") ? "success" : "error"}
         announce={false}
       />
       <AppButton
-        title={register ? "Crear cuenta" : "Ingresar"}
+        title={register ? "Crear cuenta" : "Iniciar sesión"}
         onPress={submit}
-        busy={busy}
+        busy={busy === "email"}
+        disabled={working && busy !== "email"}
       />
-      <AppButton
-        title={
-          register
-            ? "¿Ya tienes cuenta? Inicia sesión"
-            : "¿No tienes cuenta? Crea una"
-        }
-        variant="ghost"
-        disabled={busy}
-        onPress={() => switchMode(!register)}
-      />
-    </Screen>
+    </AuthShell>
   );
 }

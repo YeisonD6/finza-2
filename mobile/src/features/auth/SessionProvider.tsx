@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { auth } from "./runtime";
+import { googleSignOut } from "./social";
 import { announce } from "../../shared/accessibility/announcements";
 const Context = createContext({
   message: "",
@@ -41,6 +42,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setBusy(true);
     try {
       await auth.logout();
+      await googleSignOut();
       setMessage("");
       announce("Sesión cerrada");
     } catch {

@@ -44,6 +44,8 @@ import Index from "../../../app/index";
 import AuthLayout from "../../../app/(auth)/_layout";
 import Login from "../../../app/(auth)/login";
 import Welcome from "../../../app/(auth)/welcome";
+import Onboarding from "../../../app/(auth)/onboarding";
+import { storage } from "../../auth/storage";
 import TabLayout from "../../../app/(tabs)/_layout";
 import Home from "../../../app/(tabs)/index";
 import Movements from "../../../app/(tabs)/movements";
@@ -61,6 +63,7 @@ const routes = {
   "(auth)/_layout": AuthLayout,
   "(auth)/login": Login,
   "(auth)/welcome": Welcome,
+  "(auth)/onboarding": Onboarding,
   "(tabs)/_layout": TabLayout,
   "(tabs)/index": Home,
   "(tabs)/movements": Movements,
@@ -79,6 +82,9 @@ const profile = {
   base_currency: "COP",
 };
 beforeEach(() => {
+  jest
+    .spyOn(auth, "providers")
+    .mockResolvedValue({ google: false, apple: false, password_reset: false });
   store.dispatch(authSlice.actions.changed({ profile: null, loading: true }));
 });
 afterEach(async () => {
@@ -97,43 +103,46 @@ test("private routes redirect without session, auth routes redirect with session
   restoreSession(null);
   await renderRouter(routes, { initialUrl: "/(tabs)/movements" });
   await waitFor(() => expect(screen).toHavePathname("/login"));
-  expect(screen.getByRole("button", { name: "Ingresar" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeTruthy();
 });
-test("authenticated auth route redirects to tabs", async () => {
-  restoreSession(profile);
-  jest.spyOn(auth, "request").mockResolvedValue({
-    month: "2024-02",
-    income: "0.00",
-    expense: "0.00",
-    net: "0.00",
-    comparison: { reason: "no_previous_data", delta: null, percent: null },
-    recent_movements: [],
-  });
-  // Categories need an array; summary is otherwise deliberately empty.
-  const request = jest.mocked(auth.request);
-  request.mockImplementation(async (path) =>
-    path.includes("categories")
-      ? []
-      : {
-          month: "2024-02",
-          income: "0.00",
-          expense: "0.00",
-          net: "0.00",
-          comparison: {
-            reason: "no_previous_data",
-            delta: null,
-            percent: null,
+test.each(["/(auth)/login", "/(auth)/welcome"])(
+  "authenticated auth route %s redirects to tabs",
+  async (initialUrl) => {
+    restoreSession(profile);
+    jest.spyOn(auth, "request").mockResolvedValue({
+      month: "2024-02",
+      income: "0.00",
+      expense: "0.00",
+      net: "0.00",
+      comparison: { reason: "no_previous_data", delta: null, percent: null },
+      recent_movements: [],
+    });
+    // Categories need an array; summary is otherwise deliberately empty.
+    const request = jest.mocked(auth.request);
+    request.mockImplementation(async (path) =>
+      path.includes("categories")
+        ? []
+        : {
+            month: "2024-02",
+            income: "0.00",
+            expense: "0.00",
+            net: "0.00",
+            comparison: {
+              reason: "no_previous_data",
+              delta: null,
+              percent: null,
+            },
+            recent_movements: [],
           },
-          recent_movements: [],
-        },
-  );
-  await renderRouter(routes, { initialUrl: "/(auth)/login" });
-  await waitFor(() => expect(screen).toHavePathname("/"));
-  expect(
-    screen.getByRole("tab", { name: "Inicio" }).props.accessibilityState
-      .selected,
-  ).toBe(true);
-});
+    );
+    await renderRouter(routes, { initialUrl });
+    await waitFor(() => expect(screen).toHavePathname("/"));
+    expect(
+      screen.getByRole("tab", { name: "Inicio" }).props.accessibilityState
+        .selected,
+    ).toBe(true);
+  },
+);
 test("dashboard → real modal → save → accounting month, invalidated cache and one success announcement", async () => {
   restoreSession(profile);
   const speech = jest.spyOn(announcements, "announce");
@@ -303,41 +312,78 @@ test("native route removal is blocked during a save and released on success", as
   ).toBeTruthy();
 });
 
-test("welcome shows three distinct steps, accessible progress and finishes at login", async () => {
+test("welcome opens four distinct onboarding steps, accessible progress and registration", async () => {
   restoreSession(null);
+  const persist = jest.spyOn(storage, "set");
   await renderRouter(routes, { initialUrl: "/(auth)/welcome" });
-  expect(screen.queryByText("Te damos la bienvenida")).toBeNull();
-  expect(screen.queryByText("FINZA")).toBeNull();
+  expect(screen.getByRole("header", { name: "FINZA" })).toBeTruthy();
   expect(
-    screen.getByRole("header", { name: "Hola, soy Monedin" }),
+    screen.getByText("Tus cuentas claras.\nMonedin a tu lado."),
   ).toBeTruthy();
-  expect(screen.getByLabelText("Paso 1 de 3")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Comenzar" }));
+  await waitFor(() => expect(screen).toHavePathname("/onboarding"));
+  expect(
+    screen.getByRole("header", { name: "Tu mes, de un vistazo" }),
+  ).toBeTruthy();
+  expect(
+    screen.getByLabelText("Paso 1 de 4").props.accessibilityLiveRegion,
+  ).toBe("polite");
+  expect(screen.queryByRole("button", { name: "Atrás" })).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
   expect(
     screen.getByRole("header", { name: "Registra en segundos" }),
   ).toBeTruthy();
-  expect(screen.getByLabelText("Paso 2 de 3")).toBeTruthy();
-  // The mockup is visual only: its equivalent is in the paragraph.
+  expect(screen.getByLabelText("Paso 2 de 4")).toBeTruthy();
+  // Samples stay visual; the paragraph conveys their meaning to screen readers.
   expect(screen.queryByRole("button", { name: /Editar Gasto/ })).toBeNull();
-  expect(
-    screen.getByText(/un gasto de alimentación de \$ 18.500/),
-  ).toBeTruthy();
+  expect(screen.getByText(/Escribe «almuerzo 18 mil ayer»/)).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Atrás" }));
+  expect(screen.getByLabelText("Paso 1 de 4")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
   await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
   expect(
-    screen.getByRole("header", { name: "Mira crecer tus metas" }),
+    screen.getByRole("header", { name: "Descubre en qué se va" }),
   ).toBeTruthy();
-  expect(screen.getByLabelText("Paso 3 de 3")).toBeTruthy();
+  expect(screen.getByLabelText("Paso 3 de 4")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+  expect(
+    screen.getByRole("header", { name: "Haz crecer tus metas" }),
+  ).toBeTruthy();
+  expect(screen.getByLabelText("Paso 4 de 4")).toBeTruthy();
+  expect(screen.getAllByRole("header")).toHaveLength(1);
   expect(screen.queryByRole("progressbar")).toBeNull();
-  expect(screen.getByText(/65 % de su camino recorrido/)).toBeTruthy();
-  await fireEvent.press(screen.getByRole("button", { name: "Empezar" }));
+  expect(screen.getByText(/Aparta dinero para lo que quieres/)).toBeTruthy();
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Crear mi cuenta" }),
+  );
   await waitFor(() => expect(screen).toHavePathname("/login"));
+  expect(screen).toHaveSearchParams({ mode: "register" });
+  expect(screen.getByRole("header", { name: "Crea tu cuenta" })).toBeTruthy();
+  expect(persist).toHaveBeenCalledWith("finza.onboarded", "true");
 });
 
-test("welcome skip opens login", async () => {
+test("welcome onboarding skip opens registration and marks onboarding complete", async () => {
   restoreSession(null);
+  const persist = jest.spyOn(storage, "set");
   await renderRouter(routes, { initialUrl: "/(auth)/welcome" });
+  await fireEvent.press(screen.getByRole("button", { name: "Comenzar" }));
+  await screen.findByLabelText("Paso 1 de 4");
   await fireEvent.press(screen.getByRole("button", { name: "Saltar" }));
   await waitFor(() => expect(screen).toHavePathname("/login"));
+  expect(screen).toHaveSearchParams({ mode: "register" });
+  expect(screen.getByRole("button", { name: "Crear cuenta" })).toBeTruthy();
+  expect(persist).toHaveBeenCalledWith("finza.onboarded", "true");
+});
+
+test("welcome existing-account action opens login", async () => {
+  restoreSession(null);
+  await renderRouter(routes, { initialUrl: "/(auth)/welcome" });
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Ya tengo una cuenta" }),
+  );
+  await waitFor(() => expect(screen).toHavePathname("/login"));
+  expect(screen.getByRole("header", { name: "Hola de nuevo" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Iniciar sesión" })).toBeTruthy();
 });
 
 test.each(["/budgets", "/budgets/c", "/goal/new", "/goal/g"])(
@@ -348,36 +394,56 @@ test.each(["/budgets", "/budgets/c", "/goal/new", "/goal/g"])(
     await waitFor(() => expect(screen).toHavePathname("/login"));
   },
 );
-test("profile replay of welcome preserves session and returns to profile", async () => {
-  restoreSession(profile);
-  jest.spyOn(auth, "request").mockResolvedValue(profile);
-  await renderRouter(routes, { initialUrl: "/(tabs)/profile" });
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Privacidad y seguridad" }),
-  );
-  expect(
-    screen.getByText(/Las sesiones de acceso duran 15 minutos/),
-  ).toBeTruthy();
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Volver al perfil" }),
-  );
-  await fireEvent.press(screen.getByRole("button", { name: "Accesibilidad" }));
-  expect(
-    screen.getByText(/lector de pantalla, texto grande y movimiento reducido/),
-  ).toBeTruthy();
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Volver al perfil" }),
-  );
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Volver a ver la bienvenida" }),
-  );
-  expect(
-    await screen.findByRole("header", { name: "Hola, soy Monedin" }),
-  ).toBeTruthy();
-  await fireEvent.press(screen.getByRole("button", { name: "Saltar" }));
-  expect(await screen.findByRole("header", { name: "Perfil" })).toBeTruthy();
-  expect(store.getState().auth.profile?.id).toBe(profile.id);
-});
+test.each(["Saltar", "Listo"])(
+  "profile replay of welcome via %s preserves session and returns to profile",
+  async (finish) => {
+    restoreSession(profile);
+    jest.spyOn(auth, "request").mockResolvedValue(profile);
+    const persist = jest.spyOn(storage, "set");
+    const remove = jest.spyOn(storage, "remove");
+    await renderRouter(routes, { initialUrl: "/(tabs)/profile" });
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Privacidad y seguridad" }),
+    );
+    expect(
+      screen.getByText(/Las sesiones de acceso duran 15 minutos/),
+    ).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Volver al perfil" }),
+    );
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Accesibilidad" }),
+    );
+    expect(
+      screen.getByText(
+        /lector de pantalla, texto grande y movimiento reducido/,
+      ),
+    ).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Volver al perfil" }),
+    );
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Volver a ver la bienvenida" }),
+    );
+    expect(
+      await screen.findByRole("header", { name: "Tu mes, de un vistazo" }),
+    ).toBeTruthy();
+    expect(screen).toHavePathname("/onboarding");
+    expect(remove).toHaveBeenCalledWith("finza.onboarded");
+    if (finish === "Listo") {
+      for (let step = 1; step < 4; step++)
+        await fireEvent.press(
+          screen.getByRole("button", { name: "Siguiente" }),
+        );
+      expect(screen.getByLabelText("Paso 4 de 4")).toBeTruthy();
+    }
+    await fireEvent.press(screen.getByRole("button", { name: finish }));
+    expect(await screen.findByRole("header", { name: "Perfil" })).toBeTruthy();
+    expect(screen).toHavePathname("/profile");
+    expect(store.getState().auth.profile?.id).toBe(profile.id);
+    expect(persist).toHaveBeenCalledWith("finza.onboarded", "true");
+  },
+);
 test("goal creation routes to detail, contribution updates progress without changing movements", async () => {
   restoreSession(profile);
   let goal = {

@@ -120,6 +120,7 @@ test("tab semantics have one selected tab and central registration is an indepen
     </SafeAreaInsetsContext.Provider>,
   );
   expect(screen.getAllByRole("tab")).toHaveLength(4);
+  expect(screen.getAllByRole("tab", { selected: true })).toHaveLength(1);
   expect(
     screen.getByRole("tab", { name: "Movimientos" }).props.accessibilityState
       .selected,
@@ -129,7 +130,7 @@ test("tab semantics have one selected tab and central registration is an indepen
       .selected,
   ).toBe(false);
   const plus = screen.getByRole("button", { name: "Registrar movimiento" });
-  expect(plus).toHaveStyle({ minHeight: 48, minWidth: 48 });
+  expect(plus).toHaveStyle({ minHeight: 52, minWidth: 48 });
   await fireEvent.press(plus);
   await fireEvent.press(screen.getByRole("tab", { name: "Metas" }));
   expect(add).toHaveBeenCalledTimes(1);

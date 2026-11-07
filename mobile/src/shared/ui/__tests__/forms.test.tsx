@@ -18,6 +18,7 @@ import { AmountInput } from "../AmountInput";
 import { Screen } from "../Screen";
 import { Feedback } from "../Feedback";
 import { colors } from "../styles";
+import { colors as palette } from "../../theme/tokens";
 import * as announcements from "../../accessibility/announcements";
 
 afterEach(async () => {
@@ -46,7 +47,7 @@ test("button forwards label, hint, role, value and selection; busy blocks activa
   ).toBe(true);
   expect(screen.getByText("Guardar")).toBeTruthy();
   expect(screen.queryByText(/Seleccionado/)).toBeNull();
-  expect(button).toHaveStyle({ minHeight: 48, minWidth: 48 });
+  expect(button).toHaveStyle({ minHeight: 52, minWidth: 48 });
   await view.rerender(<AppButton title="Guardar" onPress={press} busy />);
   expect(
     screen.getByRole("button", { name: "Guardar" }).props.accessibilityState,
@@ -128,7 +129,8 @@ test("field forwards focus ref, autofill and read-only state without announcing 
   const field = screen.getByLabelText("Contraseña");
   expect(field.props.autoComplete).toBe("current-password");
   expect(field.props.secureTextEntry).toBe(true);
-  expect(field).toHaveStyle({ minHeight: 48 });
+  expect(field).toHaveStyle({ minHeight: 56, borderRadius: 16 });
+  expect(field.parent).toHaveStyle({ borderColor: palette.borderStrong });
   expect(field.props.accessibilityState.disabled).toBe(true);
   expect(field.props.accessibilityValue).toBeUndefined();
   expect(String(field.props.accessibilityHint ?? "")).not.toContain(
