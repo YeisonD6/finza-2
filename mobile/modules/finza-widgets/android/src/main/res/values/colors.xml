@@ -1,0 +1,18 @@
+<resources>
+  <color name="finza_widget_forest">#1E4634</color>
+  <color name="finza_widget_on_forest">#F4F7F2</color>
+  <color name="finza_widget_on_forest_muted">#C9D8C6</color>
+  <color name="finza_widget_on_forest_negative">#F3C4BE</color>
+  <color name="finza_widget_forest_ripple">#33F4F7F2</color>
+  <color name="finza_widget_surface">#FFFFFF</color>
+  <color name="finza_widget_ink">#141D18</color>
+  <color name="finza_widget_ink_muted">#545C56</color>
+  <color name="finza_widget_soft">#E2EBDF</color>
+  <color name="finza_widget_accent">#1E4634</color>
+  <color name="finza_widget_on_accent">#F4F7F2</color>
+  <color name="finza_widget_progress">#5E8B6A</color>
+  <color name="finza_widget_track">#E8E4DA</color>
+  <color name="finza_widget_warning">#8A5A00</color>
+  <color name="finza_widget_danger">#8C3A4E</color>
+  <color name="finza_widget_ripple">#1F1E4634</color>
+</resources>

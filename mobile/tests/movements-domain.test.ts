@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   bogotaToday,
+  groupByDay,
   formatCOP,
   normalizeAmount,
   validAccountingDate,
@@ -40,4 +41,38 @@ test("dates are date-only in Bogota with real leap-day validation", () => {
   assert.equal(validMonth("2024-02"), true);
   for (const month of ["2024-2", "2024-13", "1899-12", "9999-12"])
     assert.equal(validMonth(month), false);
+});
+
+test("groupByDay keeps API order and computes exact signed day totals", () => {
+  const row = (
+    id: string,
+    day: string,
+    type: "income" | "expense",
+    amount: string,
+  ) => ({
+    id,
+    type,
+    amount,
+    currency: "COP" as const,
+    category_id: "c",
+    occurred_on: day,
+    client_request_id: id,
+    note: "",
+  });
+  const groups = groupByDay([
+    row("a", "2026-11-06", "expense", "9000.00"),
+    row("b", "2026-11-06", "expense", "18500.50"),
+    row("c", "2026-11-05", "income", "450000.00"),
+    row("d", "2026-11-05", "expense", "0.05"),
+    row("e", "2026-11-04", "expense", "999999999999999.99"),
+  ]);
+  assert.deepEqual(
+    groups.map((g) => [g.day, g.net, g.rows.map((r) => r.id).join("")]),
+    [
+      ["2026-11-06", "-27500.50", "ab"],
+      ["2026-11-05", "449999.95", "cd"],
+      ["2026-11-04", "-999999999999999.99", "e"],
+    ],
+  );
+  assert.deepEqual(groupByDay([]), []);
 });

@@ -1,207 +1,278 @@
-import { ElementRef, useEffect, useRef, useState } from "react";
-import { Text, TextInput, View } from "react-native";
-import { AppButton, FormField, styles } from "../../shared/ui/AuthControls";
+import { useContext, useEffect, useRef, type ReactNode } from "react";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { DashboardInsights } from "./components/DashboardInsights";
+import { AppText } from "../../shared/ui/AppText";
+import { AppButton } from "../../shared/ui/AppButton";
 import { Screen } from "../../shared/ui/Screen";
-import { Feedback } from "../../shared/ui/Feedback";
+import { Banner } from "../../shared/ui/Banner";
+import { Card } from "../../shared/ui/Card";
+import { MonthSwitcher } from "../../shared/ui/MonthSwitcher";
+import { MovementRow } from "../../shared/ui/MovementRow";
+import { EmptyState } from "../../shared/ui/EmptyState";
 import { announce } from "../../shared/accessibility/announcements";
-import { formatCOP, validMonth } from "../movements/domain";
+import { formatCOP } from "../movements/domain";
+import { monthName } from "../../shared/formatting/dates";
+import { colors, radii } from "../../shared/theme/tokens";
+import type { Category, Movement } from "../movements/types";
 import { useDashboardQuery } from "./api";
-
-export type AccountControls = {
-  email: string;
-  onLogout(): void;
-  logoutBusy: boolean;
-  profileError?: boolean;
-  onRetryProfile?(): void;
-};
-
-function direction(value: string): string {
-  return value === "0.00"
-    ? "Sin cambio"
-    : value.startsWith("-")
-      ? "Disminución"
-      : "Aumento";
-}
-
+import { SummaryHeader } from "./components/SummaryHeader";
+import { MonthTransition } from "./components/MonthTransition";
+import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
+import { QuickActions } from "./components/QuickActions";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaInsetsContext } from "react-native-safe-area-context";
+import { HeroRings } from "./components/HeroRings";
 export function DashboardScreen({
   month,
   onMonthChange,
   onRegister,
   onOpenMovements,
+  onProfile,
   email,
-  onLogout,
-  logoutBusy,
-  profileError,
-  onRetryProfile,
+  categories = [],
+  onEdit,
   silentInitialSummary = false,
-}: AccountControls & {
+  firstMovement = false,
+  active = true,
+  emailUnconfirmed = false,
+}: {
   month: string;
   onMonthChange(month: string): void;
   onRegister(): void;
   onOpenMovements(): void;
+  onProfile(): void;
+  email: string;
+  categories?: Category[];
+  onEdit?(record: Movement): void;
   silentInitialSummary?: boolean;
+  firstMovement?: boolean;
+  active?: boolean;
+  /** Shows the confirm-your-email reminder (never blocks the dashboard). */
+  emailUnconfirmed?: boolean;
 }) {
-  const [inputMonth, setInputMonth] = useState(month);
-  const [monthError, setMonthError] = useState("");
-  const skipSummary = useRef(silentInitialSummary);
-  const monthField = useRef<ElementRef<typeof TextInput>>(null);
+  // Context read (not the hook) so the screen also renders outside a provider, as in tests.
+  const topInset = useContext(SafeAreaInsetsContext)?.top ?? 0;
+  const skipSummary = useRef(silentInitialSummary),
+    silenced = useRef(false);
   const query = useDashboardQuery(month);
-  // currentData prevents the preceding month's figures appearing under a new month.
-  // An error hides stale figures, so an unsuccessful refresh cannot look current.
+  // Never show the preceding query's data under a new month, or stale data after an error.
   const data = query.isError ? undefined : query.currentData;
   useEffect(() => {
-    setInputMonth(month);
-  }, [month]);
+    if (silentInitialSummary && !silenced.current) {
+      skipSummary.current = true;
+      silenced.current = true;
+    }
+    if (!silentInitialSummary) silenced.current = false;
+  }, [silentInitialSummary]);
   useEffect(() => {
+    if (!active) return;
     if (data && !query.isFetching) {
       if (skipSummary.current) {
         skipSummary.current = false;
         return;
       }
       announce(
-        `Dashboard ${data.month}. Flujo neto del mes: ${formatCOP(data.net)}.`,
+        `Inicio ${data.month}. Flujo neto del mes: ${formatCOP(data.net)}.`,
       );
     }
-  }, [data, query.isFetching, query.isError]);
-
-  return (
-    <Screen title="Dashboard financiero">
-      <Feedback
-        message={silentInitialSummary ? "Movimiento guardado." : ""}
-        tone="success"
-        announce={false}
-      />
-      <Text style={styles.label}>{email}</Text>
-      {profileError ? (
-        <>
-          <Feedback message="No se pudo actualizar tu perfil." tone="error" />
-          <AppButton
-            title="Reintentar perfil"
-            onPress={() => onRetryProfile?.()}
-          />
-        </>
-      ) : null}
-      <FormField
-        ref={monthField}
-        label="Mes del dashboard (YYYY-MM)"
-        value={inputMonth}
-        onChangeText={setInputMonth}
-        maxLength={7}
-        autoCorrect={false}
-        error={monthError}
-        accessibilityHint="Mes contable de Bogotá, por ejemplo 2024-02"
-      />
-      <AppButton
-        title="Consultar mes"
-        onPress={() => {
-          if (!validMonth(inputMonth)) {
-            const message = "Ingresa un mes válido YYYY-MM (1900-01 a 9998-12)";
-            setMonthError(message);
-            monthField.current?.focus();
-            announce(message);
-            return;
+  }, [data, query.isFetching, query.isError, active]);
+  const headerContent = (heading: ReactNode) => (
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ paddingBottom: 24, gap: 20 }}
+    >
+      <View
+        style={{
+          backgroundColor: colors.forest700,
+          borderBottomLeftRadius: radii.xl,
+          borderBottomRightRadius: radii.xl,
+          paddingHorizontal: 20,
+          paddingTop: topInset + 12,
+          paddingBottom: 60,
+          gap: 8,
+          overflow: "hidden",
+        }}
+      >
+        <HeroRings />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          {heading}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Abrir perfil de ${email}`}
+            onPress={onProfile}
+            hitSlop={4}
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.sage300,
+              borderWidth: 2,
+              borderColor: colors.forestGlassStrong,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <AppText
+              variant="subhead"
+              style={{ color: colors.forest900, fontWeight: "700" }}
+            >
+              {email.slice(0, 1).toUpperCase()}
+            </AppText>
+          </Pressable>
+        </View>
+        <MonthSwitcher month={month} onChange={onMonthChange} inverse />
+        <MonthTransition month={month}>
+          {data ? <SummaryHeader data={data} /> : null}
+          {query.isFetching ? (
+            <View style={{ gap: 8 }}>
+              <ActivityIndicator color={colors.onForest} />
+              <AppText style={{ color: colors.onForest }}>Cargando…</AppText>
+            </View>
+          ) : null}
+        </MonthTransition>
+      </View>
+      {/* Quick actions overlap the header's lower edge: one surface leads into the next. */}
+      <View style={{ paddingHorizontal: 20, gap: 20, marginTop: -56 }}>
+        <QuickActions
+          onRegister={onRegister}
+          onBudgets={() => router.push("/budgets")}
+          onNewGoal={() => router.push("/goal/new")}
+        />
+        {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
+        <Banner
+          message={
+            silentInitialSummary
+              ? firstMovement
+                ? `¡Primer movimiento de ${monthName(month)}!`
+                : "Movimiento guardado"
+              : ""
           }
-          setMonthError("");
-          onMonthChange(inputMonth);
-        }}
-      />
-      <Text accessibilityRole="header" style={styles.label}>
-        Resumen de {month} en COP
-      </Text>
-      <Feedback
-        message={query.isFetching ? "Cargando dashboard…" : ""}
-        announce={!skipSummary.current}
-      />
-      <Feedback
-        message={
-          query.isError
-            ? "No se pudo cargar el dashboard. Reintenta con conexión."
-            : ""
-        }
-        tone="error"
-      />
-      <AppButton
-        title={query.isError ? "Reintentar dashboard" : "Actualizar dashboard"}
-        onPress={() => {
-          void query.refetch();
-        }}
-        busy={query.isFetching}
-      />
-      {data ? (
-        <>
-          <Text style={styles.label}>Ingresos: {formatCOP(data.income)}</Text>
-          <Text style={styles.label}>Gastos: {formatCOP(data.expense)}</Text>
-          <Text style={styles.title}>
-            Flujo neto del mes: {formatCOP(data.net)}
-          </Text>
-          {data.net.startsWith("-") ? (
-            <Text style={styles.label}>
-              Flujo negativo: los gastos superan los ingresos.
-            </Text>
-          ) : null}
-          <Text style={styles.body}>
-            El flujo neto es la diferencia entre ingresos y gastos registrados
-            en este mes.
-          </Text>
-          <Text accessibilityRole="header" style={styles.label}>
-            Comparación mensual
-          </Text>
-          <Text style={styles.body}>
-            Se compara con el mes calendario completo anterior, aunque el mes
-            consultado esté incompleto.
-          </Text>
-          {data.comparison.delta !== null ? (
-            <Text style={styles.label}>
-              {direction(data.comparison.delta)} del flujo neto:{" "}
-              {formatCOP(data.comparison.delta)}
-            </Text>
-          ) : null}
-          {data.comparison.reason === "comparable" &&
-          data.comparison.percent !== null ? (
-            <Text style={styles.label}>
-              Variación del flujo neto:{" "}
-              {data.comparison.percent.replace(".", ",")}%
-            </Text>
-          ) : (
-            <Text style={styles.body}>
-              {data.comparison.reason === "zero_baseline"
-                ? "El flujo anterior fue cero. Se muestra la diferencia absoluta; no se calcula porcentaje."
-                : data.comparison.reason === "negative_baseline"
-                  ? "El flujo anterior fue negativo. Se muestra la diferencia absoluta; no se calcula porcentaje."
-                  : "Sin movimientos activos en el mes anterior. No hay datos para comparar."}
-            </Text>
-          )}
-        </>
-      ) : null}
-      <AppButton title="Registrar movimiento" onPress={onRegister} />
-      {data ? (
-        <>
-          <Text accessibilityRole="header" style={styles.label}>
-            Últimos cinco movimientos activos de {month}
-          </Text>
-          {data.recent_movements.length === 0 ? (
-            <Text style={styles.body}>
-              No hay movimientos activos en este mes. Registra tu primer
-              movimiento.
-            </Text>
-          ) : (
-            data.recent_movements.map((row) => (
-              <View key={row.id} accessible style={{ gap: 4 }}>
-                <Text style={styles.label}>
-                  {row.type === "income" ? "Ingreso" : "Gasto"}:{" "}
-                  {formatCOP(row.amount)}
-                </Text>
-                <Text style={styles.body}>
-                  Fecha contable: {row.occurred_on}
-                </Text>
-                {row.note ? <Text style={styles.body}>{row.note}</Text> : null}
+          tone="success"
+          announce={false}
+          celebrate={firstMovement && !!data?.recent_movements.length}
+        />
+        {query.isError ? (
+          <>
+            <Banner
+              message="No se pudo cargar el dashboard. Reintenta con conexión."
+              tone="error"
+            />
+            <AppButton
+              title="Reintentar"
+              onPress={() => {
+                void query.refetch();
+              }}
+            />
+          </>
+        ) : null}
+        {data ? (
+          <>
+            <Card>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
+                <AppText
+                  variant="heading"
+                  accessibilityRole="header"
+                  style={{ flex: 1 }}
+                >
+                  Tus movimientos
+                </AppText>
+                <AppButton
+                  title="Ver todos"
+                  variant="ghost"
+                  size="sm"
+                  onPress={onOpenMovements}
+                />
               </View>
-            ))
-          )}
+              {data.recent_movements.length === 0 ? (
+                <EmptyState
+                  active={active}
+                  title={`Aún no hay movimientos en ${monthName(month)}`}
+                  message="Registra tu primer movimiento."
+                  action="Registrar el primero"
+                  onAction={onRegister}
+                />
+              ) : (
+                data.recent_movements.slice(0, 5).map((row, index) => {
+                  const category = categories.find(
+                    (c) => c.id === row.category_id,
+                  );
+                  return (
+                    <MovementRow
+                      key={row.id}
+                      movement={row}
+                      category={category?.name}
+                      isSystem={category?.is_system}
+                      index={index}
+                      onPress={onEdit ? () => onEdit(row) : undefined}
+                    />
+                  );
+                })
+              )}
+            </Card>
+            <DashboardInsights
+              data={data}
+              categories={categories}
+              allowMascot={!firstMovement}
+            />
+          </>
+        ) : null}
+        <AppButton
+          title="Actualizar resumen"
+          variant="ghost"
+          busy={query.isFetching}
+          onPress={() => {
+            void query.refetch();
+          }}
+        />
+      </View>
+    </ScrollView>
+  );
+  return (
+    <Screen
+      title="FINZA"
+      titleVariant="label"
+      variant="forest"
+      active={active}
+      focusKey={month}
+    >
+      {(heading: ReactNode) => (
+        <>
+          {/* Light icons over the forest header, only while Inicio is the visible tab. */}
+          {active ? <StatusBar style="light" /> : null}
+          {headerContent(heading)}
+          {/* Forest strip behind the status bar so its light icons stay legible once the
+              header scrolls away. */}
+          {topInset ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: topInset,
+                backgroundColor: colors.forest700,
+              }}
+            />
+          ) : null}
         </>
-      ) : null}
-      <AppButton title="Ver movimientos" onPress={onOpenMovements} />
-      <AppButton title="Cerrar sesión" onPress={onLogout} busy={logoutBusy} />
+      )}
     </Screen>
   );
 }

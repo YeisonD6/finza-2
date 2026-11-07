@@ -18,6 +18,7 @@ import { AmountInput } from "../AmountInput";
 import { Screen } from "../Screen";
 import { Feedback } from "../Feedback";
 import { colors } from "../styles";
+import { colors as palette } from "../../theme/tokens";
 import * as announcements from "../../accessibility/announcements";
 
 afterEach(async () => {
@@ -40,8 +41,13 @@ test("button forwards label, hint, role, value and selection; busy blocks activa
   expect(button.props.accessibilityHint).toBe("Guarda los cambios");
   expect(button.props.accessibilityValue.text).toBe("COP");
   expect(button.props.accessibilityState.selected).toBe(true);
-  expect(screen.getByText("Guardar ✓ Seleccionado")).toBeTruthy();
-  expect(button).toHaveStyle({ minHeight: 48, minWidth: 48 });
+  expect(
+    screen.getByRole("button", { name: "Guardar" }).props.accessibilityState
+      .selected,
+  ).toBe(true);
+  expect(screen.getByText("Guardar")).toBeTruthy();
+  expect(screen.queryByText(/Seleccionado/)).toBeNull();
+  expect(button).toHaveStyle({ minHeight: 52, minWidth: 48 });
   await view.rerender(<AppButton title="Guardar" onPress={press} busy />);
   expect(
     screen.getByRole("button", { name: "Guardar" }).props.accessibilityState,
@@ -64,7 +70,7 @@ test("button exposes keyboard focus visually and propagates native events", asyn
   );
   await fireEvent(screen.getByRole("button"), "focus", {});
   expect(screen.getByRole("button")).toHaveStyle({
-    borderColor: colors.background,
+    borderColor: colors.text,
   });
   expect(screen.getByText("Volver")).toHaveStyle({
     textDecorationLine: "underline",
@@ -123,7 +129,8 @@ test("field forwards focus ref, autofill and read-only state without announcing 
   const field = screen.getByLabelText("Contraseña");
   expect(field.props.autoComplete).toBe("current-password");
   expect(field.props.secureTextEntry).toBe(true);
-  expect(field).toHaveStyle({ minHeight: 48 });
+  expect(field).toHaveStyle({ minHeight: 56, borderRadius: 16 });
+  expect(field.parent).toHaveStyle({ borderColor: palette.borderStrong });
   expect(field.props.accessibilityState.disabled).toBe(true);
   expect(field.props.accessibilityValue).toBeUndefined();
   expect(String(field.props.accessibilityHint ?? "")).not.toContain(

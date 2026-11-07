@@ -98,4 +98,77 @@ def test_unknown_route_has_stable_error():
     with TestClient(create_app()) as client:
         response = client.get("/missing")
         assert response.status_code == 404
-        assert set(response.json()) == {"code", "message", "field_errors", "request_id"}
+        assert set(response.json()) == {"code", "message", "detail", "field_errors", "request_id"}
+        assert response.json()["detail"] == response.json()["message"]
+
+
+def test_cors_disabled_by_default_and_limited_to_configured_origins(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    monkeypatch.delenv("FINZA_CORS_ORIGINS", raising=False)
+    plain = TestClient(create_app()).get("/health/live", headers={"Origin": "http://localhost:8081"})
+    assert "access-control-allow-origin" not in plain.headers
+
+    monkeypatch.setenv("FINZA_CORS_ORIGINS", "http://localhost:8081")
+    client = TestClient(create_app())
+    allowed = client.get("/health/live", headers={"Origin": "http://localhost:8081"})
+    assert allowed.headers["access-control-allow-origin"] == "http://localhost:8081"
+    other = client.get("/health/live", headers={"Origin": "http://evil.example"})
+    assert "access-control-allow-origin" not in other.headers
+
+
+def test_validation_errors_are_spanish_and_never_echo_input():
+    from app.shared.validation_messages import spanish_message
+
+    email = {
+        "type": "value_error",
+        "loc": ("body", "email"),
+        "msg": "value is not a valid email address: The part after the @-sign is a special-use or reserved name",
+    }
+    assert spanish_message(email).startswith("Escribe un correo electrónico válido")
+    assert (
+        spanish_message({"type": "missing", "loc": ("body", "amount"), "msg": "Field required"})
+        == "Este campo es obligatorio."
+    )
+    assert spanish_message(
+        {"type": "value_error", "loc": ("body", "amount"), "msg": "Value error, Invalid amount format"}
+    ).startswith("Escribe un monto válido")
+    assert (
+        spanish_message(
+            {
+                "type": "value_error",
+                "loc": ("body", "occurred_on"),
+                "msg": "Value error, Usa una fecha YYYY-MM-DD",
+            }
+        )
+        == "Usa una fecha YYYY-MM-DD"
+    )
+    assert (
+        spanish_message(
+            {"type": "string_too_long", "loc": ("body", "note"), "msg": "x", "ctx": {"max_length": 140}}
+        )
+        == "Debe tener como máximo 140 caracteres."
+    )
+    assert (
+        spanish_message(
+            {"type": "value_error", "loc": ("body", "x"), "msg": "Value error, Something english"}
+        )
+        == "Revisa este valor."
+    )
+
+
+def test_reserved_email_domain_gets_spanish_field_error():
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/api/v1/auth/register", json={"email": "laura@finza.test", "password": "una-clave-segura-123"}
+        )
+    assert response.status_code == 422
+    message = response.json()["field_errors"]["email"]
+    assert message.startswith("Escribe un correo electrónico válido")
+    assert "laura" not in response.text and "una-clave" not in response.text

@@ -6,11 +6,12 @@ import { MovementsScreen } from "../MovementsScreen";
 const mockArchive = jest.fn((_id: string) => ({ unwrap: async () => {} }));
 let mockFailed = false;
 let mockDuplicates = false;
+let mockPaged = false;
 const mockRetry = jest.fn();
 jest.mock("expo-crypto", () => ({ randomUUID: () => "key" }));
 jest.mock("../api", () => ({
   useCategoriesQuery: () => ({ data: [] }),
-  useMovementsQuery: () => ({
+  useMovementsQuery: (filters: { cursor?: string }) => ({
     error: mockFailed ? { status: 503 } : undefined,
     currentData: {
       items: [
@@ -24,50 +25,48 @@ jest.mock("../api", () => ({
           category_id: "cat",
         },
       ].flatMap((row) =>
-        mockDuplicates ? [row, { ...row, id: "second" }] : [row],
+        mockDuplicates || (mockPaged && filters.cursor)
+          ? [row, { ...row, id: "second" }]
+          : [row],
       ),
-      next_cursor: null,
+      next_cursor: mockPaged && !filters.cursor ? "next" : null,
     },
     refetch: mockRetry,
   }),
   useArchiveMovementMutation: () => [mockArchive],
 }));
 
+let mockSummary: { month: string; income: string; expense: string } | undefined;
+jest.mock("../../dashboard/api", () => ({
+  useDashboardQuery: () => ({ currentData: mockSummary }),
+}));
+
 beforeEach(() => {
+  mockSummary = undefined;
   mockFailed = false;
   mockDuplicates = false;
+  mockPaged = false;
   jest.clearAllMocks();
 });
 
 test("duplicate amounts and dates still have uniquely named edit/archive actions", async () => {
   mockDuplicates = true;
-  await render(
-    <MovementsScreen
-      email="a@example.com"
-      onLogout={() => {}}
-      logoutBusy={false}
-    />,
-  );
+  await render(<MovementsScreen onEdit={() => {}} />);
   const names = screen
     .getAllByRole("button")
     .map((button) => button.props.accessibilityLabel);
   expect(new Set(names).size).toBe(names.length);
   expect(
     screen.getByRole("button", {
-      name: /Archivar.*Movimiento 2 de esta página/,
-    }),
-  ).toBeTruthy();
+      name: /Editar Gasto.*Movimiento 2/,
+    }).props.accessibilityActions,
+  ).toEqual([{ name: "archive", label: "Archivar" }]);
+  expect(screen.queryByRole("button", { name: /^Archivar/ })).toBeNull();
 });
 
 test("a failed refresh hides stale financial rows and offers retry", async () => {
   mockFailed = true;
-  await render(
-    <MovementsScreen
-      email="a@example.com"
-      onLogout={() => {}}
-      logoutBusy={false}
-    />,
-  );
+  await render(<MovementsScreen onEdit={() => {}} />);
   expect(
     screen.queryByRole("button", { name: /Archivar movimiento/ }),
   ).toBeNull();
@@ -79,12 +78,9 @@ test("a failed refresh hides stale financial rows and offers retry", async () =>
 });
 
 test("month validation associates the error with its field and retains the selection", async () => {
-  await render(
-    <MovementsScreen
-      email="a@example.com"
-      onLogout={() => {}}
-      logoutBusy={false}
-    />,
+  await render(<MovementsScreen onEdit={() => {}} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: /^Mes: .*Toca para elegir otro mes$/ }),
   );
   await fireEvent.changeText(screen.getByLabelText("Mes (YYYY-MM)"), "2024-13");
   await fireEvent.press(screen.getByRole("button", { name: "Aplicar mes" }));
@@ -97,15 +93,11 @@ test("month validation associates the error with its field and retains the selec
 
 test("archive requires confirmation and reports success", async () => {
   const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
-  await render(
-    <MovementsScreen
-      email="a@example.com"
-      onLogout={() => {}}
-      logoutBusy={false}
-    />,
-  );
-  await fireEvent.press(
-    screen.getByRole("button", { name: /Archivar movimiento de/ }),
+  await render(<MovementsScreen onEdit={() => {}} />);
+  await fireEvent(
+    screen.getByRole("button", { name: /Editar Gasto/ }),
+    "accessibilityAction",
+    { nativeEvent: { actionName: "archive" } },
   );
   expect(mockArchive.mock.calls).toHaveLength(0);
   const confirm = alert.mock.calls[0][2]!.find((b) => b.text === "Archivar")!;
@@ -115,4 +107,31 @@ test("archive requires confirmation and reports success", async () => {
   expect(await screen.findByText("Movimiento archivado")).toBeTruthy();
   expect(mockArchive.mock.calls[0][0]).toBe("m");
   alert.mockRestore();
+});
+
+test("cursor loading appends unique rows and a later failure hides every loaded page", async () => {
+  mockPaged = true;
+  const view = await render(<MovementsScreen onEdit={() => {}} />);
+  expect(screen.getAllByRole("button", { name: /Editar Gasto/ })).toHaveLength(
+    1,
+  );
+  await fireEvent.press(screen.getByRole("button", { name: "Cargar más" }));
+  expect(screen.getAllByRole("button", { name: /Editar Gasto/ })).toHaveLength(
+    2,
+  );
+  expect(screen.queryByRole("button", { name: "Cargar más" })).toBeNull();
+  mockFailed = true;
+  await view.rerender(<MovementsScreen onEdit={() => {}} />);
+  expect(screen.queryByRole("button", { name: /Editar Gasto/ })).toBeNull();
+  expect(screen.queryByText("Compra")).toBeNull();
+});
+
+test("month totals come from the summary of the month on screen", async () => {
+  await render(<MovementsScreen initialMonth="2024-02" onEdit={() => {}} />);
+  expect(screen.queryByLabelText(/^Totales de/)).toBeNull();
+  mockSummary = { month: "2024-02", income: "3650000.00", expense: "1873600.00" };
+  await render(<MovementsScreen initialMonth="2024-02" onEdit={() => {}} />);
+  expect(screen.getByText("+$ 3.650.000")).toBeTruthy();
+  expect(screen.getByText("−$ 1.873.600")).toBeTruthy();
+  expect(screen.getByLabelText(/^Totales de febrero\. Ingresos: Monto de/)).toBeTruthy();
 });

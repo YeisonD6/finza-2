@@ -1,5 +1,20 @@
 /** Tokens live here (memory) and in the injected secure vault, never in Redux actions. */
-export type Profile = { id: string; email: string; base_currency: string };
+export type Profile = {
+  id: string;
+  email: string;
+  base_currency: string;
+  /** False for accounts created with Google/Apple until a password is set. */
+  has_password?: boolean;
+  providers?: string[];
+  email_verified?: boolean;
+};
+export type ExternalProvider = "google" | "apple";
+export type ServerProviders = {
+  google: boolean;
+  apple: boolean;
+  password_reset: boolean;
+  email_verification?: boolean;
+};
 export type TokenPair = {
   access_token: string;
   refresh_token: string;
@@ -27,13 +42,16 @@ export class AuthClient {
   private epoch = 0;
   private refreshing: { epoch: number; promise: Promise<void> } | null = null;
   private writes: Promise<void> = Promise.resolve();
+  /** When false the refresh token stays in memory only: closing the app signs out. */
+  private remember = true;
   onChange: (profile: Profile | null, loading: boolean) => void = () => {};
   onReset: () => void = () => {};
 
   constructor(
     private url: string,
     private vault: Vault,
-    private fetcher: typeof fetch = fetch,
+    // Wrapped: browsers throw "Illegal invocation" when fetch is called detached from window.
+    private fetcher: typeof fetch = (input, init) => fetch(input, init),
   ) {}
 
   private store(task: () => Promise<void>): Promise<void> {
@@ -86,7 +104,8 @@ export class AuthClient {
       this.stale(epoch);
       await this.store(async () => {
         this.stale(epoch);
-        await this.vault.set(pair.refresh_token);
+        if (this.remember) await this.vault.set(pair.refresh_token);
+        else await this.vault.remove();
       });
       this.stale(epoch);
       this.access = pair.access_token;
@@ -106,22 +125,111 @@ export class AuthClient {
     );
   }
 
-  async login(email: string, password: string) {
+  setRemember(value: boolean) {
+    this.remember = value;
+  }
+
+  private async signIn(path: string, body: unknown) {
     const clearing = this.clear();
     const epoch = this.epoch;
     await clearing;
     this.stale(epoch);
     const pair = await this.checked<TokenPair>(
-      await this.raw("/api/v1/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      }),
+      await this.raw(path, { method: "POST", body: JSON.stringify(body) }),
     );
     await this.accept(pair, epoch);
     const profile = await this.request<Profile>("/api/v1/me");
     this.stale(epoch);
     this.onChange(profile, false);
     return profile;
+  }
+
+  login(email: string, password: string) {
+    return this.signIn("/api/v1/auth/login", { email, password });
+  }
+
+  /** Exchanges a Google/Apple ID token (verified by the API) for FINZA sessions. */
+  loginWithProvider(
+    provider: ExternalProvider,
+    idToken: string,
+    nonce?: string,
+  ) {
+    return this.signIn(`/api/v1/auth/oauth/${provider}`, {
+      id_token: idToken,
+      ...(nonce ? { nonce } : {}),
+    });
+  }
+
+  async providers(): Promise<ServerProviders> {
+    return this.checked<ServerProviders>(
+      await this.raw("/api/v1/auth/providers"),
+    );
+  }
+
+  async forgotPassword(email: string) {
+    await this.checked(
+      await this.raw("/api/v1/auth/password/forgot", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }),
+    );
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    await this.checked(
+      await this.raw("/api/v1/auth/password/reset", {
+        method: "POST",
+        body: JSON.stringify({ token, new_password: newPassword }),
+      }),
+    );
+  }
+
+  /** Works with or without a session: the link may be opened on any device. */
+  async verifyEmail(token: string) {
+    await this.checked(
+      await this.raw("/api/v1/auth/email/verify", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      }),
+    );
+    if (this.access) await this.reloadProfile().catch(() => {});
+  }
+
+  async resendVerification(): Promise<string> {
+    const body = await this.request<{ message: string }>(
+      "/api/v1/me/email/verification",
+      { method: "POST" },
+    );
+    return body.message;
+  }
+
+  async reloadProfile() {
+    const profile = await this.request<Profile>("/api/v1/me");
+    this.onChange(profile, false);
+  }
+
+  /** Permanent: the server deletes the account and every record it owns. */
+  async deleteAccount(confirmEmail: string, password: string | null) {
+    await this.request("/api/v1/me", {
+      method: "DELETE",
+      body: JSON.stringify({
+        confirm_email: confirmEmail,
+        ...(password ? { password } : {}),
+      }),
+    });
+    await this.clear();
+  }
+
+  async changePassword(current: string | null, newPassword: string) {
+    await this.request("/api/v1/me/password", {
+      method: "POST",
+      body: JSON.stringify({
+        ...(current ? { current_password: current } : {}),
+        new_password: newPassword,
+      }),
+    });
+    const profile = await this.request<Profile>("/api/v1/me");
+    this.onChange(profile, false);
   }
 
   async restore() {

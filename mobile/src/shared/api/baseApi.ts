@@ -36,7 +36,7 @@ const query: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: query,
-  tagTypes: ["Movements", "Categories", "Dashboard"],
+  tagTypes: ["Movements", "Categories", "Dashboard", "Budgets", "Goals"],
   endpoints: (builder) => ({
     me: builder.query<import("../../features/auth/client").Profile, void>({
       query: () => "/api/v1/me",

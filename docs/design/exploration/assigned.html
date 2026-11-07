@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;font-family:Manrope,sans-serif;background:#EEF2EC;color:#17261E;font-variant-numeric:tabular-nums}
+.top{background:#1E4634;color:#F4F7F2;padding:52px 22px 26px;border-radius:0 0 28px 28px;position:relative}
+.row{display:flex;justify-content:space-between;align-items:center}
+.month{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.chev{width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:14px}
+.av{width:36px;height:36px;border-radius:18px;background:#A8BFA3;color:#1E4634;display:grid;place-items:center;font-weight:800;font-size:14px}
+.lbl{font-size:13px;color:#C9D8C6;margin-top:22px}
+.big{font-size:40px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.big small{font-size:18px;font-weight:600;color:#C9D8C6;margin-left:4px}
+.delta{display:inline-flex;gap:6px;align-items:center;margin-top:10px;background:rgba(168,191,163,.22);padding:6px 10px;border-radius:12px;font-size:13px;font-weight:600}
+.io{display:flex;gap:10px;margin-top:18px}
+.io div{flex:1;background:rgba(255,255,255,.08);border-radius:16px;padding:12px}
+.io span{display:block;font-size:12px;color:#C9D8C6}
+.io b{font-size:17px}
+.sec{padding:20px 22px 0}
+.h{font-size:17px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline}
+.h a{font-size:13px;font-weight:600;color:#1E4634}
+.card{background:#fff;border-radius:20px;padding:14px 16px;margin-top:10px;box-shadow:0 1px 2px rgba(23,38,30,.06),0 8px 24px rgba(23,38,30,.05)}
+.cat{display:flex;align-items:center;gap:12px;padding:8px 0}
+.ic{width:38px;height:38px;border-radius:12px;background:#E3EBE0;display:grid;place-items:center}
+.ic svg{width:20px;height:20px;stroke:#1E4634;fill:none;stroke-width:1.8}
+.grow{flex:1}
+.t{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.t em{font-style:normal;color:#55665C;font-weight:500;font-size:13px}
+.stem{position:relative;height:6px;border-radius:3px;background:#E6ECE3;margin-top:8px}
+.stem i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#5E8B6A}
+.stem b{position:absolute;top:-9px;width:16px;height:14px}
+.over i{background:#8C3A4E}
+.note{font-size:12px;color:#8C3A4E;font-weight:600;margin-top:4px}
+.tip{display:flex;gap:12px;align-items:center;background:#F3E6DE;border-radius:20px;padding:10px 14px;margin-top:14px}
+.tip img{width:54px;height:54px;object-fit:contain}
+.tip p{font-size:13px;line-height:1.4;color:#3B2F2A}
+.tab{position:absolute;bottom:0;left:0;right:0;height:84px;background:#fff;display:flex;justify-content:space-around;align-items:flex-start;padding-top:12px;box-shadow:0 -1px 0 #E1E7DE}
+.tab div{font-size:11px;font-weight:600;color:#55665C;text-align:center;width:60px}
+.tab div.on{color:#1E4634}
+.tab .dot{width:22px;height:22px;margin:0 auto 4px;border:1.8px solid currentColor;border-radius:7px}
+.plus{width:56px!important;height:56px;border-radius:20px;background:#1E4634;color:#fff;display:grid;place-items:center;font-size:28px;margin-top:-26px;box-shadow:0 6px 16px rgba(30,70,52,.35)}
+</style></head><body>
+<div class="top">
+ <div class="row"><div class="month"><span class="chev">‹</span>Noviembre 2026<span class="chev">›</span></div><div class="av">L</div></div>
+ <div class="lbl">Flujo neto del mes</div>
+ <div class="big">$ 1.245.000<small>COP</small></div>
+ <div class="delta">▲ 18 % frente a octubre</div>
+ <div class="io"><div><span>Ingresos</span><b>$ 3.200.000</b></div><div><span>Gastos</span><b>$ 1.955.000</b></div></div>
+</div>
+<div class="sec">
+ <div class="h">Presupuestos <a>Ver todos</a></div>
+ <div class="card">
+  <div class="cat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 11h14M7 11V7a5 5 0 0 1 10 0v4M6 11l1 9h10l1-9"/></svg></div>
+   <div class="grow"><div class="t">Alimentación <em>$ 620.000 de $ 800.000</em></div><div class="stem"><i style="width:77%"></i></div></div></div>
+  <div class="cat"><div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="12" rx="3"/><path d="M7 21l2-4M17 21l-2-4M4 11h16"/></svg></div>
+   <div class="grow over"><div class="t">Transporte <em>$ 318.000 de $ 300.000</em></div><div class="stem"><i style="width:100%"></i></div><div class="note">Excedido por $ 18.000</div></div></div>
+  <div class="cat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg></div>
+   <div class="grow"><div class="t">Servicios <em>$ 210.000 de $ 450.000</em></div><div class="stem"><i style="width:47%"></i></div></div></div>
+ </div>
+ <div class="tip"><img src="../../../mobile/assets/brand/monedin.png" alt=""><p><b>Vas muy bien.</b> Te quedan $ 180.000 para comida hasta fin de mes.</p></div>
+</div>
+<div class="tab">
+ <div class="on"><div class="dot"></div>Inicio</div><div><div class="dot"></div>Movimientos</div>
+ <div class="plus">+</div><div><div class="dot"></div>Metas</div><div><div class="dot"></div>Perfil</div>
+</div>
+</body></html>

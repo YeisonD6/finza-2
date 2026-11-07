@@ -4,8 +4,17 @@
     "slug": "finza",
     "scheme": "finza",
     "version": "0.1.0",
-    "plugins": ["expo-router", "expo-secure-store"],
-    "android": { "package": "co.edu.unisabana.finza" },
-    "ios": { "bundleIdentifier": "co.edu.unisabana.finza" }
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "expo-splash-screen"
+    ],
+    "android": {
+      "package": "co.edu.unisabana.finza"
+    },
+    "ios": {
+      "bundleIdentifier": "co.edu.unisabana.finza"
+    }
   }
 }

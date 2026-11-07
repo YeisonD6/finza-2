@@ -1,0 +1,13 @@
+<resources>
+  <color name="finza_widget_surface">#1B2420</color>
+  <color name="finza_widget_ink">#F4F7F2</color>
+  <color name="finza_widget_ink_muted">#C9D8C6</color>
+  <color name="finza_widget_soft">#2A3A31</color>
+  <color name="finza_widget_accent">#CFE3D2</color>
+  <color name="finza_widget_on_accent">#10291D</color>
+  <color name="finza_widget_progress">#A8BFA3</color>
+  <color name="finza_widget_track">#33413A</color>
+  <color name="finza_widget_warning">#E9C27A</color>
+  <color name="finza_widget_danger">#F3C4BE</color>
+  <color name="finza_widget_ripple">#33CFE3D2</color>
+</resources>

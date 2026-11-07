@@ -147,7 +147,9 @@ def list_page(
     movement_type: str | None,
     category_id: UUID | None,
     cursor: str | None,
+    query: str | None = None,
 ):
+    query = (query or "").strip() or None
     month = month if month is not None else accounting_today(utcnow()).strftime("%Y-%m")
     try:
         start, end = month_bounds(month)
@@ -156,6 +158,8 @@ def list_page(
     if category_id:
         require_category(session, owner, category_id)
     context = [str(owner), month, movement_type, str(category_id) if category_id else None]
+    if query:
+        context.append(query)
     position = None
     if cursor:
         try:
@@ -173,7 +177,7 @@ def list_page(
                 raise ValueError("Timezone required")
         except (ValueError, TypeError, KeyError, UnicodeError):
             raise HTTPException(422, "Cursor inválido para estos filtros") from None
-    rows = repo.page(session, owner, start, end, limit, movement_type, category_id, position)
+    rows = repo.page(session, owner, start, end, limit, movement_type, category_id, position, query)
     items = rows[:limit]
     next_cursor = None
     if len(rows) > limit:

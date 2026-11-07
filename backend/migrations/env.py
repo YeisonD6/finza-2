@@ -9,7 +9,15 @@ from sqlalchemy import create_engine
 from app.core.database import _connect_args
 from app.core.models import Base
 from app.modules.audit.models import AuditEvent  # noqa: F401
-from app.modules.identity.models import Account, RefreshSession  # noqa: F401
+from app.modules.budgets.models import Budget  # noqa: F401
+from app.modules.goals.models import Goal, GoalContribution  # noqa: F401
+from app.modules.identity.models import (  # noqa: F401
+    Account,
+    EmailVerificationToken,
+    ExternalIdentity,
+    PasswordResetToken,
+    RefreshSession,
+)
 from app.modules.movements.models import Category, Movement  # noqa: F401
 from app.modules.users.models import UserProfile  # noqa: F401
 
@@ -36,10 +44,10 @@ else:
     engine = create_engine(url, connect_args=_connect_args(url))
     with engine.connect() as connection:
         context.configure(
-        connection=connection,
-        target_metadata=metadata,
-        render_as_batch=True,
-    )
+            connection=connection,
+            target_metadata=metadata,
+            render_as_batch=True,
+        )
         with context.begin_transaction():
             context.run_migrations()
     engine.dispose()

@@ -1,16 +1,21 @@
 import os
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException as FastAPIHTTPException, Request
+from fastapi import FastAPI, Request
+from fastapi import HTTPException as FastAPIHTTPException
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import database_ready
+from app.modules.budgets.api import router as budgets_router
 from app.modules.dashboard.api import router as dashboard_router
+from app.modules.goals.api import router as goals_router
 from app.modules.identity.api import me_router
 from app.modules.identity.api import router as identity_router
 from app.modules.movements.api import router as movements_router
+from app.shared.validation_messages import spanish_message
 
 
 def create_app() -> FastAPI:
@@ -19,6 +24,20 @@ def create_app() -> FastAPI:
     app.include_router(me_router)
     app.include_router(movements_router)
     app.include_router(dashboard_router)
+    app.include_router(budgets_router)
+    app.include_router(goals_router)
+
+    # Development-only browser preview (Expo web). Mobile clients do not use CORS and it never
+    # replaces authorization; with FINZA_CORS_ORIGINS unset no CORS headers are sent at all.
+    origins = [o.strip() for o in os.getenv("FINZA_CORS_ORIGINS", "").split(",") if o.strip()]
+    if origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            allow_headers=["Authorization", "Content-Type"],
+            expose_headers=["x-request-id"],
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
@@ -32,7 +51,7 @@ def create_app() -> FastAPI:
                 "code": "validation_error",
                 "message": "Revisa los campos indicados",
                 "detail": "Revisa los campos indicados",
-                "field_errors": {str(e["loc"][-1]): e["msg"] for e in exc.errors()},
+                "field_errors": {str(e["loc"][-1]): spanish_message(e) for e in exc.errors()},
                 "request_id": getattr(request.state, "request_id", None),
             },
         )

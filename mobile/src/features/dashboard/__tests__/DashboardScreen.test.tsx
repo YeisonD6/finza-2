@@ -13,6 +13,21 @@ let mockQuery: {
   refetch: typeof mockRefetch;
 };
 jest.mock("../api", () => ({ useDashboardQuery: () => mockQuery }));
+let mockGoals: unknown[] = [];
+jest.mock("../../goals/api", () => ({
+  useGoalsQuery: () => ({
+    currentData: mockGoals,
+    isFetching: false,
+    isError: false,
+  }),
+}));
+jest.mock("../../budgets/api", () => ({
+  useBudgetsQuery: () => ({
+    currentData: { items: [] },
+    isFetching: false,
+    isError: false,
+  }),
+}));
 const fixture = (
   changes: Partial<DashboardSummary> = {},
 ): DashboardSummary => ({
@@ -43,7 +58,7 @@ const props = {
   onMonthChange: jest.fn(),
   onRegister: jest.fn(),
   onOpenMovements: jest.fn(),
-  onLogout: jest.fn(),
+  onProfile: jest.fn(),
 };
 beforeEach(() => {
   jest.clearAllMocks();
@@ -58,36 +73,36 @@ beforeEach(() => {
 test("readable financial summary, negative flow, comparison and actions", async () => {
   const announcement = jest.spyOn(announcements, "announce");
   await render(<DashboardScreen {...props} />);
+  expect(screen.getByRole("header", { name: "FINZA" })).toBeTruthy();
   expect(
-    screen.getByRole("header", { name: "Dashboard financiero" }),
+    screen.getByLabelText("Ingresos: Monto de $ 1.000,00 pesos colombianos"),
   ).toBeTruthy();
-  expect(screen.getByText("Ingresos: $ 1.000,00 COP")).toBeTruthy();
-  expect(screen.getByText("Gastos: $ 1.250,00 COP")).toBeTruthy();
-  expect(screen.getByText("Flujo neto del mes: $ -250,00 COP")).toBeTruthy();
+  expect(
+    screen.getByLabelText("Gastos: Monto de $ 1.250,00 pesos colombianos"),
+  ).toBeTruthy();
+  expect(
+    screen.getByLabelText(
+      "Flujo neto del mes: Monto de menos $ 250,00 pesos colombianos",
+    ),
+  ).toBeTruthy();
   expect(screen.getByText(/Flujo negativo: los gastos superan/)).toBeTruthy();
-  expect(
-    screen.getByText("Disminución del flujo neto: $ -750,00 COP"),
-  ).toBeTruthy();
-  expect(screen.getByText("Variación del flujo neto: -150,00%")).toBeTruthy();
+  expect(screen.getByText("$ 750 menos que enero (150 %)")).toBeTruthy();
+  expect(screen.getByText(/150 %/)).toBeTruthy();
   expect(screen.getByText(/mes calendario completo anterior/)).toBeTruthy();
-  expect(screen.getByText("Fecha contable: 2024-02-29")).toBeTruthy();
+  expect(screen.getByLabelText(/Gasto de menos.*2024-02-29/)).toBeTruthy();
   expect(announcement).toHaveBeenCalledWith(
     expect.stringContaining("$ -250,00 COP"),
   );
   await fireEvent.press(
-    screen.getByRole("button", { name: "Registrar movimiento" }),
+    screen.getByRole("button", { name: "Abrir perfil de a@example.com" }),
   );
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Ver movimientos" }),
-  );
-  await fireEvent.press(screen.getByRole("button", { name: "Cerrar sesión" }));
-  expect(props.onRegister).toHaveBeenCalledTimes(1);
+  await fireEvent.press(screen.getByRole("button", { name: "Ver todos" }));
+  expect(props.onProfile).toHaveBeenCalledTimes(1);
   expect(props.onOpenMovements).toHaveBeenCalledTimes(1);
-  expect(props.onLogout).toHaveBeenCalledTimes(1);
 });
 
 test.each([
-  ["no_previous_data", null, /No hay datos para comparar/],
+  ["no_previous_data", null, /Sin datos del mes anterior/],
   ["zero_baseline", "750.00", /El flujo anterior fue cero/],
   ["negative_baseline", "850.00", /El flujo anterior fue negativo/],
 ] as const)(
@@ -102,7 +117,7 @@ test.each([
     if (delta)
       expect(
         screen.getByText(
-          `Aumento del flujo neto: $ ${delta.replace(".", ",")} COP`,
+          new RegExp(`\\$ ${delta.replace(".00", "")} más que enero`),
         ),
       ).toBeTruthy();
   },
@@ -117,21 +132,28 @@ test("empty month shows explicit zero totals and an actionable empty state", asy
     comparison: { delta: null, percent: null, reason: "no_previous_data" },
   });
   await render(<DashboardScreen {...props} />);
-  expect(screen.getByText("Flujo neto del mes: $ 0,00 COP")).toBeTruthy();
+  expect(
+    screen.getByLabelText(
+      "Flujo neto del mes: Monto de $ 0,00 pesos colombianos",
+    ),
+  ).toBeTruthy();
   expect(screen.getByText(/Registra tu primer movimiento/)).toBeTruthy();
   expect(screen.queryByText(/Flujo negativo:/)).toBeNull();
 });
 
 test("month errors keep the field and valid selection calls the parent", async () => {
   await render(<DashboardScreen {...props} />);
-  const field = screen.getByLabelText("Mes del dashboard (YYYY-MM)");
+  await fireEvent.press(
+    screen.getByRole("button", { name: /^Mes: .*Toca para elegir otro mes$/ }),
+  );
+  const field = screen.getByLabelText("Mes (YYYY-MM)");
   await fireEvent.changeText(field, "2024-13");
-  await fireEvent.press(screen.getByRole("button", { name: "Consultar mes" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Aplicar mes" }));
   expect(screen.getByRole("alert")).toBeTruthy();
   expect(props.onMonthChange).not.toHaveBeenCalled();
   expect(field.props.value).toBe("2024-13");
   await fireEvent.changeText(field, "2024-03");
-  await fireEvent.press(screen.getByRole("button", { name: "Consultar mes" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Aplicar mes" }));
   expect(props.onMonthChange).toHaveBeenCalledWith("2024-03");
 });
 
@@ -143,10 +165,10 @@ test("loading a new month never presents data from the preceding query", async (
     isFetching: true,
   };
   await render(<DashboardScreen {...props} month="2024-03" />);
-  expect(screen.getByText("Cargando dashboard…")).toBeTruthy();
-  expect(screen.queryByText(/Flujo neto del mes:/)).toBeNull();
+  expect(screen.getByText("Cargando…")).toBeTruthy();
+  expect(screen.queryByLabelText(/Flujo neto del mes:/)).toBeNull();
   expect(
-    screen.getByRole("button", { name: "Actualizar dashboard" }),
+    screen.getByRole("button", { name: "Actualizar resumen" }),
   ).toBeDisabled();
 });
 
@@ -154,10 +176,8 @@ test("refresh error hides stale data and exposes a retry", async () => {
   mockQuery.isError = true;
   await render(<DashboardScreen {...props} />);
   expect(screen.getByRole("alert")).toBeTruthy();
-  expect(screen.queryByText(/Flujo neto del mes:/)).toBeNull();
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Reintentar dashboard" }),
-  );
+  expect(screen.queryByLabelText(/Flujo neto del mes:/)).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Reintentar" }));
   expect(mockRefetch).toHaveBeenCalledTimes(1);
 });
 
@@ -169,9 +189,13 @@ test("large decimal strings are displayed exactly without Number conversion", as
   });
   await render(<DashboardScreen {...props} />);
   expect(
-    screen.getByText("Ingresos: $ 1.999.999.999.999.999,98 COP"),
+    screen.getByLabelText(
+      "Ingresos: Monto de $ 1.999.999.999.999.999,98 pesos colombianos",
+    ),
   ).toBeTruthy();
   expect(
-    screen.getByText("Flujo neto del mes: $ 1.999.999.999.999.999,68 COP"),
+    screen.getByLabelText(
+      "Flujo neto del mes: Monto de $ 1.999.999.999.999.999,68 pesos colombianos",
+    ),
   ).toBeTruthy();
 });

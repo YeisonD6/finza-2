@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.modules.dashboard.domain import compare_net
-from app.modules.dashboard.repository import monthly_snapshot
+from app.modules.dashboard.repository import expense_by_category, monthly_snapshot
 from app.modules.dashboard.schemas import DashboardSummary
 from app.modules.movements.service import out
 from app.shared.accounting_dates import accounting_today, month_bounds
@@ -26,6 +26,19 @@ def summary(session: Session, owner: UUID, month: str | None) -> DashboardSummar
         context.prec = 38
         net = data.income - data.expense
         previous_net = data.previous_income - data.previous_expense if data.previous_count else None
+        breakdown = (
+            [
+                {
+                    "category_id": row.id,
+                    "name": row.name,
+                    "total": rounded(row.total),
+                    "share_percent": rounded(row.total / data.expense * 100),
+                }
+                for row in expense_by_category(session, owner, start, end)
+            ]
+            if data.expense
+            else []
+        )
     return DashboardSummary(
         month=selected,
         income=rounded(data.income),
@@ -33,4 +46,5 @@ def summary(session: Session, owner: UUID, month: str | None) -> DashboardSummar
         net=rounded(net),
         comparison=compare_net(net, previous_net),
         recent_movements=[out(row) for row in data.recent],
+        expense_by_category=breakdown,
     )

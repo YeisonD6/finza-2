@@ -38,7 +38,7 @@ export const movementsApi = baseApi.injectEndpoints({
     }),
     createMovement: builder.mutation<Movement, CreateMovement>({
       query: (body) => ({ url: "/api/v1/movements", method: "POST", body }),
-      invalidatesTags: ["Movements", "Dashboard"],
+      invalidatesTags: ["Movements", "Dashboard", "Budgets"],
     }),
     editMovement: builder.mutation<
       Movement,
@@ -49,11 +49,11 @@ export const movementsApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: changes,
       }),
-      invalidatesTags: ["Movements", "Dashboard"],
+      invalidatesTags: ["Movements", "Dashboard", "Budgets"],
     }),
     archiveMovement: builder.mutation<void, string>({
       query: (id) => ({ url: `/api/v1/movements/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Movements", "Dashboard"],
+      invalidatesTags: ["Movements", "Dashboard", "Budgets"],
     }),
   }),
 });

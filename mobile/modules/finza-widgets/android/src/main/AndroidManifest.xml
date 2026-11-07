@@ -1,0 +1,37 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <receiver
+      android:name="co.edu.unisabana.finza.widgets.SummaryWidgetProvider"
+      android:exported="false"
+      android:label="@string/finza_widget_summary_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/finza_widget_summary_info" />
+    </receiver>
+    <receiver
+      android:name="co.edu.unisabana.finza.widgets.BudgetWidgetProvider"
+      android:exported="false"
+      android:label="@string/finza_widget_budget_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/finza_widget_budget_info" />
+    </receiver>
+    <receiver
+      android:name="co.edu.unisabana.finza.widgets.ActionsWidgetProvider"
+      android:exported="false"
+      android:label="@string/finza_widget_actions_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/finza_widget_actions_info" />
+    </receiver>
+  </application>
+</manifest>

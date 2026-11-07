@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from sqlalchemy import or_, select, tuple_
+from sqlalchemy import func, or_, select, tuple_
 from sqlalchemy.orm import Session
 
 from app.modules.movements.models import Category, Movement
@@ -48,6 +48,32 @@ def active_month_conditions(owner: UUID, start: date, end: date):
     )
 
 
+ACCENTED, PLAIN = "áéíóúüñ", "aeiouun"
+
+
+def folded(text: str) -> str:
+    """Lowercase without Spanish accents, matching the SQL side of search()."""
+    return text.casefold().translate(str.maketrans(ACCENTED, PLAIN))
+
+
+def search_condition(owner: UUID, query: str):
+    """Note or category name contains the query, ignoring case and Spanish accents."""
+    escaped = folded(query).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    pattern = f"%{escaped}%"
+
+    def fold(column):
+        return func.translate(func.lower(column), ACCENTED, PLAIN)
+
+    matching_categories = select(Category.id).where(
+        or_(Category.owner_id.is_(None), Category.owner_id == owner),
+        fold(Category.name).like(pattern, escape="\\"),
+    )
+    return or_(
+        fold(func.coalesce(Movement.note, "")).like(pattern, escape="\\"),
+        Movement.category_id.in_(matching_categories),
+    )
+
+
 def page(
     session: Session,
     owner: UUID,
@@ -57,8 +83,11 @@ def page(
     movement_type: str | None,
     category_id: UUID | None,
     position: tuple[date, datetime, UUID] | None,
+    query: str | None = None,
 ):
     statement = select(Movement).where(*active_month_conditions(owner, start, end))
+    if query:
+        statement = statement.where(search_condition(owner, query))
     if movement_type:
         statement = statement.where(Movement.type == movement_type)
     if category_id:

@@ -8,10 +8,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ChevronLeft, X } from "lucide-react-native";
 import { focusAccessibility } from "../accessibility/announcements";
-import { AppButton } from "./AppButton";
+import { IconButton } from "./IconButton";
+import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
-
+import { fontFamily } from "../theme/fonts";
+import { colors } from "../theme/tokens";
 export function Screen({
   title,
   children,
@@ -20,24 +23,37 @@ export function Screen({
   backLabel = "Volver",
   backDisabled = false,
   focusKey = "",
+  variant = "simple",
+  footer,
+  active = true,
+  showBackAction = true,
+  headerLeading,
+  titleVariant = "title",
 }: {
   title: string;
+  titleVariant?: TextVariant;
+  headerLeading?: ReactNode;
   children: ReactNode | ((heading: ReactNode) => ReactNode);
   scroll?: boolean;
   onBack?(): void;
   backLabel?: string;
   backDisabled?: boolean;
   focusKey?: string;
+  variant?: "simple" | "forest" | "modal";
+  footer?: ReactNode;
+  active?: boolean;
+  showBackAction?: boolean;
 }) {
   const heading = useRef<ElementRef<typeof Text>>(null);
   useEffect(() => {
+    if (!active) return;
     const frame = requestAnimationFrame(() =>
       focusAccessibility(heading.current),
     );
     return () => cancelAnimationFrame(frame);
-  }, [title, focusKey]);
+  }, [title, focusKey, active]);
   useEffect(() => {
-    if (!onBack) return;
+    if (!onBack || Platform.OS === "web" || !active) return;
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -46,19 +62,67 @@ export function Screen({
       },
     );
     return () => subscription.remove();
-  }, [onBack, backDisabled]);
+  }, [onBack, backDisabled, active]);
   const header = (
-    <>
-      <Text ref={heading} accessibilityRole="header" style={styles.title}>
-        {title}
-      </Text>
-      {onBack ? (
-        <AppButton title={backLabel} onPress={onBack} disabled={backDisabled} />
+    <View
+      style={[
+        { gap: 12 },
+        variant === "modal" && { flexDirection: "row", alignItems: "center" },
+      ]}
+    >
+      {onBack && showBackAction && variant === "modal" ? (
+        <IconButton
+          icon={X}
+          accessibilityLabel={backLabel}
+          disabled={backDisabled}
+          onPress={onBack}
+        />
       ) : null}
-    </>
+      {onBack && showBackAction && variant !== "modal" ? (
+        <IconButton
+          icon={ChevronLeft}
+          accessibilityLabel={backLabel}
+          disabled={backDisabled}
+          onPress={onBack}
+          style={{ marginLeft: -12, marginBottom: -8 }}
+        />
+      ) : null}
+      {headerLeading}
+      {title ? (
+        <AppText
+          ref={heading}
+          accessibilityRole="header"
+          variant={titleVariant}
+          style={
+            variant === "forest"
+              ? {
+                  color: colors.onForest,
+                  letterSpacing: 1,
+                  fontFamily: fontFamily.heading,
+                  fontWeight: "700",
+                }
+              : variant === "modal"
+                ? { flex: 1, fontSize: 24, lineHeight: 32 }
+                : undefined
+          }
+        >
+          {title}
+        </AppText>
+      ) : null}
+
+    </View>
   );
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView
+      edges={[
+        // The forest header paints its own status-bar area (it adds the top inset).
+        ...(variant === "forest" ? [] : ["top" as const]),
+        "left",
+        "right",
+        ...(variant === "modal" ? ["bottom" as const] : []),
+      ]}
+      style={styles.screen}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -75,12 +139,25 @@ export function Screen({
           </ScrollView>
         ) : (
           <>
-            <View style={{ paddingHorizontal: 24, paddingTop: 16, gap: 12 }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 16, gap: 12 }}>
               {header}
             </View>
             {children}
           </>
         )}
+        {footer ? (
+          <View
+            style={{
+              padding: 16,
+              gap: 8,
+              backgroundColor: colors.surface,
+              borderTopWidth: 1,
+              borderColor: colors.border,
+            }}
+          >
+            {footer}
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
