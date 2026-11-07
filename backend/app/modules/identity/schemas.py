@@ -64,12 +64,14 @@ def _new_password(value):
 class MeResponse(AccountResponse):
     has_password: bool
     providers: list[str]
+    email_verified: bool
 
 
 class ProvidersResponse(BaseModel):
     google: bool
     apple: bool
     password_reset: bool
+    email_verification: bool
 
 
 class ExternalSignInRequest(BaseModel):
@@ -118,6 +120,18 @@ class ResetPasswordRequest(BaseModel):
     @classmethod
     def new_password_length(cls, value):
         return _new_password(value)
+
+
+class VerifyEmailRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    token: SecretStr
+
+    @field_validator("token", mode="before")
+    @classmethod
+    def bounded_token(cls, value):
+        if not isinstance(value, str) or not 20 <= len(value) <= 256:
+            raise ValueError("El enlace no es válido o ya venció. Pide uno nuevo desde FINZA.")
+        return value
 
 
 class ChangePasswordRequest(BaseModel):

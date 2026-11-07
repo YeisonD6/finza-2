@@ -9,7 +9,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.main import create_app
@@ -77,9 +77,13 @@ def test_google_creates_account_then_reuses_link(pg_identity):
         )
 
 
-def test_verified_email_links_existing_password_account(pg_identity):
+def test_verified_email_links_confirmed_password_account(pg_identity):
+    _, engine = pg_identity
     with TestClient(create_app()) as client:
         client.post("/api/v1/auth/register", json={"email": "laura@example.com", "password": PASSWORD})
+        with Session(engine) as session:
+            session.execute(update(Account).values(email_verified_at=func.now()))
+            session.commit()
         password_login = client.post(
             "/api/v1/auth/login", json={"email": "laura@example.com", "password": PASSWORD}
         )
@@ -88,6 +92,26 @@ def test_verified_email_links_existing_password_account(pg_identity):
         a = me(client, password_login.json()["access_token"]).json()
         b = me(client, apple.json()["access_token"]).json()
         assert a["id"] == b["id"] and b["has_password"] is True and b["providers"] == ["apple"]
+
+
+def test_provider_email_takes_over_unconfirmed_password_account(pg_identity):
+    """Someone who pre-registers another person's address loses that password and its sessions."""
+    with TestClient(create_app()) as client:
+        client.post("/api/v1/auth/register", json={"email": "laura@example.com", "password": PASSWORD})
+        squatter = client.post(
+            "/api/v1/auth/login", json={"email": "laura@example.com", "password": PASSWORD}
+        ).json()
+        owner = sign_in(client)
+        assert owner.status_code == 200, owner.text
+        profile = me(client, owner.json()["access_token"]).json()
+        assert profile["has_password"] is False and profile["email_verified"] is True
+        assert me(client, squatter["access_token"]).status_code == 401
+        assert (
+            client.post(
+                "/api/v1/auth/login", json={"email": "laura@example.com", "password": PASSWORD}
+            ).status_code
+            == 401
+        )
 
 
 @pytest.mark.parametrize(
@@ -126,6 +150,7 @@ def test_unconfigured_or_unknown_provider(pg_identity, monkeypatch):
             "google": True,
             "apple": False,
             "password_reset": False,
+            "email_verification": False,
         }
         assert sign_in(client, "apple", id_token("apple")).status_code == 503
         assert sign_in(client, "facebook").status_code == 404
@@ -218,7 +243,7 @@ def test_expired_reset_link_and_new_request_invalidates_old(pg_identity, monkeyp
         with caplog.at_level(logging.WARNING, logger="finza.mail"):
             client.post("/api/v1/auth/password/forgot", json={"email": "a@example.com"})
             client.post("/api/v1/auth/password/forgot", json={"email": "a@example.com"})
-        first, second = re.findall(r"token=([\w-]+)", caplog.text)
+        first, second = re.findall(r"reset-password\?token=([\w-]+)", caplog.text)
         assert (
             client.post(
                 "/api/v1/auth/password/reset", json={"token": first, "new_password": "z" * 14}

@@ -25,7 +25,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.modules.identity.models import Account, ExternalIdentity
+from app.modules.identity.passwords import revoke_families
 from app.modules.users.models import UserProfile
+from app.shared.time import utcnow
 
 
 @dataclass(frozen=True)
@@ -145,10 +147,18 @@ def account_for(session: Session, identity: VerifiedIdentity, *, retry: bool = T
         account = session.scalar(select(Account).where(Account.email == identity.email))
         try:
             if account is None:
-                account = Account(email=identity.email, password_hash=None)
+                account = Account(email=identity.email, password_hash=None, email_verified_at=utcnow())
                 session.add(account)
                 session.flush()
                 session.add(UserProfile(account_id=account.id, base_currency="COP", locale="es-CO"))
+            elif account.email_verified_at is None:
+                # Pre-registration takeover guard: whoever set this password never proved they own
+                # the address, while the provider just did. Drop that password and its sessions; the
+                # owner can create a new password from Profile.
+                if account.password_hash is not None:
+                    account.password_hash = None
+                    revoke_families(session, account.id)
+                account.email_verified_at = utcnow()
             session.add(
                 ExternalIdentity(
                     account_id=account.id,

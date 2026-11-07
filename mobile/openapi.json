@@ -234,6 +234,41 @@
         }
       }
     },
+    "/api/v1/auth/email/verify": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Verify Email",
+        "description": "Opened from the e-mailed link; works without a session so any device can confirm.",
+        "operationId": "verify_email_api_v1_auth_email_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "tags": [
@@ -324,6 +359,30 @@
                 "schema": {
                   "$ref": "#/components/schemas/MeResponse"
                 }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/email/verification": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Resend Verification",
+        "operationId": "resend_verification_api_v1_me_email_verification_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -2125,6 +2184,10 @@
             },
             "type": "array",
             "title": "Providers"
+          },
+          "email_verified": {
+            "type": "boolean",
+            "title": "Email Verified"
           }
         },
         "type": "object",
@@ -2133,7 +2196,8 @@
           "email",
           "base_currency",
           "has_password",
-          "providers"
+          "providers",
+          "email_verified"
         ],
         "title": "MeResponse"
       },
@@ -2374,13 +2438,18 @@
           "password_reset": {
             "type": "boolean",
             "title": "Password Reset"
+          },
+          "email_verification": {
+            "type": "boolean",
+            "title": "Email Verification"
           }
         },
         "type": "object",
         "required": [
           "google",
           "apple",
-          "password_reset"
+          "password_reset",
+          "email_verification"
         ],
         "title": "ProvidersResponse"
       },
@@ -2512,6 +2581,22 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerifyEmailRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "password",
+            "title": "Token",
+            "writeOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "VerifyEmailRequest"
       }
     },
     "securitySchemes": {

@@ -13,6 +13,7 @@ from app.modules.budgets.models import Budget  # noqa: F401
 from app.modules.goals.models import Goal, GoalContribution  # noqa: F401
 from app.modules.identity.models import (  # noqa: F401
     Account,
+    EmailVerificationToken,
     ExternalIdentity,
     PasswordResetToken,
     RefreshSession,
