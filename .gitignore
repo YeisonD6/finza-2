@@ -18,3 +18,6 @@ tmp/
 
 # Impeccable local design tooling
 .impeccable/
+
+# Local-only environment for the dev servers (never commit)
+.env.local
