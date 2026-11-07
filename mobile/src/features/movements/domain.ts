@@ -1,3 +1,4 @@
+import type { Movement } from "./types";
 /** Presentation only: all authoritative money/date validation happens on the API. */
 export function normalizeAmount(value: string): string {
   const raw = value.trim();
@@ -44,3 +45,34 @@ export const validMonth = (value: string) =>
   /^\d{4}-(0[1-9]|1[0-2])$/.test(value) &&
   value >= "1900-01" &&
   value <= "9998-12";
+
+export type DayGroup = {
+  day: string;
+  /** Signed net of the day as a decimal string ("-27500.00"), exact on cents. */
+  net: string;
+  rows: Movement[];
+};
+
+/** Consecutive rows of the same accounting day, newest first as the API returns them. */
+export function groupByDay(rows: Movement[]): DayGroup[] {
+  const groups: DayGroup[] = [];
+  const totals: bigint[] = [];
+  for (const row of rows) {
+    const [integer, fraction = ""] = row.amount.split(".");
+    const value = BigInt(integer + fraction.padEnd(2, "0").slice(0, 2));
+    const last = groups[groups.length - 1];
+    if (last && last.day === row.occurred_on) {
+      last.rows.push(row);
+      totals[totals.length - 1] += row.type === "income" ? value : -value;
+    } else {
+      groups.push({ day: row.occurred_on, net: "", rows: [row] });
+      totals.push(row.type === "income" ? value : -value);
+    }
+  }
+  groups.forEach((group, index) => {
+    const total = totals[index];
+    const absolute = (total < 0n ? -total : total).toString().padStart(3, "0");
+    group.net = `${total < 0n ? "-" : ""}${absolute.slice(0, -2)}.${absolute.slice(-2)}`;
+  });
+  return groups;
+}

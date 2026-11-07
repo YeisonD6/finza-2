@@ -14,4 +14,6 @@ export type ListFilter = {
   type?: MovementType;
   category_id?: string;
   cursor?: string;
+  /** Server-side search in note or category name (accent-insensitive). */
+  q?: string;
 };

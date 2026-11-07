@@ -12,19 +12,33 @@ export function useMovementList(initialMonth?: string, active = true) {
   const [month, setMonth] = useState(initialMonth ?? bogotaToday().slice(0, 7)),
     [type, setType] = useState<MovementType | undefined>(),
     [category, setCategory] = useState<string | undefined>(),
-    [cursor, setCursor] = useState<string | undefined>();
+    [cursor, setCursor] = useState<string | undefined>(),
+    [search, setSearch] = useState(""),
+    [q, setQ] = useState("");
   const [pages, setPages] = useState<{
     key: string;
     cursor?: string;
     items: Movement[];
   }>({ key: "", items: [] });
-  const key = `${month}|${type ?? ""}|${category ?? ""}`;
+  const key = `${month}|${type ?? ""}|${category ?? ""}|${q}`;
   const query = useMovementsQuery({
     month,
     type,
     category_id: category,
     cursor,
+    q: q || undefined,
   });
+  // Ask the server only after a short pause in typing.
+  useEffect(() => {
+    const next = search.trim().slice(0, 80);
+    if (next === q) return;
+    const timer = setTimeout(() => {
+      setQ(next);
+      setCursor(undefined);
+      setPages({ key: "", items: [] });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, q]);
   const categories = useCategoriesQuery();
   const [archive] = useArchiveMovementMutation();
   const lock = useRef(false);
@@ -110,6 +124,9 @@ export function useMovementList(initialMonth?: string, active = true) {
     month,
     type,
     category,
+    search,
+    q,
+    setSearch,
     query,
     categories,
     rows,
@@ -134,6 +151,8 @@ export function useMovementList(initialMonth?: string, active = true) {
     clearFilters: () => {
       setType(undefined);
       setCategory(undefined);
+      setSearch("");
+      setQ("");
       reset();
     },
     loadMore: () => {

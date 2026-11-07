@@ -42,8 +42,9 @@ def movements(
     type: MovementType | None = None,
     category_id: UUID | None = None,
     cursor: Annotated[str | None, Query(max_length=1024)] = None,
+    q: Annotated[str | None, Query(max_length=80, description="Busca en nota o categoría")] = None,
 ):
-    return service.list_page(session, family.account_id, month, limit, type, category_id, cursor)
+    return service.list_page(session, family.account_id, month, limit, type, category_id, cursor, q)
 
 
 @router.post("/movements", response_model=MovementOut, status_code=201)

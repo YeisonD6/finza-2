@@ -10,6 +10,9 @@ import { monthName, dayLabel } from "../../shared/formatting/dates";
 import { useMovementList } from "./components/useMovementList";
 import { MovementFilters } from "./components/MovementFilters";
 import type { Movement } from "./types";
+import { groupByDay, type DayGroup } from "./domain";
+import { formatCOP } from "../../shared/formatting/money";
+import { colors, radii, shadows } from "../../shared/theme/tokens";
 export function MovementsScreen({
   initialMonth,
   onEdit,
@@ -20,27 +23,33 @@ export function MovementsScreen({
   active?: boolean;
 }) {
   const f = useMovementList(initialMonth, active);
-  const list = useRef<FlatList<Movement>>(null);
+  const list = useRef<FlatList<DayGroup>>(null);
   useEffect(() => {
     list.current?.scrollToOffset({ offset: 0, animated: false });
-  }, [f.month, f.type, f.category]);
+  }, [f.month, f.type, f.category, f.q]);
   const category = f.categories.data?.find((c) => c.id === f.category);
-  const filtered = !!(f.type || f.category);
-  const empty = filtered
-    ? `No hay ${f.type === "expense" ? "gastos" : f.type === "income" ? "ingresos" : "movimientos"}${category ? ` de ${category.name}` : ""} en ${monthName(f.month)}`
-    : `Aún no hay movimientos en ${monthName(f.month)}`;
+  const filtered = !!(f.type || f.category || f.q);
+  const groups = groupByDay(f.rows);
+  const offsets = groups.map((_, i) =>
+    groups.slice(0, i).reduce((sum, g) => sum + g.rows.length, 0),
+  );
+  const empty = f.q
+    ? `No encontramos «${f.q}» en ${monthName(f.month)}`
+    : filtered
+      ? `No hay ${f.type === "expense" ? "gastos" : f.type === "income" ? "ingresos" : "movimientos"}${category ? ` de ${category.name}` : ""} en ${monthName(f.month)}`
+      : `Aún no hay movimientos en ${monthName(f.month)}`;
   return (
     <Screen
       title="Movimientos"
       scroll={false}
       active={active}
-      focusKey={`${f.month}|${f.type}|${f.category}`}
+      focusKey={`${f.month}|${f.type}|${f.category}|${f.q}`}
     >
       {(heading) => (
         <FlatList
           ref={list}
-          data={f.rows}
-          keyExtractor={(row) => row.id}
+          data={groups}
+          keyExtractor={(group) => group.day}
           contentContainerStyle={{ padding: 20, gap: 16 }}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
@@ -66,30 +75,68 @@ export function MovementsScreen({
               ) : null}
             </View>
           }
-          renderItem={({ item, index }) => {
-            const category = f.categories.data?.find(
-              (c) => c.id === item.category_id,
-            );
-            return (
-              <View>
-                {index === 0 ||
-                f.rows[index - 1].occurred_on !== item.occurred_on ? (
-                  <AppText accessibilityRole="header" variant="caption">
-                    {dayLabel(item.occurred_on)}
-                  </AppText>
-                ) : null}
-                <MovementRow
-                  movement={item}
-                  category={category?.name}
-                  isSystem={category?.is_system}
-                  index={index}
-                  disabled={f.archiving}
-                  onPress={() => onEdit(item)}
-                  onArchive={() => f.confirmArchive(item)}
-                />
+          renderItem={({ item: group, index: groupIndex }) => (
+            <View style={{ gap: 8 }}>
+              <View
+                accessible
+                accessibilityRole="header"
+                accessibilityLabel={`${dayLabel(group.day)}. Balance del día: ${formatCOP(group.net)}`}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  paddingHorizontal: 4,
+                  gap: 12,
+                }}
+              >
+                <AppText variant="label" style={{ color: colors.inkMuted }}>
+                  {dayLabel(group.day)}
+                </AppText>
+                <AppText
+                  variant="label"
+                  style={{
+                    color: group.net.startsWith("-")
+                      ? colors.expense
+                      : colors.forest600,
+                    fontVariant: ["tabular-nums"],
+                  }}
+                >
+                  {group.net.startsWith("-") ? "" : "+"}
+                  {formatCOP(group.net)}
+                </AppText>
               </View>
-            );
-          }}
+              <View
+                style={[
+                  {
+                    backgroundColor: colors.surface,
+                    borderRadius: radii.lg,
+                    paddingHorizontal: 16,
+                  },
+                  shadows.card,
+                ]}
+              >
+                {group.rows.map((item, i) => {
+                  const category = f.categories.data?.find(
+                    (c) => c.id === item.category_id,
+                  );
+                  return (
+                    <MovementRow
+                      key={item.id}
+                      movement={item}
+                      category={category?.name}
+                      isSystem={category?.is_system}
+                      index={offsets[groupIndex] + i}
+                      disabled={f.archiving}
+                      showDate={false}
+                      last={i === group.rows.length - 1}
+                      onPress={() => onEdit(item)}
+                      onArchive={() => f.confirmArchive(item)}
+                    />
+                  );
+                })}
+              </View>
+            </View>
+          )}
           ListEmptyComponent={
             !f.query.isFetching && !f.query.error ? (
               <EmptyState

@@ -4,6 +4,10 @@ import { SegmentedControl } from "../../../shared/ui/SegmentedControl";
 import { CategoryChip } from "../../../shared/ui/CategoryChip";
 import { Banner } from "../../../shared/ui/Banner";
 import { AppButton } from "../../../shared/ui/AppButton";
+import { FormField } from "../../../shared/ui/FormField";
+import { IconButton } from "../../../shared/ui/IconButton";
+import { X } from "lucide-react-native";
+import { monthName } from "../../../shared/formatting/dates";
 import type { MovementType } from "../types";
 import type { useMovementList } from "./useMovementList";
 export function MovementFilters({
@@ -17,6 +21,26 @@ export function MovementFilters({
         month={f.month}
         onChange={f.setMonth}
         disabled={f.archiving}
+      />
+      <FormField
+        label={`Buscar en ${monthName(f.month)}`}
+        placeholder="Nota o categoría"
+        value={f.search}
+        onChangeText={f.setSearch}
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="search"
+        maxLength={80}
+        editable={!f.archiving}
+        trailing={
+          f.search ? (
+            <IconButton
+              icon={X}
+              accessibilityLabel="Borrar búsqueda"
+              onPress={() => f.setSearch("")}
+            />
+          ) : undefined
+        }
       />
       <SegmentedControl
         label="Filtrar tipo"

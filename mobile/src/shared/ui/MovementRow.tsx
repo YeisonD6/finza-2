@@ -16,6 +16,8 @@ export function MovementRow({
   onArchive,
   index = 0,
   disabled = false,
+  showDate = true,
+  last = false,
 }: {
   movement: Movement;
   category?: string;
@@ -24,6 +26,10 @@ export function MovementRow({
   onArchive?(): void;
   index?: number;
   disabled?: boolean;
+  /** Hide the visible date when the row sits under a day heading (still spoken). */
+  showDate?: boolean;
+  /** Drop the divider on the last row of a group. */
+  last?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   const { fontScale, width: windowWidth } = useWindowDimensions();
@@ -91,9 +97,11 @@ export function MovementRow({
             {movement.note}
           </AppText>
         ) : null}
-        <AppText variant="caption" style={{ color: colors.inkMuted }}>
-          {dayLabel(movement.occurred_on)}
-        </AppText>
+        {showDate ? (
+          <AppText variant="caption" style={{ color: colors.inkMuted }}>
+            {dayLabel(movement.occurred_on)}
+          </AppText>
+        ) : null}
       </View>
     </>
   );
@@ -102,7 +110,7 @@ export function MovementRow({
     alignItems: "center" as const,
     gap: 12,
     paddingVertical: 16,
-    borderBottomWidth: 1,
+    borderBottomWidth: last ? 0 : 1,
     borderColor: colors.border,
     minHeight: 48,
   };

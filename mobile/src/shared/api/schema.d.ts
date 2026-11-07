@@ -1354,6 +1354,8 @@ export interface operations {
                 type?: ("income" | "expense") | null;
                 category_id?: string | null;
                 cursor?: string | null;
+                /** @description Busca en nota o categoría */
+                q?: string | null;
             };
             header?: never;
             path?: never;

@@ -344,3 +344,46 @@ def test_edit_archive_race_cannot_resurrect(movement_api):
     with Session(engine) as session:
         record = session.scalar(select(Movement))
         assert record.deleted_at is not None
+
+
+def test_search_matches_note_or_category_ignoring_case_and_accents(movement_api):
+    client, _, a, b, _, _ = movement_api
+    categories = client.get("/api/v1/categories?type=expense", headers=a).json()
+    food = next(c for c in categories if c["name"] == "Alimentación")
+    transport = next(c for c in categories if c["name"] == "Transporte")
+    for category, note in [
+        (food["id"], "Almuerzo en el Éxito"),
+        (transport["id"], "Taxi al aeropuerto"),
+        (transport["id"], "100% descuento_bono"),
+    ]:
+        assert (
+            client.post("/api/v1/movements", json=payload(category, note=note), headers=a).status_code == 201
+        )
+    assert (
+        client.post("/api/v1/movements", json=payload(food["id"], note="exito ajeno"), headers=b).status_code
+        == 201
+    )
+
+    def notes(q, **params):
+        query = {"month": "2024-02", "q": q, **params}
+        response = client.get("/api/v1/movements", params=query, headers=a)
+        assert response.status_code == 200, response.text
+        return sorted(item["note"] for item in response.json()["items"])
+
+    assert notes("EXITO") == ["Almuerzo en el Éxito"]  # accent and case folded, owner isolated
+    assert notes("alimentacion") == ["Almuerzo en el Éxito"]  # category name
+    assert notes("transporte") == ["100% descuento_bono", "Taxi al aeropuerto"]
+    assert len(notes("transporte", limit=1)) == 1
+    assert notes("%") == ["100% descuento_bono"]  # LIKE wildcards are literal
+    assert notes("a_r") == []  # "_" is literal, so "aer" in aeropuerto does not match
+    assert notes("   ") == sorted(["Almuerzo en el Éxito", "Taxi al aeropuerto", "100% descuento_bono"])
+    first = client.get(
+        "/api/v1/movements", params={"month": "2024-02", "q": "transporte", "limit": 1}, headers=a
+    )
+    cursor = first.json()["next_cursor"]
+    assert cursor
+    other = client.get(
+        "/api/v1/movements", params={"month": "2024-02", "q": "taxi", "cursor": cursor}, headers=a
+    )
+    assert other.status_code == 422  # cursor is bound to the search
+    assert client.get("/api/v1/movements", params={"q": "x" * 81}, headers=a).status_code == 422

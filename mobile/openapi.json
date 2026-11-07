@@ -633,6 +633,25 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Busca en nota o categor\u00eda",
+              "title": "Q"
+            },
+            "description": "Busca en nota o categor\u00eda"
           }
         ],
         "responses": {
