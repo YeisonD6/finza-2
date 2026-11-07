@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import func, select, true
 from sqlalchemy.orm import Session, aliased
 
-from app.modules.movements.models import Movement
+from app.modules.movements.models import Category, Movement
 from app.modules.movements.repository import active_month_conditions
 
 
@@ -20,6 +20,17 @@ class MonthlySnapshot:
     previous_expense: Decimal
     previous_count: int
     recent: list[Movement]
+
+
+def expense_by_category(session: Session, owner: UUID, start: date, end: date):
+    total = func.sum(Movement.amount).label("total")
+    return session.execute(
+        select(Category.id, Category.name, total)
+        .join(Movement, Movement.category_id == Category.id)
+        .where(*active_month_conditions(owner, start, end), Movement.type == "expense")
+        .group_by(Category.id, Category.name)
+        .order_by(total.desc(), Category.name.asc())
+    ).all()
 
 
 def monthly_snapshot(session: Session, owner: UUID, start: date, end: date, previous_start: date):

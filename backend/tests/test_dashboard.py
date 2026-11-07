@@ -214,3 +214,52 @@ def test_percent_round_half_up_and_no_negative_zero_with_small_context():
         assert compare_net(Decimal("197.99"), Decimal(200))["percent"] == "-1.01"
         result = compare_net(Decimal("999999999999999.98"), Decimal("999999999999999.99"))
         assert result["delta"] == "-0.01" and result["percent"] == "0.00"
+
+
+def test_expense_by_category_order_percent_and_scope(movement_api):
+    from test_movements import payload
+
+    client, _, a, _, _, _ = movement_api
+    categories = []
+    for name in ("A categoría", "B categoría", "C categoría"):
+        response = client.post(
+            "/api/v1/categories", json={"name": name, "movement_type": "expense"}, headers=a
+        )
+        assert response.status_code == 201
+        categories.append(response.json())
+    for category, amount in zip(categories, ("1.00", "1.00", "4.00"), strict=True):
+        add(movement_api, kind="expense", category_id=category["id"], amount=amount)
+    archived = add(movement_api, kind="expense", category_id=categories[0]["id"], amount="100.00")
+    assert client.delete("/api/v1/movements/" + archived["id"], headers=a).status_code == 204
+    add(movement_api, kind="expense", day="2024-01-31", amount="500.00")
+    add(movement_api, kind="expense", day="2024-03-01", amount="500.00")
+    add(movement_api, kind="expense", user="b", amount="500.00")
+    add(movement_api, kind="income", amount="500.00")
+    # Aggregation includes multiple movements in one category.
+    assert (
+        client.post(
+            "/api/v1/movements", json=payload(categories[2]["id"], amount="0.01"), headers=a
+        ).status_code
+        == 201
+    )
+    items = summary(movement_api)["expense_by_category"]
+    assert [r["category_id"] for r in items] == [categories[i]["id"] for i in (2, 0, 1)]
+    assert [r["name"] for r in items] == [categories[i]["name"] for i in (2, 0, 1)]
+    assert [r["total"] for r in items] == ["4.01", "1.00", "1.00"]
+    assert [r["share_percent"] for r in items] == ["66.72", "16.64", "16.64"]
+    assert summary(movement_api, "2024-04")["expense_by_category"] == []
+    assert all(
+        r["category_id"] not in [c["id"] for c in categories]
+        for r in summary(movement_api, user="b")["expense_by_category"]
+    )
+
+
+def test_expense_by_category_round_half_up(movement_api):
+    client, _, a, _, expense, _ = movement_api
+    other = client.post(
+        "/api/v1/categories", json={"name": "Otra", "movement_type": "expense"}, headers=a
+    ).json()["id"]
+    add(movement_api, kind="expense", amount="1.01")
+    add(movement_api, kind="expense", category_id=other, amount="198.99")
+    items = summary(movement_api)["expense_by_category"]
+    assert next(row for row in items if row["category_id"] == expense)["share_percent"] == "0.51"

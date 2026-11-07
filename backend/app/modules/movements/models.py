@@ -3,12 +3,12 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
     Index,
-    JSON,
     Numeric,
     String,
     Text,

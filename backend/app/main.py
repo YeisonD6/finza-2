@@ -1,13 +1,16 @@
 import os
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException as FastAPIHTTPException, Request
+from fastapi import FastAPI, Request
+from fastapi import HTTPException as FastAPIHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.database import database_ready
+from app.modules.budgets.api import router as budgets_router
 from app.modules.dashboard.api import router as dashboard_router
+from app.modules.goals.api import router as goals_router
 from app.modules.identity.api import me_router
 from app.modules.identity.api import router as identity_router
 from app.modules.movements.api import router as movements_router
@@ -19,6 +22,8 @@ def create_app() -> FastAPI:
     app.include_router(me_router)
     app.include_router(movements_router)
     app.include_router(dashboard_router)
+    app.include_router(budgets_router)
+    app.include_router(goals_router)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):

@@ -98,4 +98,5 @@ def test_unknown_route_has_stable_error():
     with TestClient(create_app()) as client:
         response = client.get("/missing")
         assert response.status_code == 404
-        assert set(response.json()) == {"code", "message", "field_errors", "request_id"}
+        assert set(response.json()) == {"code", "message", "detail", "field_errors", "request_id"}
+        assert response.json()["detail"] == response.json()["message"]

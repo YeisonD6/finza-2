@@ -47,7 +47,9 @@ def pg_identity(monkeypatch):
 
 def test_postgres_migrations_registration_and_readiness(pg_identity):
     config, engine = pg_identity
-    assert {"accounts", "user_profiles", "refresh_sessions"} <= set(inspect(engine).get_table_names())
+    assert {"accounts", "user_profiles", "refresh_sessions", "budgets", "goals", "goal_contributions"} <= set(
+        inspect(engine).get_table_names()
+    )
     columns = {column["name"]: column for column in inspect(engine).get_columns("refresh_sessions")}
     assert columns["expires_at"]["type"].timezone is True
     with TestClient(create_app()) as client:
