@@ -11,7 +11,12 @@ from app.core.models import Base
 from app.modules.audit.models import AuditEvent  # noqa: F401
 from app.modules.budgets.models import Budget  # noqa: F401
 from app.modules.goals.models import Goal, GoalContribution  # noqa: F401
-from app.modules.identity.models import Account, RefreshSession  # noqa: F401
+from app.modules.identity.models import (  # noqa: F401
+    Account,
+    ExternalIdentity,
+    PasswordResetToken,
+    RefreshSession,
+)
 from app.modules.movements.models import Category, Movement  # noqa: F401
 from app.modules.users.models import UserProfile  # noqa: F401
 

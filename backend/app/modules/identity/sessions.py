@@ -18,7 +18,8 @@ DUMMY_HASH = password_hasher.hash("finza-dummy-password-not-a-credential")
 def verify_credentials(session: Session, email: str, password: str) -> Account:
     account = session.scalar(select(Account).where(Account.email == email))
     try:
-        valid = password_hasher.verify(account.password_hash if account else DUMMY_HASH, password)
+        stored = account.password_hash if account and account.password_hash else DUMMY_HASH
+        valid = password_hasher.verify(stored, password) and stored is not DUMMY_HASH
     except (VerificationError, InvalidHashError):
         valid = False
     if not valid or account is None or account.status != "active":
