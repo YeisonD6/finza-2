@@ -3,9 +3,18 @@ import { render, screen } from "@testing-library/react-native";
 import { CategorySpending, categoryBars } from "../components/CategorySpending";
 import { monedinTip } from "../monedinTip";
 import { DashboardInsights } from "../components/DashboardInsights";
+import { MonthlyTrend, trendBars } from "../components/MonthlyTrend";
 import type { DashboardSummary } from "../api";
 import type { Budget } from "../../budgets/components/BudgetProgress";
 let mockBudgets: Budget[] = [];
+let mockTrend: Record<string, { income: string; expense: string }> = {};
+jest.mock("../api", () => ({
+  useDashboardQuery: (month: string) => ({
+    currentData: mockTrend[month]
+      ? { month, ...mockTrend[month] }
+      : { month, income: "0.00", expense: "0.00" },
+  }),
+}));
 let mockGoals: unknown[] = [];
 jest.mock("../../goals/api", () => ({
   useGoalsQuery: () => ({
@@ -151,4 +160,35 @@ test("empty expenses hide the chart; budgets show three largest with textual sta
   expect(
     screen.getByRole("button", { name: "Ver todos los presupuestos" }),
   ).toBeTruthy();
+});
+
+test("trend shows six months on one scale, ending at the month on screen", async () => {
+  mockTrend = {
+    "2026-06": { income: "1000000.00", expense: "500000.00" },
+    "2026-11": { income: "3650000.00", expense: "1873600.00" },
+  };
+  await render(<MonthlyTrend month="2026-11" />);
+  expect(screen.getByText("Evolución")).toBeTruthy();
+  expect(screen.getByText("jun", { includeHiddenElements: true })).toBeTruthy();
+  expect(screen.getByText("nov", { includeHiddenElements: true })).toBeTruthy();
+  expect(
+    screen.getByLabelText(
+      /noviembre 2026: ingresos \$ 3\.650\.000, gastos \$ 1\.873\.600$/,
+    ),
+  ).toBeTruthy();
+  expect(
+    trendBars([
+      { income: "3650000.00", expense: "1825000.00" },
+      { income: "0.00", expense: "0.00" },
+    ]),
+  ).toEqual([
+    { income: 1, expense: 0.5 },
+    { income: 0, expense: 0 },
+  ]);
+  mockTrend = {};
+});
+test("trend hides itself when the six months are empty", async () => {
+  mockTrend = {};
+  await render(<MonthlyTrend month="2026-11" />);
+  expect(screen.queryByText("Evolución")).toBeNull();
 });

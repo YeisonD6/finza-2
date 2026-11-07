@@ -7,6 +7,7 @@ import { BudgetProgress } from "../../budgets/components/BudgetProgress";
 import { monedinTip } from "../monedinTip";
 import { CategorySpending } from "./CategorySpending";
 import { GoalsGlance } from "./GoalsGlance";
+import { MonthlyTrend } from "./MonthlyTrend";
 import { Card } from "../../../shared/ui/Card";
 import { AppText } from "../../../shared/ui/AppText";
 import { AppButton } from "../../../shared/ui/AppButton";
@@ -87,6 +88,7 @@ export function DashboardInsights({
         ) : null}
       </Card>
       <GoalsGlance />
+      <MonthlyTrend month={data.month} />
       <CategorySpending
         items={data.expense_by_category ?? []}
         categories={categories}

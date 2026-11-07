@@ -1,0 +1,178 @@
+import { View } from "react-native";
+import { useDashboardQuery, type DashboardSummary } from "../api";
+import { AppText } from "../../../shared/ui/AppText";
+import { Card } from "../../../shared/ui/Card";
+import { formatCOP } from "../../../shared/formatting/money";
+import {
+  monthLabel,
+  monthName,
+  shiftMonth,
+} from "../../../shared/formatting/dates";
+import { colors } from "../../../shared/theme/tokens";
+
+const CHART_HEIGHT = 112;
+const toCents = (value: string) =>
+  BigInt(value.replace("-", "").replace(".", ""));
+
+/** Six fixed calls (never a loop) so hook order is stable; RTK Query shares the cache. */
+function useSixMonths(month: string) {
+  const at = (offset: number) => shiftMonth(month, offset);
+  return [
+    useDashboardQuery(at(-5)),
+    useDashboardQuery(at(-4)),
+    useDashboardQuery(at(-3)),
+    useDashboardQuery(at(-2)),
+    useDashboardQuery(at(-1)),
+    useDashboardQuery(month),
+  ].map((query, index) => ({
+    month: at(index - 5),
+    data: query.isError ? undefined : query.currentData,
+  }));
+}
+
+/** Bar heights on one shared scale, exact on decimal strings until the final ratio. */
+export function trendBars(
+  rows: Pick<DashboardSummary, "income" | "expense">[],
+) {
+  const max = rows.reduce((top, row) => {
+    const a = toCents(row.income);
+    const b = toCents(row.expense);
+    return a > top ? (b > a ? b : a) : b > top ? b : top;
+  }, 0n);
+  const ratio = (value: string) =>
+    max ? Number((toCents(value) * 10000n) / max) / 10000 : 0;
+  return rows.map((row) => ({
+    income: ratio(row.income),
+    expense: ratio(row.expense),
+  }));
+}
+
+/**
+ * Income vs expense for the six months ending at the month on screen. Paired bars on a
+ * shared scale; the figures are spoken as text, so the chart itself is decorative.
+ */
+export function MonthlyTrend({ month }: { month: string }) {
+  const months = useSixMonths(month);
+  if (months.some((item) => !item.data)) return null;
+  const rows = months.map((item) => item.data as DashboardSummary);
+  if (
+    rows.every(
+      (row) => toCents(row.income) === 0n && toCents(row.expense) === 0n,
+    )
+  )
+    return null;
+  const bars = trendBars(rows);
+  const summary = `Evolución de los últimos 6 meses. ${months
+    .map(
+      (item, index) =>
+        `${monthLabel(item.month)}: ingresos ${formatCOP(rows[index].income)}, gastos ${formatCOP(rows[index].expense)}`,
+    )
+    .join(". ")}`;
+  return (
+    <Card>
+      <View style={{ gap: 2 }}>
+        <AppText variant="heading" accessibilityRole="header">
+          Evolución
+        </AppText>
+        <AppText variant="caption" style={{ color: colors.inkMuted }}>
+          Ingresos y gastos de los últimos 6 meses
+        </AppText>
+      </View>
+      <View style={{ flexDirection: "row", gap: 16 }}>
+        {[
+          ["Ingresos", colors.forest600],
+          ["Gastos", colors.expense],
+        ].map(([name, color]) => (
+          <View
+            key={name}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+          >
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 3,
+                backgroundColor: color,
+              }}
+            />
+            <AppText variant="caption" style={{ color: colors.inkMuted }}>
+              {name}
+            </AppText>
+          </View>
+        ))}
+      </View>
+      <View accessible accessibilityLabel={summary}>
+        <View
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            height: CHART_HEIGHT,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          {bars.map((bar, index) => {
+            return (
+              <View
+                key={months[index].month}
+                testID={`trend-${months[index].month}`}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                  gap: 3,
+                }}
+              >
+                {[
+                  [bar.income, colors.forest600],
+                  [bar.expense, colors.expense],
+                ].map(([share, color], i) => (
+                  <View
+                    key={i}
+                    style={{
+                      width: 10,
+                      height: Math.max(
+                        2,
+                        (share as number) * (CHART_HEIGHT - 8),
+                      ),
+                      borderTopLeftRadius: 4,
+                      borderTopRightRadius: 4,
+                      backgroundColor: color as string,
+                    }}
+                  />
+                ))}
+              </View>
+            );
+          })}
+        </View>
+        <View
+          importantForAccessibility="no-hide-descendants"
+          accessibilityElementsHidden
+          style={{ flexDirection: "row", marginTop: 6 }}
+        >
+          {months.map((item, index) => {
+            const current = index === months.length - 1;
+            return (
+              <AppText
+                key={item.month}
+                variant="caption"
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  color: current ? colors.ink : colors.inkMuted,
+                  fontWeight: current ? "700" : "500",
+                }}
+              >
+                {monthName(item.month).slice(0, 3)}
+              </AppText>
+            );
+          })}
+        </View>
+      </View>
+    </Card>
+  );
+}
