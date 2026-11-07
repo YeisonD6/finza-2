@@ -20,6 +20,7 @@ import { MonthTransition } from "./components/MonthTransition";
 import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
 import { QuickActions } from "./components/QuickActions";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 import { HeroRings } from "./components/HeroRings";
 export function DashboardScreen({
@@ -250,7 +251,28 @@ export function DashboardScreen({
       active={active}
       focusKey={month}
     >
-      {headerContent}
+      {(heading: ReactNode) => (
+        <>
+          {/* Light icons over the forest header, only while Inicio is the visible tab. */}
+          {active ? <StatusBar style="light" /> : null}
+          {headerContent(heading)}
+          {/* Forest strip behind the status bar so its light icons stay legible once the
+              header scrolls away. */}
+          {topInset ? (
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: topInset,
+                backgroundColor: colors.forest700,
+              }}
+            />
+          ) : null}
+        </>
+      )}
     </Screen>
   );
 }

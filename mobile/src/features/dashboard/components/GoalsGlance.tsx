@@ -6,7 +6,9 @@ import { AppButton } from "../../../shared/ui/AppButton";
 import { Card } from "../../../shared/ui/Card";
 import { SproutProgress } from "../../../shared/ui/SproutProgress";
 import { formatCOP } from "../../../shared/formatting/money";
-import { colors } from "../../../shared/theme/tokens";
+import { Sprout } from "lucide-react-native";
+import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
+import { colors, radii } from "../../../shared/theme/tokens";
 
 const percentText = (value: string) =>
   value.replace(".", ",").replace(/,00$/, "");
@@ -72,17 +74,46 @@ export function GoalsGlance() {
               opacity: pressed ? 0.7 : 1,
             })}
           >
-            <View style={{ gap: 2 }}>
-              <AppText variant="subhead">{goal.name}</AppText>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+            >
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: radii.md,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: colors.sage100,
+                }}
+              >
+                <DecorativeIcon
+                  icon={Sprout}
+                  size={20}
+                  color={colors.forest700}
+                />
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <AppText variant="subhead">{goal.name}</AppText>
+                <AppText
+                  variant="caption"
+                  style={{
+                    color: colors.inkMuted,
+                    fontVariant: ["tabular-nums"],
+                  }}
+                >
+                  {formatCOP(goal.saved_amount)} de{" "}
+                  {formatCOP(goal.target_amount)}
+                </AppText>
+              </View>
               <AppText
                 variant="label"
                 style={{
-                  color: colors.inkMuted,
+                  color: colors.forest600,
                   fontVariant: ["tabular-nums"],
                 }}
               >
-                {formatCOP(goal.saved_amount)} de{" "}
-                {formatCOP(goal.target_amount)}
+                {percentText(goal.percent)} %
               </AppText>
             </View>
             <View
@@ -92,7 +123,7 @@ export function GoalsGlance() {
               <SproutProgress
                 kind="goal"
                 value={Number(goal.percent)}
-                text={`${percentText(goal.percent)} % · faltan ${formatCOP(goal.remaining)}`}
+                text={`Faltan ${formatCOP(goal.remaining)}`}
               />
             </View>
           </Pressable>

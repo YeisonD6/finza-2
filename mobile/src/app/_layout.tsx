@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { Provider, useSelector } from "react-redux";
 import * as SplashScreen from "expo-splash-screen";
 import { store, type RootState } from "../core/store";
@@ -19,6 +20,9 @@ function Navigation() {
   if ((!fonts && !error) || loading) return null;
   return (
     <FinancialProvider key={profile?.id ?? "guest"}>
+      {/* FINZA is a light-only UI: dark icons on paper even when the phone is in dark mode.
+          Forest screens (welcome, Inicio) push "light" while they are visible. */}
+      <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen
           name="movement/new"
