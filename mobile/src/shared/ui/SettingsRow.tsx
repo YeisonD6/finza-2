@@ -4,7 +4,7 @@ import type { LucideIcon } from "lucide-react-native";
 import { ChevronRight } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { DecorativeIcon } from "./DecorativeIcon";
-import { colors, radii, shadows } from "../theme/tokens";
+import { colors, radii, shadows, type CategoryTone } from "../theme/tokens";
 
 /** One tappable settings line: icon tile, title, optional detail, chevron. */
 export function SettingsRow({
@@ -13,6 +13,7 @@ export function SettingsRow({
   detail,
   tone = "default",
   hint,
+  palette,
   onPress,
 }: {
   icon: LucideIcon;
@@ -20,6 +21,8 @@ export function SettingsRow({
   detail?: string;
   tone?: "default" | "danger";
   hint?: string;
+  /** Icon tile colours; each row gets its own hue so the list scans faster. */
+  palette?: CategoryTone;
   onPress(): void;
 }) {
   const danger = tone === "danger";
@@ -45,14 +48,16 @@ export function SettingsRow({
           borderRadius: radii.md,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: danger ? colors.cream : colors.sage100,
+          backgroundColor: danger
+            ? colors.expenseTint
+            : (palette?.tint ?? colors.sage100),
         }}
       >
         <DecorativeIcon
           icon={icon}
           size={20}
           strokeWidth={1.75}
-          color={danger ? colors.danger : colors.forest700}
+          color={danger ? colors.danger : (palette?.ink ?? colors.forest700)}
         />
       </View>
       <View style={{ flex: 1, gap: 2 }}>

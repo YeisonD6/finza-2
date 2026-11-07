@@ -11,6 +11,9 @@ import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
 import { AmountText } from "../../shared/ui/AmountText";
 import { MovementRow } from "../../shared/ui/MovementRow";
+import { categoryIcon } from "../../shared/ui/categoryIcon";
+import { categoryTone } from "../../shared/ui/categoryTheme";
+import Svg, { Circle } from "react-native-svg";
 import { SproutProgress } from "../../shared/ui/SproutProgress";
 import { markOnboarded } from "../../features/auth/storage";
 import { colors, radii, shadows } from "../../shared/theme/tokens";
@@ -114,6 +117,7 @@ function StepVisual({ step }: { step: number }) {
             client_request_id: "example",
           }}
           category="Alimentación"
+          last
         />
       </Sample>
     );
@@ -123,14 +127,33 @@ function StepVisual({ step }: { step: number }) {
       ["Alimentación", "413900.00", 0.35],
       ["Transporte", "268500.00", 0.23],
     ] as const;
+    const tones = rows.map(([name]) => categoryTone(name));
     return (
       <Sample>
-        {rows.map(([name, value, share]) => (
+        {rows.map(([name, value, share], index) => (
           <View key={name} style={{ gap: 6 }}>
             <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              <AppText variant="label">{name}</AppText>
+              <View
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 8,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: tones[index].tint,
+                }}
+              >
+                <DecorativeIcon
+                  icon={categoryIcon(name)}
+                  size={16}
+                  color={tones[index].ink}
+                />
+              </View>
+              <AppText variant="label" style={{ flex: 1 }}>
+                {name}
+              </AppText>
               <AmountText value={value} variant="label" />
             </View>
             <View
@@ -145,7 +168,7 @@ function StepVisual({ step }: { step: number }) {
                   width: `${share * 100}%`,
                   height: 8,
                   borderRadius: 4,
-                  backgroundColor: colors.progress,
+                  backgroundColor: tones[index].chart,
                 }}
               />
             </View>
@@ -165,8 +188,47 @@ function StepVisual({ step }: { step: number }) {
           </AppText>
         </View>
       </View>
-      <SproutProgress value={65} text="65 % de tu meta" />
+      <SproutProgress kind="goal" value={65} text="65 % de tu meta" />
     </Sample>
+  );
+}
+
+/** Soft sage disc and growth rings behind each sample, so the step has a place to sit. */
+function Stage({ children }: { children: ReactNode }) {
+  const { width } = useWindowDimensions();
+  const size = Math.min(width * 0.95, 380);
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 32,
+      }}
+    >
+      <View
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        style={{ position: "absolute", width: size, height: size }}
+      >
+        <Svg width={size} height={size} viewBox="0 0 100 100">
+          <Circle cx={50} cy={50} r={36} fill={colors.sage100} />
+          {[42, 49].map((r, index) => (
+            <Circle
+              key={r}
+              cx={50}
+              cy={50}
+              r={r}
+              fill="none"
+              stroke={colors.sage300}
+              strokeOpacity={0.5 - index * 0.2}
+              strokeWidth={0.4}
+            />
+          ))}
+        </Svg>
+      </View>
+      {children}
+    </View>
   );
 }
 
@@ -246,7 +308,9 @@ export default function Onboarding() {
               step === index ? "auto" : "no-hide-descendants"
             }
           >
-            <StepVisual step={index} />
+            <Stage>
+              <StepVisual step={index} />
+            </Stage>
             <View style={{ gap: 8 }}>
               <AppText variant="title" accessibilityRole="header">
                 {item.title}

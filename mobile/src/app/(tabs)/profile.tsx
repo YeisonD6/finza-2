@@ -25,7 +25,7 @@ import {
   LayoutGrid,
 } from "lucide-react-native";
 import { SettingsGroup, SettingsRow } from "../../shared/ui/SettingsRow";
-import { colors } from "../../shared/theme/tokens";
+import { categoryPalette, colors } from "../../shared/theme/tokens";
 
 const PROVIDER_NAMES: Record<string, string> = {
   google: "Google",
@@ -112,12 +112,14 @@ export default function Profile() {
         <SettingsRow
           icon={PiggyBank}
           title="Presupuestos"
+          palette={categoryPalette.services}
           detail="Límites por categoría para este mes"
           onPress={() => router.push("/budgets")}
         />
         <SettingsRow
           icon={Sprout}
           title="Metas de ahorro"
+          palette={categoryPalette.salary}
           detail="Lo que estás construyendo"
           onPress={() => router.navigate("/(tabs)/goals")}
         />
@@ -126,6 +128,7 @@ export default function Profile() {
         <SettingsRow
           icon={KeyRound}
           title={hasPassword ? "Cambiar contraseña" : "Crear contraseña"}
+          palette={categoryPalette.transport}
           detail={
             hasPassword
               ? "Cierra tus otras sesiones"
@@ -136,6 +139,7 @@ export default function Profile() {
         <SettingsRow
           icon={ShieldCheck}
           title="Privacidad y seguridad"
+          palette={categoryPalette.income}
           onPress={() => setInformation("privacy")}
         />
       </SettingsGroup>
@@ -143,17 +147,20 @@ export default function Profile() {
         <SettingsRow
           icon={LayoutGrid}
           title="Widgets"
+          palette={categoryPalette.other}
           detail="Tu mes en la pantalla de inicio"
           onPress={() => router.push("/widgets")}
         />
         <SettingsRow
           icon={Accessibility}
           title="Accesibilidad"
+          palette={categoryPalette.transport}
           onPress={() => setInformation("accessibility")}
         />
         <SettingsRow
           icon={RotateCcw}
           title="Volver a ver la bienvenida"
+          palette={categoryPalette.food}
           onPress={() => {
             void storage
               .remove("finza.onboarded")
