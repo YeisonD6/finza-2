@@ -33,7 +33,8 @@ export class AuthClient {
   constructor(
     private url: string,
     private vault: Vault,
-    private fetcher: typeof fetch = fetch,
+    // Wrapped: browsers throw "Illegal invocation" when fetch is called detached from window.
+    private fetcher: typeof fetch = (input, init) => fetch(input, init),
   ) {}
 
   private store(task: () => Promise<void>): Promise<void> {

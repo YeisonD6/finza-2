@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import type { ComponentProps } from "react";
 import { AppButton } from "./AppButton";
 import { categoryIcon } from "./categoryIcon";
@@ -20,11 +21,11 @@ export function CategoryChip({
       accessibilityRole="radio"
       variant={selected ? "primary" : "secondary"}
       icon={
-        <Icon
+        <DecorativeIcon
+          icon={Icon}
           size={20}
           strokeWidth={1.75}
           color={selected ? colors.onForest : colors.forest700}
-          accessible={false}
         />
       }
     />

@@ -1,3 +1,4 @@
+import { QuickEntryField } from "./components/QuickEntryField";
 import { useEffect } from "react";
 import { Screen } from "../../shared/ui/Screen";
 import { AppButton } from "../../shared/ui/AppButton";
@@ -56,6 +57,7 @@ export function MovementForm({
         </>
       }
     >
+      {!initial ? <QuickEntryField draft={f} /> : null}
       <SegmentedControl
         label="Tipo de movimiento"
         value={f.type}

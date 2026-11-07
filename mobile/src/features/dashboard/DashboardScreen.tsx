@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { Monedin } from "../../shared/brand/Monedin";
+import { DashboardInsights } from "./components/DashboardInsights";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
 import { Screen } from "../../shared/ui/Screen";
@@ -120,7 +120,7 @@ export function DashboardScreen({
           }
           tone="success"
           announce={false}
-          celebrate={firstMovement}
+          celebrate={firstMovement && !!data?.recent_movements.length}
         />
         {query.isError ? (
           <>
@@ -138,22 +138,6 @@ export function DashboardScreen({
         ) : null}
         {data ? (
           <>
-            <Card
-              style={{
-                backgroundColor: colors.cream,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <Monedin size="sm" />
-              <View style={{ flex: 1, gap: 4 }}>
-                <AppText variant="label">Tu mes, paso a paso</AppText>
-                <AppText variant="caption" style={{ color: colors.inkMuted }}>
-                  Cada movimiento que registras te ayuda a entender tu dinero.
-                </AppText>
-              </View>
-            </Card>
             <Card>
               <View
                 style={{
@@ -199,7 +183,11 @@ export function DashboardScreen({
                 })
               )}
             </Card>
-            {/* T5: presupuestos y gasto por categoría */}
+            <DashboardInsights
+              data={data}
+              categories={categories}
+              allowMascot={!firstMovement}
+            />
           </>
         ) : null}
         <AppButton

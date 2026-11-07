@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+import type { RootState } from "../../core/store";
 import { useRef, useState, type ElementRef } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
@@ -64,12 +66,15 @@ function StepVisual({ step, active }: { step: number; active: boolean }) {
   );
 }
 export default function Welcome() {
+  const profile = useSelector((s: RootState) => s.auth.profile);
   const [step, setStep] = useState(0);
   const scroll = useRef<ElementRef<typeof ScrollView>>(null);
   const { width, height, fontScale } = useWindowDimensions();
   const pageWidth = width - 40;
   function finish() {
-    void markOnboarded().then(() => router.replace("/(auth)/login"));
+    void markOnboarded().then(() =>
+      router.replace(profile ? "/(tabs)/profile" : "/(auth)/login"),
+    );
   }
   return (
     <Screen

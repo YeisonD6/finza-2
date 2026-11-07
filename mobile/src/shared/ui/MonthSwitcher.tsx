@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import { useState, useRef, type ElementRef } from "react";
 import { Pressable, TextInput } from "react-native";
 import { AppButton } from "./AppButton";
@@ -79,7 +80,7 @@ export function MonthSwitcher({
           >
             {monthLabel(month)}
           </AppText>
-          <ChevronDown size={16} color={color} accessible={false} />
+          <DecorativeIcon icon={ChevronDown} size={16} color={color} />
         </Pressable>
         <IconButton
           icon={ChevronRight}

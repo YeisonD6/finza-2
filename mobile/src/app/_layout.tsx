@@ -26,6 +26,14 @@ function Navigation() {
           name="movement/[id]"
           options={{ presentation: "modal", gestureEnabled: false }}
         />
+        <Stack.Screen
+          name="goal/new"
+          options={{ presentation: "modal", gestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="budgets/[categoryId]"
+          options={{ presentation: "modal", gestureEnabled: false }}
+        />
       </Stack>
     </FinancialProvider>
   );

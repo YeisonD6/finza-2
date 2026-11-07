@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import { useState } from "react";
 import { Pressable, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -70,11 +71,11 @@ export function TabBar({
                   active === name ? colors.sage100 : colors.transparent,
               }}
             >
-              <Icon
+              <DecorativeIcon
+                icon={Icon}
                 size={20}
                 strokeWidth={active === name ? 2 : 1.75}
                 color={active === name ? colors.forest700 : colors.inkMuted}
-                accessible={false}
               />
             </View>
             <AppText

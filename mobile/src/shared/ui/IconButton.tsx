@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import type { ComponentProps } from "react";
 import type { LucideIcon } from "lucide-react-native";
 import { AppButton } from "./AppButton";
@@ -25,7 +26,12 @@ export function IconButton({
       accessibilityLabel={accessibilityLabel}
       hitSlop={4}
       icon={
-        <Icon size={24} strokeWidth={1.75} color={color} accessible={false} />
+        <DecorativeIcon
+          icon={Icon}
+          size={24}
+          strokeWidth={1.75}
+          color={color}
+        />
       }
     />
   );

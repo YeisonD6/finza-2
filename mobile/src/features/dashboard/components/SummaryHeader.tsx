@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { View } from "react-native";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react-native";
 import type { DashboardSummary } from "../api";
@@ -42,11 +43,11 @@ export function SummaryHeader({ data }: { data: DashboardSummary }) {
       ) : null}
       <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
         {delta !== null ? (
-          <Direction
+          <DecorativeIcon
+            icon={Direction}
             color={colors.onForest}
             size={24}
             strokeWidth={1.75}
-            accessible={false}
           />
         ) : null}
         <AppText

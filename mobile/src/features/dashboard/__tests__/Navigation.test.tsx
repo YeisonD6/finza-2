@@ -51,6 +51,10 @@ import Goals from "../../../app/(tabs)/goals";
 import Profile from "../../../app/(tabs)/profile";
 import NewMovement from "../../../app/movement/new";
 import EditMovement from "../../../app/movement/[id]";
+import Budgets from "../../../app/budgets/index";
+import BudgetEditor from "../../../app/budgets/[categoryId]";
+import NewGoal from "../../../app/goal/new";
+import GoalDetail from "../../../app/goal/[id]";
 const routes = {
   _layout: RootLayout,
   index: Index,
@@ -64,6 +68,10 @@ const routes = {
   "(tabs)/profile": Profile,
   "movement/new": NewMovement,
   "movement/[id]": EditMovement,
+  "budgets/index": Budgets,
+  "budgets/[categoryId]": BudgetEditor,
+  "goal/new": NewGoal,
+  "goal/[id]": GoalDetail,
 };
 const profile = {
   id: "account-a",
@@ -330,4 +338,106 @@ test("welcome skip opens login", async () => {
   await renderRouter(routes, { initialUrl: "/(auth)/welcome" });
   await fireEvent.press(screen.getByRole("button", { name: "Saltar" }));
   await waitFor(() => expect(screen).toHavePathname("/login"));
+});
+
+test.each(["/budgets", "/budgets/c", "/goal/new", "/goal/g"])(
+  "new private route %s requires a session",
+  async (initialUrl) => {
+    restoreSession(null);
+    await renderRouter(routes, { initialUrl });
+    await waitFor(() => expect(screen).toHavePathname("/login"));
+  },
+);
+test("profile replay of welcome preserves session and returns to profile", async () => {
+  restoreSession(profile);
+  jest.spyOn(auth, "request").mockResolvedValue(profile);
+  await renderRouter(routes, { initialUrl: "/(tabs)/profile" });
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Privacidad y seguridad" }),
+  );
+  expect(
+    screen.getByText(/Las sesiones de acceso duran 15 minutos/),
+  ).toBeTruthy();
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Volver al perfil" }),
+  );
+  await fireEvent.press(screen.getByRole("button", { name: "Accesibilidad" }));
+  expect(
+    screen.getByText(/lector de pantalla, texto grande y movimiento reducido/),
+  ).toBeTruthy();
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Volver al perfil" }),
+  );
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Volver a ver la bienvenida" }),
+  );
+  expect(
+    await screen.findByRole("header", { name: "Hola, soy Monedin" }),
+  ).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Saltar" }));
+  expect(await screen.findByRole("header", { name: "Perfil" })).toBeTruthy();
+  expect(store.getState().auth.profile?.id).toBe(profile.id);
+});
+test("goal creation routes to detail, contribution updates progress without changing movements", async () => {
+  restoreSession(profile);
+  let goal = {
+    id: "g",
+    name: "Viaje",
+    target_amount: "100.00",
+    saved_amount: "0.00",
+    remaining: "100.00",
+    percent: "0.00",
+    target_date: null,
+    status: "active",
+    currency: "COP",
+    created_at: "2026-11-07T00:00:00Z",
+  };
+  let contributions: object[] = [];
+  const request = jest
+    .spyOn(auth, "request")
+    .mockImplementation(async (path, init) => {
+      if (path.endsWith("/contributions")) {
+        if (init?.method === "POST") {
+          const body = JSON.parse(init.body as string);
+          const row = {
+            ...body,
+            id: "contribution",
+            goal_id: "g",
+            created_at: "2026-11-07T00:00:00Z",
+          };
+          contributions = [...contributions, row];
+          goal = {
+            ...goal,
+            saved_amount: "100.00",
+            remaining: "0.00",
+            percent: "100.00",
+            status: "completed",
+          };
+          return row;
+        }
+        return contributions;
+      }
+      if (path === "/api/v1/goals")
+        return init?.method === "POST" ? goal : [goal];
+      return profile;
+    });
+  await renderRouter(routes, { initialUrl: "/goal/new" });
+  await fireEvent.changeText(
+    screen.getByLabelText("Nombre de la meta"),
+    "Viaje",
+  );
+  await fireEvent.changeText(screen.getByLabelText("Monto"), "100");
+  await fireEvent.press(screen.getByRole("button", { name: "Crear meta" }));
+  expect(await screen.findByRole("header", { name: "Tu meta" })).toBeTruthy();
+  expect(screen.getByText(/Los aportes son dinero que apartas/)).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Aportar" }));
+  await fireEvent.changeText(screen.getByLabelText("Monto"), "100");
+  await fireEvent.press(screen.getByRole("button", { name: "Guardar aporte" }));
+  expect(await screen.findByText("¡Meta cumplida!")).toBeTruthy();
+  expect(screen.getByText("100,00 % · Completada")).toBeTruthy();
+  expect(
+    request.mock.calls.some(
+      ([path, init]) => path.includes("movements") && init?.method === "POST",
+    ),
+  ).toBe(false);
 });

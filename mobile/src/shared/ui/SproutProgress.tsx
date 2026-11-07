@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, View } from "react-native";
+import { Animated, View, Platform } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { AppText } from "./AppText";
 import { colors } from "../theme/tokens";
@@ -8,20 +8,24 @@ export function SproutProgress({
   value,
   text,
   delay = 0,
+  kind = "budget",
 }: {
   value: number;
   text?: string;
   delay?: number;
+  kind?: "budget" | "goal";
 }) {
   const now = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
   const status =
     value > 100 ? "Excedido" : value >= 80 ? "Cerca del límite" : "Al día";
   const color =
-    value > 100
-      ? colors.expense
-      : value >= 80
-        ? colors.warning
-        : colors.progress;
+    kind === "goal"
+      ? colors.progress
+      : value > 100
+        ? colors.expense
+        : value >= 80
+          ? colors.warning
+          : colors.progress;
   const reduced = useReducedMotion(),
     scale = useRef(new Animated.Value(now / 100)).current,
     leaf = useRef(new Animated.Value(1)).current;
@@ -95,7 +99,14 @@ export function SproutProgress({
               opacity: leaf,
             }}
           >
-            <Svg width={28} height={28} viewBox="0 0 28 28" accessible={false}>
+            <Svg
+              width={28}
+              height={28}
+              viewBox="0 0 28 28"
+              {...(Platform.OS === "web"
+                ? { "aria-hidden": true }
+                : { accessible: false })}
+            >
               <Path
                 d="M14 26V12M14 17C4 17 3 10 4 5C12 5 16 10 14 17ZM14 13C14 5 19 2 25 3C25 11 21 15 14 13Z"
                 stroke={colors.forest700}

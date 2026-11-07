@@ -13,6 +13,13 @@ let mockQuery: {
   refetch: typeof mockRefetch;
 };
 jest.mock("../api", () => ({ useDashboardQuery: () => mockQuery }));
+jest.mock("../../budgets/api", () => ({
+  useBudgetsQuery: () => ({
+    currentData: { items: [] },
+    isFetching: false,
+    isError: false,
+  }),
+}));
 const fixture = (
   changes: Partial<DashboardSummary> = {},
 ): DashboardSummary => ({

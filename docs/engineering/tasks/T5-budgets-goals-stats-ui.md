@@ -56,3 +56,10 @@ Completa la pantalla de T3: tarjeta de cuenta (correo, moneda COP), enlaces «Pr
 1. `npm run typecheck`, `npm test` y `npx expo export --platform android` sin fallos.
 2. Pruebas nuevas: `monedinTip` (cada regla), gráfica de categorías (texto visible y etiqueta resumen, escala), pantalla de presupuestos (lista, definir, quitar con confirmación, error asociado), metas (vacío, crear con validación, aportar con idempotencia de clave en reintento, celebración al completar una sola vez), registro rápido (rellena sin guardar, foco al monto, explicación anunciada).
 3. Resumen final con archivos, decisiones, desviaciones y limitaciones.
+
+## 8. Anexo tras la revisión de T3/T3b (7 nov 2026)
+
+- **Un solo Monedin por pantalla.** La tarjeta fija «Tu mes, paso a paso» de Inicio desaparece: la sustituye la tarjeta de `monedinTip` (§1.3). Con el mes vacío solo queda el estado vacío con Monedin.
+- Iconos lucide en web: hoy reciben `accessible={false}` y React avisa «Received `false` for a non-boolean attribute `accessible`». Centraliza los iconos decorativos en un helper (p. ej. `DecorativeIcon` en `shared/ui`) que en web no pase `accessible` al SVG y en nativo lo oculte del lector (`accessibilityElementsHidden` / `importantForAccessibility="no-hide-descendants"` en el contenedor).
+- La vista web (`.claude/launch.json`, servidor `mobile`) se usa para QA visual; no debe tener errores en consola en las pantallas nuevas.
+- Datos de demostración: `backend/scripts/seed_demo.py` crea dos meses de movimientos, presupuestos en los tres estados y dos metas con aportes; úsalos para probar visualmente (no para las pruebas automáticas).

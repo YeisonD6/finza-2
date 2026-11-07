@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import { useState } from "react";
 import { Pressable, ScrollView, View, useWindowDimensions } from "react-native";
 import type { Movement } from "../../features/movements/types";
@@ -42,11 +43,11 @@ export function MovementRow({
           padding: 12,
         }}
       >
-        <Icon
+        <DecorativeIcon
+          icon={Icon}
           size={24}
           strokeWidth={1.75}
           color={colors.forest700}
-          accessible={false}
         />
       </View>
       <View style={{ flex: 1, gap: 4 }}>

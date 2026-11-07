@@ -1,3 +1,4 @@
+import { DecorativeIcon } from "./DecorativeIcon";
 import { useRef, useState, type ReactNode } from "react";
 import { Animated, Pressable, type PressableProps } from "react-native";
 import { Check } from "lucide-react-native";
@@ -117,11 +118,11 @@ export function AppButton({
         }}
       >
         {active ? (
-          <Check
+          <DecorativeIcon
+            icon={Check}
             size={16}
             strokeWidth={2}
             color={colors.onForest}
-            accessible={false}
           />
         ) : (
           icon

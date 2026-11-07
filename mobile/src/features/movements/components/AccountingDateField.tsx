@@ -1,6 +1,6 @@
 import { AppText } from "../../../shared/ui/AppText";
 import { View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TextField } from "../../../shared/ui/TextField";
 import { SegmentedControl } from "../../../shared/ui/SegmentedControl";
 import { bogotaToday } from "../domain";
@@ -14,6 +14,9 @@ export function AccountingDateField({
   const today = bogotaToday(),
     yesterday = previousDay(today);
   const [other, setOther] = useState(f.date !== today && f.date !== yesterday);
+  useEffect(() => {
+    setOther(f.date !== today && f.date !== yesterday);
+  }, [f.date, today, yesterday]);
   return (
     <View style={{ gap: 8, flexShrink: 0 }}>
       <AppText variant="label">Fecha contable</AppText>

@@ -327,3 +327,52 @@ test.each([1, 2])(
     dimensions.mockRestore();
   },
 );
+
+test("quick entry fills without saving, announces explanation and focuses amount", async () => {
+  const { TextInput } = require("react-native");
+  const focus = jest
+    .spyOn(TextInput.prototype, "focus")
+    .mockImplementation(() => {});
+  const announcement = jest.spyOn(announcements, "announce");
+  await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Escribe o dicta tu movimiento"),
+    "almuerzo 18 mil ayer",
+  );
+  await fireEvent.press(screen.getByRole("button", { name: "Interpretar" }));
+  expect(screen.getByLabelText("Monto").props.value).toBe("18000");
+  expect(screen.getByLabelText("Nota (opcional)").props.value).toBe("Almuerzo");
+  expect(
+    screen.getByRole("tab", { name: "Ayer" }).props.accessibilityState.selected,
+  ).toBe(true);
+  expect(
+    screen.getByRole("radio", { name: "Alimentación" }).props.accessibilityState
+      .selected,
+  ).toBe(true);
+  expect(screen.getByText(/Gasto de 18.000 pesos/)).toBeTruthy();
+  expect(mockCreate).not.toHaveBeenCalled();
+  expect(focus).toHaveBeenCalled();
+  expect(
+    announcement.mock.calls.filter(([s]) => /Gasto de 18.000 pesos/.test(s)),
+  ).toHaveLength(1);
+  focus.mockRestore();
+});
+test("quick entry missing amount explains and focuses amount; editing has no quick field", async () => {
+  const { TextInput } = require("react-native");
+  const focus = jest
+    .spyOn(TextInput.prototype, "focus")
+    .mockImplementation(() => {});
+  await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Escribe o dicta tu movimiento"),
+    "almuerzo",
+  );
+  await fireEvent(
+    screen.getByLabelText("Escribe o dicta tu movimiento"),
+    "submitEditing",
+  );
+  expect(screen.getByText(/No encontré un monto/)).toBeTruthy();
+  expect(focus).toHaveBeenCalled();
+  expect(mockCreate).not.toHaveBeenCalled();
+  focus.mockRestore();
+});
