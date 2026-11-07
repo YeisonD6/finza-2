@@ -21,9 +21,11 @@ export function WidgetPreview({ hidden }: { hidden: boolean }) {
   const query = useDashboardQuery(month);
   const data = query.isError ? undefined : query.currentData;
   if (!data) return null;
-  const net = data.net.startsWith("-")
-    ? formatCOP(data.net)
-    : `+${formatCOP(data.net)}`;
+  const zero = /^-?0*(\.0+)?$/.test(data.net);
+  const net =
+    data.net.startsWith("-") || zero
+      ? formatCOP(data.net.replace(/^-(?=0*(\.0+)?$)/, ""))
+      : `+${formatCOP(data.net)}`;
   const show = (value: string) => (hidden ? HIDDEN : value);
   return (
     <View style={{ gap: 8 }}>

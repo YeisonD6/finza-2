@@ -85,7 +85,11 @@ export function MonthTotals({ month }: { month: string }) {
               variant="label"
               style={{ color: item.color, fontVariant: ["tabular-nums"] }}
             >
-              {item.tone === "income" ? "+" : "−"}
+              {/^0*(\.0+)?$/.test(item.value)
+                ? ""
+                : item.tone === "income"
+                  ? "+"
+                  : "−"}
               {formatCOP(item.value)}
             </AppText>
           </View>
