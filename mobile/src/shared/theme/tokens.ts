@@ -25,6 +25,7 @@ export const colors = {
   onForestMuted: "#C9D8C6",
   expense: "#8C3A4E",
   danger: "#8C3A4E",
+  expenseTint: "#F4E4E7",
   warning: "#8A5A00",
   border: "#D9D4C8",
   borderStrong: "#848780",

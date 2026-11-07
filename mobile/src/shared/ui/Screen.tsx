@@ -101,7 +101,9 @@ export function Screen({
                   fontFamily: fontFamily.heading,
                   fontWeight: "700",
                 }
-              : undefined
+              : variant === "modal"
+                ? { flex: 1, fontSize: 24, lineHeight: 32 }
+                : undefined
           }
         >
           {title}

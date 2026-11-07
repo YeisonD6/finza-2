@@ -1,5 +1,6 @@
 import { ScrollView, View } from "react-native";
 import { MonthSwitcher } from "../../../shared/ui/MonthSwitcher";
+import { MonthTotals } from "./MonthTotals";
 import { SegmentedControl } from "../../../shared/ui/SegmentedControl";
 import { CategoryChip } from "../../../shared/ui/CategoryChip";
 import { Banner } from "../../../shared/ui/Banner";
@@ -22,6 +23,7 @@ export function MovementFilters({
         onChange={f.setMonth}
         disabled={f.archiving}
       />
+      <MonthTotals month={f.month} />
       <FormField
         label={`Buscar en ${monthName(f.month)}`}
         placeholder="Nota o categoría"
