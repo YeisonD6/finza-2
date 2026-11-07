@@ -20,6 +20,13 @@ jest.mock("../../features/widgets/native", () => ({
   setHideAmounts: (hidden: boolean) => mockSetHide(hidden),
 }));
 
+let mockSummary:
+  | { month: string; net: string; income: string; expense: string }
+  | undefined;
+jest.mock("../../features/dashboard/api", () => ({
+  useDashboardQuery: () => ({ currentData: mockSummary }),
+}));
+
 async function open() {
   const store = configureStore({ reducer: { auth: authSlice.reducer } });
   store.dispatch(
@@ -42,6 +49,7 @@ async function open() {
 }
 
 afterEach(() => {
+  mockSummary = undefined;
   cleanup();
   jest.clearAllMocks();
 });
@@ -66,4 +74,26 @@ test("hiding amounts is saved for the widgets", async () => {
   expect(mockSetHide).toHaveBeenCalledWith(true);
   // The section copy promises no session data leaves the app.
   expect(screen.getByText(/No guardan tu correo, tu contraseña ni tu sesión/)).toBeTruthy();
+});
+
+test("the preview mirrors the summary widget and the privacy setting", async () => {
+  mockAvailable = true;
+  mockSummary = {
+    month: "2026-11",
+    net: "1776400.00",
+    income: "3650000.00",
+    expense: "1873600.00",
+  };
+  await open();
+  expect(screen.getByLabelText("Vista previa del widget Resumen del mes")).toBeTruthy();
+  expect(screen.getByText("+$ 1.776.400")).toBeTruthy();
+  await fireEvent(
+    screen.getByRole("switch", { name: "Ocultar montos en los widgets" }),
+    "valueChange",
+    true,
+  );
+  expect(screen.queryByText("+$ 1.776.400")).toBeNull();
+  expect(
+    screen.getByLabelText(/Vista previa del widget Resumen del mes, con montos ocultos/),
+  ).toBeTruthy();
 });

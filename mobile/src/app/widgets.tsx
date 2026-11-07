@@ -13,22 +13,37 @@ import { AppText } from "../shared/ui/AppText";
 import { Banner } from "../shared/ui/Banner";
 import { DecorativeIcon } from "../shared/ui/DecorativeIcon";
 import { PrivateScreen } from "../shared/ui/PrivateScreen";
-import { colors, radii, shadows } from "../shared/theme/tokens";
+import {
+  categoryPalette,
+  colors,
+  radii,
+  shadows,
+  type CategoryTone,
+} from "../shared/theme/tokens";
+import { WidgetPreview } from "../features/widgets/WidgetPreview";
 import { announce } from "../shared/accessibility/announcements";
 
-const WIDGETS: { icon: LucideIcon; title: string; detail: string }[] = [
+const WIDGETS: {
+  icon: LucideIcon;
+  title: string;
+  detail: string;
+  palette: CategoryTone;
+}[] = [
   {
     icon: WalletCards,
+    palette: categoryPalette.salary,
     title: "Resumen del mes",
     detail: "Balance, ingresos y gastos del mes en curso.",
   },
   {
     icon: PiggyBank,
+    palette: categoryPalette.services,
     title: "Presupuesto",
     detail: "El presupuesto más cerca de su límite.",
   },
   {
     icon: ListPlus,
+    palette: categoryPalette.transport,
     title: "Atajos",
     detail: "Registra un gasto o un ingreso en un toque.",
   },
@@ -81,6 +96,7 @@ export default function Widgets() {
             message="Los widgets funcionan en la app instalada en Android o iOS. En esta vista previa no están disponibles."
           />
         )}
+        <WidgetPreview hidden={hidden} />
         <Section>
           {WIDGETS.map((widget) => (
             <View
@@ -95,14 +111,14 @@ export default function Widgets() {
                   borderRadius: radii.md,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: colors.sage100,
+                  backgroundColor: widget.palette.tint,
                 }}
               >
                 <DecorativeIcon
                   icon={widget.icon}
                   size={20}
                   strokeWidth={1.75}
-                  color={colors.forest700}
+                  color={widget.palette.ink}
                 />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
@@ -118,9 +134,7 @@ export default function Widgets() {
         <Section>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <View style={{ flex: 1, gap: 2 }}>
-              <AppText variant="subhead">
-                Ocultar montos
-              </AppText>
+              <AppText variant="subhead">Ocultar montos</AppText>
               <AppText variant="caption" style={{ color: colors.inkMuted }}>
                 Los widgets muestran •••• en lugar de cifras. También puedes
                 tocar el ojo del widget de resumen.
@@ -130,7 +144,10 @@ export default function Widgets() {
               accessibilityLabel="Ocultar montos en los widgets"
               value={hidden}
               disabled={!widgetsAvailable}
-              accessibilityState={{ disabled: !widgetsAvailable, checked: hidden }}
+              accessibilityState={{
+                disabled: !widgetsAvailable,
+                checked: hidden,
+              }}
               onValueChange={(value) => {
                 setHidden(value);
                 setHideAmounts(value);
@@ -140,7 +157,10 @@ export default function Widgets() {
                     : "Los widgets muestran tus montos",
                 );
               }}
-              trackColor={{ false: colors.borderStrong, true: colors.forest700 }}
+              trackColor={{
+                false: colors.borderStrong,
+                true: colors.forest700,
+              }}
               thumbColor={colors.surface}
               {...({ activeThumbColor: colors.surface } as object)}
             />

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronLeft } from "lucide-react-native";
+import Svg, { Circle } from "react-native-svg";
 import { Monedin } from "../../../shared/brand/Monedin";
 import { AppText } from "../../../shared/ui/AppText";
 import { IconButton } from "../../../shared/ui/IconButton";
@@ -59,7 +60,32 @@ export function AuthShell({
     return () => subscription.remove();
   }, [onBack, backDisabled]);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.ground }}>
+    <SafeAreaView
+      // Clip the corner rings so they never widen the page (web) or the scroll area.
+      style={{ flex: 1, backgroundColor: colors.ground, overflow: "hidden" }}
+    >
+      <View
+        pointerEvents="none"
+        aria-hidden
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={{ position: "absolute", top: -140, right: -150 }}
+      >
+        <Svg width={340} height={340} viewBox="0 0 100 100">
+          {[0.38, 0.58, 0.78, 0.98].map((r, index) => (
+            <Circle
+              key={r}
+              cx={50}
+              cy={50}
+              r={r * 49}
+              fill="none"
+              stroke={colors.sage300}
+              strokeOpacity={0.55 - index * 0.12}
+              strokeWidth={0.5}
+            />
+          ))}
+        </Svg>
+      </View>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -86,7 +112,20 @@ export function AuthShell({
             ) : null}
           </View>
           <Animated.View style={[block(0), { gap: 12 }]}>
-            {mascot ? <Monedin size="sm" /> : null}
+            {mascot ? (
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 36,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: colors.sage100,
+                }}
+              >
+                <Monedin size="sm" />
+              </View>
+            ) : null}
             <AppText ref={heading} variant="hero" accessibilityRole="header">
               {title}
             </AppText>
