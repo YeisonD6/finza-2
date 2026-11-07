@@ -15,6 +15,7 @@ from app.modules.goals.api import router as goals_router
 from app.modules.identity.api import me_router
 from app.modules.identity.api import router as identity_router
 from app.modules.movements.api import router as movements_router
+from app.shared.validation_messages import spanish_message
 
 
 def create_app() -> FastAPI:
@@ -50,7 +51,7 @@ def create_app() -> FastAPI:
                 "code": "validation_error",
                 "message": "Revisa los campos indicados",
                 "detail": "Revisa los campos indicados",
-                "field_errors": {str(e["loc"][-1]): e["msg"] for e in exc.errors()},
+                "field_errors": {str(e["loc"][-1]): spanish_message(e) for e in exc.errors()},
                 "request_id": getattr(request.state, "request_id", None),
             },
         )
