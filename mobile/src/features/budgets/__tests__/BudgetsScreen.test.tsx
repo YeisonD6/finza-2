@@ -50,7 +50,13 @@ test("budgets list, recurring limits and define only remaining expense categorie
   expect(
     screen.getByText("Límites mensuales que se repiten cada mes."),
   ).toBeTruthy();
-  expect(screen.getByText("Transporte: Excedido por $ 18")).toBeTruthy();
+  // The row names the category; the caption shows the state and the progress bar speaks both.
+  expect(screen.getByText("Excedido por $ 18")).toBeTruthy();
+  expect(
+    screen.getByRole("progressbar", {
+      value: { text: "Transporte: Excedido por $ 18" },
+    }),
+  ).toBeTruthy();
   expect(screen.queryByText("Salario")).toBeNull();
   await fireEvent.press(
     screen.getByRole("button", { name: "Definir presupuesto de Alimentación" }),

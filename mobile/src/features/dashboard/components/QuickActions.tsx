@@ -3,13 +3,20 @@ import type { LucideIcon } from "lucide-react-native";
 import { PiggyBank, Plus, Target } from "lucide-react-native";
 import { AppText } from "../../../shared/ui/AppText";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
-import { colors, radii, shadows } from "../../../shared/theme/tokens";
+import {
+  categoryPalette,
+  colors,
+  radii,
+  shadows,
+} from "../../../shared/theme/tokens";
 
 type Action = {
   label: string;
   hint: string;
   icon: LucideIcon;
   primary?: boolean;
+  tint?: string;
+  ink?: string;
   onPress(): void;
 };
 
@@ -38,6 +45,8 @@ export function QuickActions({
       label: "Presupuestos",
       hint: "Revisa y ajusta tus presupuestos del mes",
       icon: PiggyBank,
+      tint: categoryPalette.services.tint,
+      ink: categoryPalette.services.ink,
       onPress: onBudgets,
     },
     {
@@ -86,14 +95,16 @@ export function QuickActions({
               justifyContent: "center",
               backgroundColor: action.primary
                 ? colors.forest700
-                : colors.sage100,
+                : (action.tint ?? colors.sage100),
             }}
           >
             <DecorativeIcon
               icon={action.icon}
               size={22}
               strokeWidth={2}
-              color={action.primary ? colors.onForest : colors.forest700}
+              color={
+                action.primary ? colors.onForest : (action.ink ?? colors.forest700)
+              }
             />
           </View>
           <AppText variant="label" style={{ textAlign: "center" }}>

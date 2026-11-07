@@ -9,9 +9,15 @@ export function SproutProgress({
   text,
   delay = 0,
   kind = "budget",
+  caption,
+  captionColor,
 }: {
   value: number;
+  /** Spoken value (and visible caption unless `caption` is given). */
   text?: string;
+  /** Shorter visible caption when the surrounding row already names the item. */
+  caption?: string;
+  captionColor?: string;
   delay?: number;
   kind?: "budget" | "goal";
 }) {
@@ -117,7 +123,12 @@ export function SproutProgress({
           </Animated.View>
         ) : null}
       </View>
-      <AppText variant="caption">{text ?? status}</AppText>
+      <AppText
+        variant="caption"
+        style={captionColor ? { color: captionColor } : undefined}
+      >
+        {caption ?? text ?? status}
+      </AppText>
     </View>
   );
 }

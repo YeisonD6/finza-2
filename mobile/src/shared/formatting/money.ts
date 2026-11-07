@@ -15,3 +15,16 @@ export function amountLabel(
   const absolute = value.replace(/^-/, "");
   return `${kind === "expense" ? "Gasto" : kind === "income" ? "Ingreso" : "Monto"} de ${kind === "expense" || negative ? "menos " : kind === "income" ? "más " : ""}${exactCOP(absolute).replace(" COP", " pesos colombianos")}`;
 }
+
+/** Exact sum of decimal strings ("1250.50"), returned in the same format. */
+export function sumAmounts(values: string[]) {
+  const total = values.reduce((acc, value) => {
+    const negative = value.startsWith("-");
+    const [whole, fraction = ""] = value.replace(/^-/, "").split(".");
+    const cents = BigInt(whole || "0") * 100n + BigInt((fraction + "00").slice(0, 2));
+    return acc + (negative ? -cents : cents);
+  }, 0n);
+  const negative = total < 0n;
+  const abs = negative ? -total : total;
+  return `${negative ? "-" : ""}${abs / 100n}.${(abs % 100n).toString().padStart(2, "0")}`;
+}

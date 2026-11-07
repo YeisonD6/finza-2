@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ReactNode } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { useContext, useEffect, useRef, type ReactNode } from "react";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { DashboardInsights } from "./components/DashboardInsights";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
@@ -20,6 +20,8 @@ import { MonthTransition } from "./components/MonthTransition";
 import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
 import { QuickActions } from "./components/QuickActions";
 import { router } from "expo-router";
+import { SafeAreaInsetsContext } from "react-native-safe-area-context";
+import { HeroRings } from "./components/HeroRings";
 export function DashboardScreen({
   month,
   onMonthChange,
@@ -48,6 +50,8 @@ export function DashboardScreen({
   /** Shows the confirm-your-email reminder (never blocks the dashboard). */
   emailUnconfirmed?: boolean;
 }) {
+  // Context read (not the hook) so the screen also renders outside a provider, as in tests.
+  const topInset = useContext(SafeAreaInsetsContext)?.top ?? 0;
   const skipSummary = useRef(silentInitialSummary),
     silenced = useRef(false);
   const query = useDashboardQuery(month);
@@ -83,10 +87,13 @@ export function DashboardScreen({
           borderBottomLeftRadius: radii.xl,
           borderBottomRightRadius: radii.xl,
           paddingHorizontal: 20,
-          paddingVertical: 12,
+          paddingTop: topInset + 12,
+          paddingBottom: 60,
           gap: 8,
+          overflow: "hidden",
         }}
       >
+        <HeroRings />
         <View
           style={{
             flexDirection: "row",
@@ -96,13 +103,30 @@ export function DashboardScreen({
           }}
         >
           {heading}
-          <AppButton
-            title={email.slice(0, 1).toUpperCase()}
+          <Pressable
+            accessibilityRole="button"
             accessibilityLabel={`Abrir perfil de ${email}`}
             onPress={onProfile}
-            variant="secondary"
-            style={{ borderRadius: radii.pill }}
-          />
+            hitSlop={4}
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.sage300,
+              borderWidth: 2,
+              borderColor: colors.forestGlassStrong,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <AppText
+              variant="subhead"
+              style={{ color: colors.forest900, fontWeight: "700" }}
+            >
+              {email.slice(0, 1).toUpperCase()}
+            </AppText>
+          </Pressable>
         </View>
         <MonthSwitcher month={month} onChange={onMonthChange} inverse />
         <MonthTransition month={month}>
@@ -115,7 +139,8 @@ export function DashboardScreen({
           ) : null}
         </MonthTransition>
       </View>
-      <View style={{ paddingHorizontal: 20, gap: 20 }}>
+      {/* Quick actions overlap the header's lower edge: one surface leads into the next. */}
+      <View style={{ paddingHorizontal: 20, gap: 20, marginTop: -56 }}>
         <QuickActions
           onRegister={onRegister}
           onBudgets={() => router.push("/budgets")}

@@ -500,7 +500,9 @@ test("goal creation routes to detail, contribution updates progress without chan
   await fireEvent.changeText(screen.getByLabelText("Monto"), "100");
   await fireEvent.press(screen.getByRole("button", { name: "Guardar aporte" }));
   expect(await screen.findByText("¡Meta cumplida!")).toBeTruthy();
-  expect(screen.getByText("100,00 % · Completada")).toBeTruthy();
+  expect(
+    screen.getByRole("progressbar", { value: { text: "100,00 % · Completada" } }),
+  ).toBeTruthy();
   expect(
     request.mock.calls.some(
       ([path, init]) => path.includes("movements") && init?.method === "POST",

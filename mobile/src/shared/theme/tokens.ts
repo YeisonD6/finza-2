@@ -30,7 +30,23 @@ export const colors = {
   borderStrong: "#848780",
   transparent: "transparent",
   forestGlass: "rgba(244,247,242,0.08)",
+  forestGlassStrong: "rgba(244,247,242,0.18)",
 } as const;
+/**
+ * Category hues: earthy, muted tones that sit next to the forest without competing.
+ * `ink` on `tint` ≥ 6.2:1 (icons and text); `chart` on white ≥ 3.8:1 (WCAG 1.4.11).
+ * Colour never carries meaning alone: every use sits next to the category name.
+ */
+export const categoryPalette = {
+  salary: { tint: "#E2EBDF", ink: "#1E4634", chart: "#2D5E46" },
+  income: { tint: "#DCEBE7", ink: "#1D5247", chart: "#2F7464" },
+  food: { tint: "#F7E2D8", ink: "#8A3A20", chart: "#B5532F" },
+  transport: { tint: "#DFE7F0", ink: "#284766", chart: "#47698F" },
+  services: { tint: "#F5EAD0", ink: "#6E4E00", chart: "#A57A12" },
+  other: { tint: "#EEE2EC", ink: "#673660", chart: "#8C5683" },
+  custom: { tint: "#ECE8DF", ink: "#4A514B", chart: "#7A7F78" },
+} as const;
+export type CategoryTone = (typeof categoryPalette)[keyof typeof categoryPalette];
 export const spacing = {
   xs: 4,
   sm: 8,

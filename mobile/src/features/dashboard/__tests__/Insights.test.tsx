@@ -142,7 +142,12 @@ test("empty expenses hide the chart; budgets show three largest with textual sta
   await render(<DashboardInsights data={data} categories={[]} />);
   expect(screen.getAllByRole("progressbar")).toHaveLength(3);
   expect(screen.queryByText("Gasto por categoría")).toBeNull();
-  expect(screen.getByText(/Transporte: Excedido por/)).toBeTruthy();
+  expect(screen.getByText(/^Excedido por/)).toBeTruthy();
+  expect(
+    screen.getByRole("progressbar", {
+      value: { text: /Transporte: Excedido por/ },
+    }),
+  ).toBeTruthy();
   expect(
     screen.getByRole("button", { name: "Ver todos los presupuestos" }),
   ).toBeTruthy();

@@ -47,24 +47,25 @@ export function TabBar({
             style={({ pressed }) => ({
               minWidth: 48,
               minHeight: 48,
-              padding: 4,
+              paddingVertical: 4,
               flexGrow: largeText ? 0 : 1,
               flexBasis: largeText ? "auto" : 0,
               flexShrink: 0,
               alignItems: "center",
               gap: 4,
               opacity: pressed ? 0.7 : 1,
-              borderWidth: 2,
-              borderColor:
-                focused === name ? colors.forest700 : colors.transparent,
             })}
           >
             <View
               style={{
-                width: 64,
+                width: 60,
                 height: 32,
                 // Half the height: Android drops oversized radii (999) when the fill changes.
                 borderRadius: 16,
+                // Keyboard focus ring on the pill, so it costs no label width.
+                borderWidth: 2,
+                borderColor:
+                  focused === name ? colors.forest700 : colors.transparent,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor:
@@ -88,6 +89,7 @@ export function TabBar({
                 color: active === name ? colors.forest700 : colors.inkMuted,
                 fontSize: 12,
                 lineHeight: 16,
+                letterSpacing: -0.2,
                 alignSelf: "stretch",
                 fontFamily:
                   active === name ? fontFamily.heading : fontFamily.caption,
@@ -108,7 +110,7 @@ export function TabBar({
         alignItems: "center",
         paddingTop: 8,
         paddingBottom: Math.max(inset.bottom, 8),
-        paddingHorizontal: 4,
+        paddingHorizontal: 0,
         backgroundColor: colors.surface,
         borderTopWidth: 1,
         borderColor: colors.border,
@@ -121,7 +123,7 @@ export function TabBar({
         variant="primary"
         color={colors.onForest}
         onPress={onRegister}
-        style={[{ borderRadius: radii.pill, margin: 4 }, shadows.floating]}
+        style={[{ borderRadius: radii.pill, marginHorizontal: 2 }, shadows.floating]}
       />
       {tabs(tabItems.slice(2))}
     </View>

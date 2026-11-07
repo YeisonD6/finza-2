@@ -8,9 +8,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X } from "lucide-react-native";
+import { ChevronLeft, X } from "lucide-react-native";
 import { focusAccessibility } from "../accessibility/announcements";
-import { AppButton } from "./AppButton";
 import { IconButton } from "./IconButton";
 import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
@@ -79,6 +78,15 @@ export function Screen({
           onPress={onBack}
         />
       ) : null}
+      {onBack && showBackAction && variant !== "modal" ? (
+        <IconButton
+          icon={ChevronLeft}
+          accessibilityLabel={backLabel}
+          disabled={backDisabled}
+          onPress={onBack}
+          style={{ marginLeft: -12, marginBottom: -8 }}
+        />
+      ) : null}
       {headerLeading}
       {title ? (
         <AppText
@@ -99,20 +107,14 @@ export function Screen({
           {title}
         </AppText>
       ) : null}
-      {onBack && showBackAction && variant !== "modal" ? (
-        <AppButton
-          title={backLabel}
-          variant="ghost"
-          onPress={onBack}
-          disabled={backDisabled}
-        />
-      ) : null}
+
     </View>
   );
   return (
     <SafeAreaView
       edges={[
-        "top",
+        // The forest header paints its own status-bar area (it adds the top inset).
+        ...(variant === "forest" ? [] : ["top" as const]),
         "left",
         "right",
         ...(variant === "modal" ? ["bottom" as const] : []),

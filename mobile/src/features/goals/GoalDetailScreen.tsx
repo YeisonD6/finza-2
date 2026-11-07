@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { View } from "react-native";
+import { PiggyBank, Trash2 } from "lucide-react-native";
 import { router, usePreventRemove } from "expo-router";
 import {
   useGoalsQuery,
@@ -18,6 +20,9 @@ import { Screen } from "../../shared/ui/Screen";
 import { Card } from "../../shared/ui/Card";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
+import { IconButton } from "../../shared/ui/IconButton";
+import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
+import { colors, radii } from "../../shared/theme/tokens";
 import { Banner } from "../../shared/ui/Banner";
 import { QueryState } from "../../shared/ui/QueryState";
 import { confirmAction } from "../../shared/ui/confirmAction";
@@ -105,41 +110,80 @@ export function GoalDetailScreen({ id }: { id: string }) {
               Aún no hay aportes. Empieza con el monto que quieras.
             </AppText>
           ) : null}
-          {rows?.map((row) => (
-            <Card key={row.id}>
-              <AppText
-                variant="subhead"
-                style={{ fontVariant: ["tabular-nums"] }}
-              >
-                {formatCOP(row.amount)}
-              </AppText>
-              <AppText>{targetDateLabel(row.occurred_on)}</AppText>
-              {row.note ? <AppText>{row.note}</AppText> : null}
-              <AppButton
-                title="Eliminar aporte"
-                accessibilityLabel={`Eliminar aporte de ${formatCOP(row.amount)} del ${row.occurred_on}`}
-                variant="danger"
-                dangerGhost
-                disabled={f.busy}
-                onPress={() =>
-                  confirmAction(
-                    "Eliminar aporte",
-                    "Este dinero dejará de contar para tu meta.",
-                    "Eliminar",
-                    () => {
-                      void f.run(async () => {
-                        await remove({
-                          goalId: id,
-                          contributionId: row.id,
-                        }).unwrap();
-                        announce("Aporte eliminado");
-                      });
-                    },
-                  )
-                }
-              />
+          {rows?.length ? (
+            <Card style={{ paddingVertical: 4, gap: 0 }}>
+              {rows.map((row, index) => (
+                <View
+                  key={row.id}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    paddingVertical: 12,
+                    borderTopWidth: index ? 1 : 0,
+                    borderTopColor: colors.border,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: radii.md,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: colors.sage100,
+                    }}
+                  >
+                    <DecorativeIcon
+                      icon={PiggyBank}
+                      size={20}
+                      color={colors.forest700}
+                    />
+                  </View>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <AppText
+                      variant="subhead"
+                      style={{
+                        color: colors.forest600,
+                        fontVariant: ["tabular-nums"],
+                      }}
+                    >
+                      +{formatCOP(row.amount)}
+                    </AppText>
+                    <AppText
+                      variant="caption"
+                      style={{ color: colors.inkMuted }}
+                    >
+                      {targetDateLabel(row.occurred_on)}
+                      {row.note ? ` · ${row.note}` : ""}
+                    </AppText>
+                  </View>
+                  <IconButton
+                    icon={Trash2}
+                    color={colors.danger}
+                    accessibilityLabel={`Eliminar aporte de ${formatCOP(row.amount)} del ${row.occurred_on}`}
+                    disabled={f.busy}
+                    onPress={() =>
+                      confirmAction(
+                        "Eliminar aporte",
+                        "Este dinero dejará de contar para tu meta.",
+                        "Eliminar",
+                        () => {
+                          void f.run(async () => {
+                            await remove({
+                              goalId: id,
+                              contributionId: row.id,
+                            }).unwrap();
+                            announce("Aporte eliminado");
+                          });
+                        },
+                      )
+                    }
+                  />
+                </View>
+              ))}
             </Card>
-          ))}
+          ) : null}
           <AppButton
             title="Archivar meta"
             variant="danger"

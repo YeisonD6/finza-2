@@ -5,6 +5,7 @@ import type { Movement } from "../../features/movements/types";
 import { AppText } from "./AppText";
 import { AmountText } from "./AmountText";
 import { categoryIcon } from "./categoryIcon";
+import { categoryTone } from "./categoryTheme";
 import { amountLabel } from "../formatting/money";
 import { dayLabel } from "../formatting/dates";
 import { colors, radii } from "../theme/tokens";
@@ -39,21 +40,25 @@ export function MovementRow({
     fontScale >= 1.5 ||
     (width > 0 && (movement.amount.length * 11 + 110) * fontScale > width - 60);
   const Icon = categoryIcon(category, isSystem);
+  const tone = categoryTone(category, isSystem, movement.category_id);
   const label = `${onPress ? "Editar " : ""}${amountLabel(movement.amount, movement.type)}. ${category}. ${movement.occurred_on}. ${movement.note ?? ""}. Movimiento ${index + 1}`;
   const content = (
     <>
       <View
         style={{
-          backgroundColor: colors.sage100,
-          borderRadius: radii.md,
-          padding: 12,
+          backgroundColor: tone.tint,
+          borderRadius: radii.control,
+          width: 44,
+          height: 44,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <DecorativeIcon
           icon={Icon}
-          size={24}
+          size={22}
           strokeWidth={1.75}
-          color={colors.forest700}
+          color={tone.ink}
         />
       </View>
       <View style={{ flex: 1, gap: 4 }}>
@@ -108,8 +113,8 @@ export function MovementRow({
   const style = {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    gap: 12,
-    paddingVertical: 16,
+    gap: 14,
+    paddingVertical: 14,
     borderBottomWidth: last ? 0 : 1,
     borderColor: colors.border,
     minHeight: 48,
