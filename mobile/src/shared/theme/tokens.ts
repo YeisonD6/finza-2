@@ -56,7 +56,9 @@ const darkColors: Record<ColorToken, string> = {
   progress: "#7FC49A",
   sage300: "#A8BFA3",
   sage100: "#1B2621",
-  mint: "#2C5A44",
+  // Same light mint as the light scheme: it fills bars and pressed states on forest
+  // cards (3.23:1 on the forest700 card track; forest700 text on it 4.73:1).
+  mint: "#CFE3D2",
   track: "#26302B",
   ground: "#0A100D",
   surface: "#141B17",
