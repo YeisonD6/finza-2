@@ -13,5 +13,6 @@ module.exports = {
     // (tests/reanimated).
     "^react-native-reanimated$": "<rootDir>/tests/reanimated/index.cjs",
     "^react-native-reanimated/mock$": "<rootDir>/tests/reanimated/mock.cjs",
+    "^react-native-worklets$": "<rootDir>/tests/reanimated/worklets.cjs",
   },
 };

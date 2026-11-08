@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
-import { useColorScheme, View } from "react-native";
+import { useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Provider, useSelector } from "react-redux";
@@ -19,9 +20,12 @@ function ThemeRoot({ children }: { children: ReactNode }) {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
   applyColorScheme(scheme);
   return (
-    <View key={scheme} style={{ flex: 1, backgroundColor: colors.ground }}>
+    <GestureHandlerRootView
+      key={scheme}
+      style={{ flex: 1, backgroundColor: colors.ground }}
+    >
       {children}
-    </View>
+    </GestureHandlerRootView>
   );
 }
 function Navigation() {

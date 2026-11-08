@@ -49,4 +49,7 @@ module.exports = {
   withDelay: jest.fn((_delay, value) => value),
   withSequence: jest.fn((...values) => values[values.length - 1]),
   cancelAnimation: jest.fn(),
+  // Gesture Handler probes these to decide whether a config value is animated.
+  isSharedValue: (value) =>
+    !!value && typeof value === "object" && "value" in value,
 };
