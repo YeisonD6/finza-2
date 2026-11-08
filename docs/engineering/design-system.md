@@ -1,157 +1,183 @@
-# Sistema de diseño FINZA — «Brote»
+# Sistema de diseño FINZA — «Vidrio de bosque» (v4)
 
-**Dirección elegida:** Brote (7 nov 2026). Ahorrar es cultivar: el progreso crece como los dos brotes de la cabeza de Monedin. Superficie *Operate*: la estructura es la de una app financiera conocida (pestañas, tarjetas, listas, controles nativos); la marca vive en la paleta, la tipografía, la densidad y **un gesto propio**: la barra-tallo con un brote en la punta.
+**Dirección vigente:** Vidrio de bosque (8 nov 2026). Evoluciona «Brote» (v3, 7 nov 2026) hacia algo más minimalista y con profundidad: un solo dato protagonista por pantalla, superficies de vidrio translúcido sobre un fondo con luz suave, modo claro y oscuro según el sistema y Monedin como un personaje 2.5D que respira. Superficie *Operate*: la estructura sigue siendo la de una app financiera conocida (pestañas, listas, controles nativos); la marca vive en la paleta, la tipografía ligera de las cifras, el vidrio y la barra-tallo con brote.
 
 Reglas que nacen de la dirección:
 
-1. **El verde bosque es acción o dato principal.** Botones primarios, pestaña activa, encabezado del flujo neto. Nada decorativo usa verde bosque.
-2. **Las barras de progreso comparten escala.** Comparaciones mensuales y presupuestos usan la misma referencia visual para poder compararse.
-3. **El brote solo aparece en progreso y logros** (presupuestos, metas, hitos). No es ornamento.
-4. **Monedin con intención**: bienvenida, estados vacíos, confirmaciones relevantes, metas y consejos. Nunca en formularios, listas densas ni errores técnicos.
+1. **Una pregunta por pantalla.** Inicio responde «¿cómo va mi mes?»; lo demás (presupuestos, metas, categorías, consejos) vive en **Análisis**, a un toque.
+2. **El verde es acción o dato principal.** Botón primario, pestaña activa, barra del mes en curso. Nada decorativo usa verde salvo el resplandor de fondo.
+3. **El vidrio flota, el contenido no.** El desenfoque real solo va en lo que flota sobre contenido que se desplaza (barra de pestañas); las tarjetas son translúcidas sin desenfoque.
+4. **El brote solo aparece en progreso y logros.** No es ornamento.
+5. **Monedin con intención**: bienvenida, estados vacíos, confirmaciones relevantes, metas y consejos. Nunca en formularios, listas densas ni errores técnicos.
+6. **Nunca solo color** (se mantiene de v3): gasto lleva signo «−» y la palabra «Gasto» en la etiqueta accesible; la pestaña activa lleva su nombre escrito; los estados de presupuesto se dicen con texto.
+
+Exploración y tableros aprobados: artefacto «Vidrio de bosque» (Inicio claro/oscuro, Registrar, rig de Monedin, onboarding y referencias). Informe de referencias: [references-v4.md](references-v4.md).
 
 ## 1. Color
 
-Fuente única: `mobile/src/shared/theme/tokens.ts` (v2, 7 nov 2026). Contrastes calculados con la fórmula de luminancia relativa WCAG 2.x. v2 cambia el fondo salvia por **papel cálido** para que el verde sea acento y no ambiente, y añade un bosque profundo para el héroe de bienvenida.
+Fuente única: `mobile/src/shared/theme/tokens.ts`. La app sigue el esquema del sistema (`userInterfaceStyle: "automatic"`). `ThemeRoot` (`src/app/_layout.tsx`) lee `useColorScheme()`, llama a `applyColorScheme()` —que reemplaza la paleta en el mismo objeto `colors`— y remonta el árbol con `key={scheme}` para que todos los estilos en línea vuelvan a leerla.
+
+**División semántica (nueva en v4):** los tokens de **relleno** (`forest*`, `dangerFill`) llevan texto claro encima; los tokens de **tinta** (`accent`, `danger`, `expense`, `ink*`) son para texto e iconos sobre el fondo o una superficie. En claro `accent` y `forest700` coinciden; en oscuro `accent` es menta y `forest700` sigue siendo un relleno profundo.
+
+Contrastes calculados con la fórmula de luminancia relativa WCAG 2.x (script en el repositorio de trabajo, no inventados). «Tarjeta» es el vidrio compuesto sobre el fondo: `#F6F8F7` en claro y `#191E1C` en oscuro.
+
+### Claro
 
 | Token | Hex | Uso | Contraste verificado |
 |---|---|---|---|
-| `forest950` | `#10291D` | Fondo del héroe de bienvenida | `onForest` 14.32:1 · `mint` 11.48:1 |
-| `forest900` | `#163828` | Presionado de primario | — |
-| `forest700` | `#1E4634` | Primario, encabezado, pestaña activa, foco | 10.60:1 blanco · 9.56:1 `ground` · 8.67:1 `sage100` |
-| `forest600` | `#2D5E46` | Texto de ingresos, iconos de validación | 7.50:1 blanco |
-| `progress` | `#5E8B6A` | Relleno de barra-tallo | 3.08:1 sobre `track` (gráfico ≥3:1) |
-| `mint` | `#CFE3D2` | Anillos de crecimiento del héroe | Decorativo |
-| `sage300` | `#A8BFA3` | Avatar, decoración (eco del cuerpo de Monedin) | Decorativo, nunca texto |
-| `sage100` | `#E2EBDF` | Mosaicos de icono, avisos suaves (confirmar correo, consejos) | `inkMuted` 5.65:1 · `forest700` 8.67:1 |
-| `track` | `#E8E4DA` | Pista de barras | — |
-| `ground` | `#F5F3EE` | Fondo de la app (papel cálido) | — |
-| `surface` | `#FFFFFF` | Tarjetas, hojas, inputs, barra de pestañas | — |
-| `cream` / `creamInk` | `#F3E6DE` / `#3B2F2A` | Tarjeta de Monedin | 10.57:1 |
-| `cheek` | `#E8A9A2` | Acento decorativo mínimo (mejillas) | Decorativo |
-| `ink` | `#141D18` | Texto principal | 17.23:1 blanco · 15.54:1 `ground` |
-| `inkMuted` | `#545C56` | Texto secundario | 6.90:1 blanco · 6.22:1 `ground` |
-| `inkSubtle` | `#6B716C` | Metadatos de baja prioridad (solo ≥ 13 px) | 5.00:1 blanco · 4.50:1 `ground` |
-| `onForest` / `onForestMuted` | `#F4F7F2` / `#C9D8C6` | Texto sobre bosque | 9.81 / 7.13:1 sobre `forest700` |
-| `expense` / `danger` | `#8C3A4E` | Gastos, excedido, errores | 7.42:1 blanco · 6.69:1 `ground` |
-| `warning` | `#8A5A00` | Presupuesto cerca del límite | 5.93:1 blanco · 5.34:1 `ground` |
-| `border` | `#D9D4C8` | Separadores (no identifica controles) | Decorativo |
-| `borderStrong` | `#848780` | Borde de inputs y botón secundario (WCAG 1.4.11) | 3.65:1 blanco · 3.29:1 `ground` |
+| `ground` | `#E9EEEA` | Fondo de la app (salvia muy claro) | — |
+| `glass` | blanco 60 % | Tarjetas (`Card`), pastillas | Compuesto `#F6F8F7` |
+| `glassStrong` | `rgba(250,252,251,0.82)` | Barra de pestañas en Android (sin desenfoque) | Compuesto `#F7F9F8` |
+| `glassBorder` | blanco 90 % | Borde de vidrio (decorativo) | — |
+| `ink` | `#0E1712` | Texto principal | 15.55:1 fondo · 17.12:1 tarjeta |
+| `inkMuted` | `#47534C` | Texto secundario, iconos inactivos de la barra | 6.85:1 fondo · 7.54:1 tarjeta · 7.61:1 barra |
+| `inkSubtle` | `#5F6B64` | Metadatos (solo ≥ 13 px) | 4.74:1 fondo · 5.22:1 tarjeta |
+| `accent` / `forest700` | `#1E4634` | Acción, pestaña activa, foco, barra del mes | 9.03:1 fondo · 9.94:1 tarjeta · 8.54:1 `sage100` |
+| `onForest` | `#F4F7F2` | Texto sobre bosque | 9.81:1 sobre `forest700` |
+| `expense` / `danger` | `#8C3A4E` | Gastos, errores | 6.32:1 fondo · 6.96:1 tarjeta · 6.04:1 `expenseTint` |
+| `dangerFill` | `#8C3A4E` | Fondo del botón peligroso | `onForest` 6.87:1 |
+| `warning` | `#8A5A00` | Cerca del límite | 5.05:1 fondo |
+| `progress` | `#5A8767` | Relleno de barra-tallo | 3.16:1 sobre `track` (gráfico ≥ 3:1) |
+| `track` | `#DCE3DE` | Pista de barras | — |
+| `sage100` | `#E0E9E2` | Píldora de la pestaña activa, mosaicos | — |
+| `borderStrong` | `#7D8781` | Borde de inputs, barras de meses anteriores | 3.16:1 fondo · 3.48:1 tarjeta (WCAG 1.4.11) |
+| `glowA` | `#B9E2C7` | Resplandor de fondo (decorativo) | Ver nota |
 
-En v2 `borderStrong` pasó de `#8E918A` a `#848780`: el primero daba 2.88:1 sobre `ground`, por debajo del 3:1 exigido para identificar controles.
+En v4 `progress` pasó de `#5E8B6A` a `#5A8767`: con la pista nueva el anterior daba 2.99:1, por debajo de 3:1. El widget nativo de Android conserva su propia pareja `#5E8B6A`/`#E8E4DA` (3,1:1, ver [widgets.md](widgets.md)).
 
-### Colores de categoría (v3, 7 nov 2026)
+### Oscuro
 
-Una familia terrosa y apagada por categoría, para que las listas y el gráfico se lean más rápido sin competir con el verde bosque. Fuente: `categoryPalette` en `tokens.ts` y `categoryTone()` en `shared/ui/categoryTheme.ts`. Las categorías del sistema tienen un tono fijo; las personales reciben uno estable derivado de su id. **El color nunca va solo**: siempre acompaña al nombre de la categoría y a su icono.
+| Token | Hex | Uso | Contraste verificado |
+|---|---|---|---|
+| `ground` | `#0A100D` | Fondo | — |
+| `surface` | `#141B17` | Superficie sólida (Reducir transparencia) | — |
+| `glass` | blanco 6 % | Tarjetas | Compuesto `#191E1C` |
+| `glassStrong` | `rgba(22,30,26,0.86)` | Barra en Android | Compuesto `#141C18` |
+| `ink` | `#F1F4F0` | Texto principal | 17.33:1 fondo · 15.23:1 tarjeta |
+| `inkMuted` | `#A3AEA7` | Texto secundario | 8.39:1 fondo · 7.37:1 tarjeta · 7.58:1 barra |
+| `inkSubtle` | `#909B94` | Metadatos | 6.68:1 fondo · 5.87:1 tarjeta |
+| `accent` / `forest600` | `#8FD9AE` | Acción como tinta, pestaña activa, barra del mes | 11.63:1 fondo · 10.21:1 tarjeta · 9.44:1 `sage100` |
+| `forest700` | `#2E6A4F` | Relleno del botón primario | `onForest` 5.91:1 |
+| `expense` / `danger` | `#F2A1B1` | Gastos, errores | 9.62:1 fondo · 8.45:1 tarjeta · 7.55:1 `expenseTint` |
+| `dangerFill` | `#A84459` | Fondo del botón peligroso | `onForest` 5.34:1 |
+| `warning` | `#E8B65C` | Cerca del límite | 10.32:1 fondo |
+| `progress` | `#7FC49A` | Barra-tallo | 6.67:1 sobre `track` |
+| `track` | `#26302B` | Pista | — |
+| `borderStrong` | `#6B766F` | Bordes de control | 4.07:1 fondo · 3.57:1 tarjeta |
+| `glowA` | `#2F7464` al 55 % | Resplandor de fondo | Ver nota |
 
-| Familia | Categoría | `tint` (fondo del icono) | `ink` (icono/texto) | `chart` (dona y barras) | `ink`/`tint` | `chart`/blanco |
-|---|---|---|---|---|---|---|
-| salary | Salario | `#E2EBDF` | `#1E4634` | `#2D5E46` | 8.67:1 | 7.50:1 |
-| income | Otros ingresos | `#DCEBE7` | `#1D5247` | `#2F7464` | 7.27:1 | 5.52:1 |
-| food | Alimentación | `#F7E2D8` | `#8A3A20` | `#B5532F` | 6.22:1 | 4.95:1 |
-| transport | Transporte | `#DFE7F0` | `#284766` | `#47698F` | 7.71:1 | 5.70:1 |
-| services | Servicios | `#F5EAD0` | `#6E4E00` | `#A57A12` | 6.38:1 | 3.89:1 |
-| other | Otros gastos | `#EEE2EC` | `#673660` | `#8C5683` | 7.36:1 | 5.56:1 |
-| custom | Sin tono asignado | `#ECE8DF` | `#4A514B` | `#7A7F78` | 6.68:1 | 4.09:1 |
+**Nota sobre el resplandor:** `AmbientGlow` es un degradado radial estático cuyo centro cae en la esquina superior derecha, detrás del área segura. En su punto máximo `ink`, `accent` y `expense` siguen sobre 5:1 en ambos modos, e `inkMuted` sobre 4.5:1 (5.66 claro, 4.53 oscuro); `inkSubtle` baja a 3.91:1 (claro) y 3.61:1 (oscuro), por eso **no se coloca texto `inkSubtle` en esa esquina**. Fuera del centro el degradado se desvanece al fondo.
 
-`chart` supera 3:1 sobre blanco (WCAG 1.4.11, gráficos). `expenseTint` `#F4E4E7` es el fondo de iconos de gasto y filas de riesgo (`expense` encima: 6.04:1). `forestGlassStrong` (blanco al 18 %) es la pista de barras sobre bosque. El avatar usa `forest900` sobre `sage300` (6.53:1).
+### Colores de categoría
 
-**Marcas de terceros:** el logotipo «G» de Google conserva sus cuatro colores oficiales y el botón de Apple es el componente del sistema (`AppleAuthenticationButton`); ambos están exentos de los tokens por las guías de marca de cada proveedor.
+Familias terrosas por categoría, una versión por modo (`categoryPalette`, mutada con el esquema). Las categorías del sistema tienen tono fijo; las personales reciben uno estable derivado de su id. El color siempre acompaña al nombre y al icono.
 
-**Nunca solo color:** gasto lleva signo «−» y la palabra «Gasto» en la etiqueta accesible; presupuestos dicen «Al día», «Cerca del límite» o «Excedido por $…»; la comparación usa flecha + texto «más/menos que octubre».
+| Familia | Claro `ink`/`tint` | Claro `chart`/tarjeta | Oscuro `ink`/`tint` | Oscuro `chart`/tarjeta |
+|---|---|---|---|---|
+| salary | 8.67:1 | 7.03:1 | 8.98:1 | 6.96:1 |
+| income | 7.27:1 | 5.18:1 | 8.77:1 | 6.77:1 |
+| food | 6.22:1 | 4.64:1 | 8.22:1 | 5.70:1 |
+| transport | 7.71:1 | 5.34:1 | 8.32:1 | 6.46:1 |
+| services | 6.38:1 | 3.65:1 | 8.81:1 | 7.01:1 |
+| other | 7.36:1 | 5.22:1 | 8.39:1 | 5.56:1 |
+| custom | 6.68:1 | 3.83:1 | 8.93:1 | 6.31:1 |
+
+Todos los `chart` superan 3:1 (WCAG 1.4.11) y todas las tintas 4.5:1.
+
+**Marcas de terceros:** el logotipo «G» de Google conserva sus colores oficiales y el botón de Apple es el componente del sistema; ambos están exentos de los tokens.
 
 ## 2. Tipografía
 
-**Manrope** (variable, OFL, vía `@expo-google-fonts/manrope`): sans grotesca humanista con cifras claras; no está entre los defaults saturados y tiene numerales tabulares para montos. Todos los montos usan `fontVariant: ['tabular-nums']`.
+**Manrope** (OFL, `@expo-google-fonts/manrope`). v4 añade el peso **300 (`Manrope_300Light`)** para la cifra protagonista: una cifra grande y ligera se lee como «el dato» sin gritar. Todos los montos usan `fontVariant: ['tabular-nums']`.
 
 | Variante | Tamaño/alto de línea | Peso | Uso |
 |---|---|---|---|
-| `hero` | 34/40 | 800 (`Manrope_800ExtraBold`), tracking −0.8 | Titular de bienvenida y de pantallas de acceso |
-| `display` | 40/48 | 800, tracking −0.5 | Flujo neto del mes |
+| `amount` | 52/60 (60/72 en Registrar) | 300, tracking −2 | Flujo neto en Inicio, monto que se escribe |
+| `hero` | 34/40 | 800, tracking −0.8 | Titular de bienvenida y acceso |
+| `display` | 40/48 | 800, tracking −0.5 | Montos de formularios secundarios (metas, presupuestos) |
 | `title` | 28/36 | 700 | Título de pantalla |
 | `heading` | 20/28 | 700 | Secciones |
-| `subhead` | 17/24 | 600 | Nombres en filas, montos de tarjeta |
-| `body` | 16/24 | 500 | Texto general (mínimo para lectura) |
-| `label` | 14/20 | 600 | Etiquetas de campos y botones pequeños |
-| `caption` | 13/18 | 500 | Metadatos (fecha, categoría) |
+| `subhead` | 17/24 | 600 | Nombres en filas, Gasto/Ingreso |
+| `body` | 16/24 | 500 | Texto general |
+| `label` | 14/20 | 600 | Etiquetas y botones pequeños |
+| `caption` | 13/18 | 500 | Metadatos |
 
-Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en montos ni etiquetas; los contenedores crecen con el texto (probado a 200 %). `lineHeight` explícito en todas las variantes para evitar recortes de acentos y descendentes.
+Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en etiquetas; la cifra de Inicio usa `adjustsFontSizeToFit` en una línea para que montos de muchos dígitos no se partan. El campo de monto de Registrar mide su texto con un gemelo oculto para que el «$» quede pegado a la cifra.
 
 ## 3. Espacio, forma y profundidad
 
-- Escala de 4: `xs 4 · sm 8 · md 12 · lg 16 · xl 20 · 2xl 24 · 3xl 32 · 4xl 40 · 5xl 56`. Margen lateral de pantalla 20.
-- Radios: `sm 8` (chips) · `md 12` (mosaicos de icono) · `control 16` (inputs y botones) · `lg 24` (tarjetas) · `xl 32` (base del encabezado, hoja de bienvenida) · `pill 999`.
-- Controles: inputs de 56 dp de alto con relleno lateral 16 y borde `borderStrong`; botones de 52 dp. El borde enfocado es `forest700` de 2 px.
-- Sombra de tarjeta: color `ink`, offset (0, 6), opacidad 0.06, radio 16, `elevation 2`. Botón flotante «+»: offset (0, 6), opacidad 0.3 de `forest700`, radio 16, `elevation 6`.
-- Áreas táctiles: mínimo 48×48 dp; controles visualmente menores amplían con `hitSlop`.
+- Escala de 4: `xs 4 · sm 8 · md 12 · lg 16 · xl 20 · 2xl 24 · 3xl 32 · 4xl 40 · 5xl 56`. Margen lateral 20 (24 en Inicio).
+- Radios: botones **en píldora** (radio 26 = mitad de su alto mínimo de 52) en toda la app; barra de pestañas 32; píldoras de 44 dp con radio 22; tarjetas `lg 24`; inputs `control 16`.
+- **Capas:** fondo (`ground` + `AmbientGlow`) → tarjetas de vidrio (`glass` + borde `glassBorder`) → elementos flotantes (`GlassSurface`). Sombra de la barra: color `shadow`, offset (0, 12), opacidad 0.16, radio 24, `elevation 8`.
+- **`GlassSurface`** (`shared/ui/Glass.tsx`): en iOS y web, `BlurView` (intensidad 40) + velo `glass`; en Android, relleno denso `glassStrong` sin desenfoque en vivo (un desenfoque real necesita capturar un `BlurTargetView`); con **Reducir transparencia** (iOS) se vuelve `surface` sólido.
+- Áreas táctiles: mínimo 48×48 dp (44 dp de alto en píldoras con `hitSlop` o fila de 48).
 
 ## 4. Iconografía
 
-`lucide-react-native` (trazo 1.75, tamaños 20/24), una sola familia. Mapa de categorías del sistema: Salario → `BriefcaseBusiness`, Otros ingresos → `Coins`, Alimentación → `UtensilsCrossed`, Transporte → `Bus`, Servicios → `Zap`, Otros gastos → `Shapes`; categorías privadas → `Tag`. Iconos siempre acompañados de texto o con `accessibilityLabel`; los decorativos se ocultan al lector.
+`lucide-react-native` (trazo 1.75; 2.25 en la pestaña activa), una sola familia. Mapa de categorías sin cambios: Salario → `BriefcaseBusiness`, Otros ingresos → `Coins`, Alimentación → `UtensilsCrossed`, Transporte → `Bus`, Servicios → `Zap`, Otros gastos → `Shapes`, personales → `Tag`. Iconos siempre con texto o `accessibilityLabel`; los decorativos se ocultan al lector.
 
 ## 5. Componentes (`mobile/src/shared/ui`)
 
 | Componente | Responsabilidad | Accesibilidad |
 |---|---|---|
-| `AppText` | Variantes tipográficas con tokens | Escalado, `lineHeight` |
-| `AppButton` | `primary` · `secondary` · `ghost` · `danger`; estados presionado, deshabilitado, ocupado | role `button`, `accessibilityState`, 48 dp, háptico ligero opcional |
+| `AppText` | Variantes tipográficas | Escalado, `lineHeight` |
+| `AppButton` | `primary` · `secondary` · `ghost` · `danger` (fondo `dangerFill`), en píldora | role `button`, `accessibilityState`, 52 dp |
 | `IconButton` | Acción solo icono | `accessibilityLabel` obligatorio, 48 dp |
-| `Card` | Superficie blanca con radio y sombra | Agrupa contenido relacionado (`accessible` cuando es un solo dato) |
-| `AmountText` | Formatea COP desde cadena, signo y color semántico | Etiqueta hablada «Gasto de 86 mil 400 pesos» |
-| `SproutProgress` | Barra-tallo con brote en la punta, estado textual; `caption` opcional más corto cuando la fila ya nombra el elemento | role `progressbar`, `accessibilityValue {min,max,now,text}` (el texto hablado conserva el nombre) |
-| `MonthSwitcher` | ‹ Mes › con límites | Botones con etiqueta «Mes anterior: octubre 2026» |
-| `SegmentedControl` | Pista salvia con el segmento elegido elevado en blanco: borde bosque (10.6:1), check y negrita, nunca solo el relleno | role `tab`, `selected` |
-| `CategoryChip` | Selección de categoría; sin elegir es blanco con icono del color de su categoría, elegido es bosque con check | role `radio`, `selected`, marca visual + texto |
-| `TextField` / `AmountField` | Campos con etiqueta persistente, error asociado | label, hint con error, foco al primer inválido |
-| `ListRow` / `MovementRow` | Fila de movimiento (icono, nombre, fecha, monto) | Un solo foco con resumen completo |
-| `EmptyState` | Monedin + mensaje + acción | Imagen decorativa oculta; texto significativo |
-| `Banner` | Éxito/error/información en línea | Anuncio una sola vez + háptico |
-| `TabBar` | Barra inferior con botón central «+»; etiquetas completas a 12 px (el anillo de foco va en la píldora, no resta ancho) | role `tab`, `selected`, etiqueta «Registrar movimiento» |
-| `SettingsRow` | Fila de ajustes con mosaico de icono; `palette` le da su propio tono | Un solo foco con título y detalle |
-| `Screen` | Pantalla con título; «volver» es un chevrón de 48 dp (`IconButton`) sobre el título; el título de los modales se ajusta en varias líneas | Etiqueta de volver explícita |
-| `Monedin` | Mascota (imagen recortada de la referencia) con estados de movimiento | Decorativa (`accessible={false}`) salvo cuando lleva mensaje |
+| `Card` | Vidrio translúcido con borde y radio 24 | Agrupa contenido relacionado |
+| `GlassSurface` / `AmbientGlow` | Vidrio flotante / luz de fondo estática | El resplandor se oculta al lector |
+| `AmountText` | Formatea COP desde cadena; variante `amount` ligera | Etiqueta hablada «Monto de $ … pesos colombianos» |
+| `AmountField` | Campo de monto; `hero` = cifra grande centrada con «$», sin caja (solo un error dibuja la línea inferior) | Etiqueta «Monto», pista con las reglas de formato |
+| `UnderlineTabs` | Dos o tres palabras; la elegida en `ink` con subrayado de 2 px y negrita | role `tablist`/`tab`, `selected`; nunca solo color |
+| `SegmentedControl` | Pista salvia con segmento elevado; variante `quiet` = píldoras de vidrio separadas (fecha en Registrar) | role `tab`, `selected`, check + negrita |
+| `CategoryChip` | Selección de categoría en píldora | role `radio`, `selected` |
+| `TextField` | Etiqueta persistente, error asociado; ranuras `leading`/`trailing` | label, pista con error, foco al primer inválido |
+| `SproutProgress` | Barra-tallo con brote | role `progressbar`, `accessibilityValue` |
+| `MonthSwitcher` | ‹ Mes › con límites | Etiquetas «Mes anterior: …» |
+| `MovementRow` | Fila de movimiento | Un solo foco con resumen completo |
+| `TabBar` | Barra de vidrio **flotante**: solo la pestaña activa muestra su palabra (icono + nombre en píldora `sage100`); «+» central | role `tab`, `selected`, nombres hablados en todas |
+| `Screen` | Pantalla con título, resplandor y relleno inferior para la barra (`TabBarSpaceContext`); el pie de los formularios ya no es una franja blanca | Foco al título al entrar |
+| `Monedin` | Rig 2.5D de la mascota (sección 6) | Decorativo (`accessible={false}`) |
 
 ## 6. Monedin
 
-- Recurso: `mobile/assets/brand/monedin{,@2x,@3x}.png`, recortado sin alterar la referencia `assets/brand/monedin-reference.jpg`.
-- Tamaños: `hero` 200 (bienvenida), `md` 120 (vacíos, celebraciones), `sm` 56 (cabecera de acceso, consejos, avisos).
-- Momentos: bienvenida (héroe con anillos de crecimiento), recorrido de 4 pasos (meta de ejemplo), cabecera de acceso y recuperación (pequeño, en reposo), correo enviado y contraseña restablecida, correo confirmado (celebra), primer uso sin movimientos, lista vacía, meta creada/completada, presupuesto excedido (consejo amable, nunca regaño), consejo del mes en Inicio (máximo una tarjeta).
-- Voz: tú, cercano y breve. Ej.: «Vas muy bien. Te quedan $ 180.000 para comida.» / «Te pasaste $ 18.000 en transporte. ¿Ajustamos el presupuesto?»
+- Recurso: `mobile/assets/brand/monedin{,@2x,@3x}.png`, recortado sin alterar la referencia `assets/brand/monedin-reference.jpg`. **v4 no redibuja la mascota**: anima capas sobre la misma imagen.
+- **Rig 2.5D** (`shared/brand/Monedin.tsx`, Reanimated en el hilo de UI):
+  - *Respiración*: `scaleY 1→1.014`, `scaleX 1→0.994` y `translateY` mínimo, con origen en los pies (`transformOrigin 50% 92%`), ciclo ≈ 3.4 s seno.
+  - *Parpadeo*: dos párpados del color del pelaje muestreado (`#D7C6BC`), ubicados sobre los ojos medidos en `monedin@3x.png` (761×768), `scaleY 0→1→0` en 180 ms con origen arriba; intervalo irregular 2.8–5.4 s y doble parpadeo ocasional.
+  - *Sombra de contacto*: elipse bajo los pies que se encoge y aclara con la respiración y los saltos.
+  - *Inclinación*: en tamaños `md` y `hero`, el sensor de gravedad (`useAnimatedSensor`, 32 ms) inclina la figura hasta ±8° (`hero`) o ±5° (`md`) con un resorte suave; el sensor solo se registra mientras Monedin está en reposo y el movimiento está permitido.
+  - Sin brillo especular: sin recortar a la silueta se vería como un rectángulo sobre el fondo.
+- Tamaños: `hero` 200 (bienvenida), `md` 120 (vacíos, celebraciones), `sm` 56 (cabeceras, consejos, avisos).
+- Momentos y voz: sin cambios respecto de v3 (bienvenida, recorrido, acceso, confirmaciones, vacíos, metas, consejo del mes ahora en Análisis). Tú, cercano y breve.
 
 ## 7. Movimiento
 
-Herramienta: `Animated` de React Native con `useNativeDriver: true` (solo `transform` y `opacity`). Hook `useReducedMotion()` basado en `AccessibilityInfo.isReduceMotionEnabled` + listener. Curvas: `easeOut = Easing.bezier(0.23, 1, 0.32, 1)`, `easeInOut = Easing.bezier(0.77, 0, 0.175, 1)`.
+Herramientas: `Animated` de React Native (`useNativeDriver: true`) para la interfaz y **Reanimated 4** para el rig de Monedin. Hook `useReducedMotion()` basado en `AccessibilityInfo`. Curvas: `easeOut = bezier(0.23, 1, 0.32, 1)`, `easeInOut = bezier(0.77, 0, 0.175, 1)`; la respiración usa seno (`Easing.inOut(Easing.sin)`).
 
 | Momento | Frecuencia / propósito | Especificación | Reduce Motion |
 |---|---|---|---|
-| Presión de botón | Decenas al día / feedback | `scale 1→0.97`, 120 ms `easeOut`; vuelta 160 ms | Sin escala; solo cambio de color |
-| Cambio de pestaña | Decenas al día | **Sin animación** (cambio instantáneo) | — |
-| Entrada de pantalla de acceso | Ocasional / continuidad | Bloques (cabecera, formulario, pie) con `opacity 0→1` + `translateY 12→0`, 320 ms `easeOut`, escalonado 40 ms (`useEntrance`) | Solo opacidad 150 ms |
-| Héroe de bienvenida | Raro / primera vez | Anillos `scale 0.86→1` + opacidad 900 ms; Monedin aparece y queda en reposo; la hoja de papel sube `translateY 32→0` en 420 ms | Estado final; hoja con opacidad 150 ms |
-| Recorrido de bienvenida | Raro | Desplazamiento horizontal paginado animado | Salto directo de página |
-| Navegación a modal/pantalla | Ocasional / continuidad espacial | Transición nativa de la plataforma (stack) | Transición nativa (el SO la reduce) |
-| Cambio de mes en Inicio | Ocasional / evitar salto brusco | Contenido `opacity 0→1` + `translateY 8→0`, 220 ms `easeOut` | Solo opacidad 150 ms |
-| Cifras | Lectura de datos | **Sin conteo animado**: los datos que se leen no se mueven por estilo | — |
-| Barra-tallo | Ocasional / indicación de estado | Relleno por `scaleX` desde la izquierda, 280 ms `easeOut`, escalonado 40 ms; el brote aparece al final con `opacity` 150 ms | Estado final sin animación |
-| Banner de éxito | Ocasional / feedback | Entra `translateY −16→0` + opacidad, 240 ms `easeOut`; sale por el mismo camino 200 ms; háptico `success` | Solo opacidad |
-| Error de validación | Ocasional / feedback | Sin sacudidas; borde de error + háptico `error` + anuncio | Igual |
-| Monedin aparece | Raro / deleite | `scale 0.94→1` + opacidad, spring `damping 14, stiffness 160` | Solo opacidad |
-| Monedin en reposo | Raro (onboarding, vacíos) | `translateY 0↔−4`, ciclo 2.4 s `easeInOut`, en bucle solo mientras está visible | Estático |
-| Monedin celebra | Raro (meta cumplida, primer movimiento) | Salto `translateY 0→−12→0` + `rotate ±6°`, spring, una vez; háptico `success` | Solo háptico + mensaje |
+| Presión de botón | Decenas al día / feedback | `scale 1→0.97`, 120 ms; vuelta 160 ms | Solo color |
+| Cambio de pestaña | Decenas al día | **Sin animación** | — |
+| Cambio de mes en Inicio | Ocasional / evitar salto | `opacity` + `translateY 8→0`, 220 ms | Solo opacidad 150 ms |
+| Entrada de acceso | Ocasional | Bloques escalonados 40 ms, 320 ms | Solo opacidad 150 ms |
+| Cifras | Lectura de datos | **Sin conteo animado** | — |
+| Barra-tallo | Ocasional / estado | `scaleX` 280 ms, escalonado 40 ms | Estado final |
+| Banner de éxito | Ocasional / feedback | `translateY −16→0`, 240 ms; sale 200 ms; háptico | Solo opacidad |
+| Monedin aparece | Raro / deleite | `scale 0.94→1` + opacidad 320 ms `easeOut` | Solo opacidad 200 ms |
+| Monedin en reposo | Raro (bienvenida, vacíos) | Respiración + parpadeo + inclinación (sección 6) | Estático, sin párpados ni sensor |
+| Monedin celebra | Raro (meta, primer movimiento) | Salto con resorte `damping 14, stiffness 160` + giro ±6°, una vez; háptico | Solo háptico + mensaje |
+| Fondo y vidrio | Siempre visible | **Estáticos**: el resplandor no se mueve | — |
 
 ## 8. Voz y contenido
 
-Español de Colombia, tú. Montos `$ 1.245.000` (punto de miles, sin decimales cuando son ,00; dos decimales si existen). Fechas «7 nov 2026», «Hoy», «Ayer». Nunca «saldo» para el flujo neto. Errores dicen qué pasó y cómo seguir.
+Español de Colombia, tú. Montos `$ 1.245.000`. Fechas «7 nov 2026», «Hoy», «Ayer». Nunca «saldo» para el flujo neto. Errores dicen qué pasó y cómo seguir. Cuando no hay porcentaje de comparación (mes anterior en cero o negativo) la razón se muestra en pantalla, no solo al lector.
 
-## 9. Composición por pantalla (v3, 7 nov 2026)
+## 9. Composición por pantalla (v4, 8 nov 2026)
 
-Referencias revisadas: Copilot Money y YNAB (desglose por categoría en dona con leyenda textual, color solo donde informa) y patrones de tarjetas de resumen de apps financieras. FINZA toma la idea, no el aspecto: tonos terrosos propios, brote y anillos de crecimiento.
+- **Inicio:** título FINZA pequeño, avatar de vidrio, selector de mes. Protagonista: «Flujo neto del mes» en cifra ligera grande; debajo, una sola línea con flecha + «Ingresos» y «Gastos»; la comparación con el mes anterior como pie. Tarjeta de vidrio «Gasto por mes» (seis barras, el mes en curso en `accent`) con «Ver análisis». «Recientes» con tres movimientos y «Ver todos». Sin atajos ni encabezado bosque.
+- **Análisis** (`/insights`, nuevo): frase de cuánto se ha gastado del ingreso, consejo de Monedin, presupuestos, metas, tendencia y dona por categoría (lo que en v3 estaba en Inicio).
+- **Registrar:** hoja modal con «Gasto · Ingreso» subrayados, «Monto» como cifra de 60 px centrada, píldora «Escribir como frase» (lápiz; despliega el campo de frase con estado *expandido* anunciado), categorías en una fila desplazable, fecha en píldoras «Hoy · Ayer · Otra fecha», nota opcional y «Guardar gasto» en píldora. Se usa el teclado numérico del sistema en vez de un teclado propio: conserva dictado, lectores de pantalla y teclados externos.
+- **Movimientos, Metas, Presupuestos, Perfil:** heredan el fondo con resplandor, las tarjetas de vidrio, los botones en píldora y la barra flotante; su estructura no cambió en v4.
+- **Acceso y bienvenida:** Monedin `hero` con el rig sobre anillos estáticos.
 
-- **Inicio:** encabezado bosque con anillos de crecimiento estáticos en la esquina (sin movimiento: se ve muchas veces al día), avatar salvia y respeto del área segura superior. Los atajos se montan sobre el borde inferior del encabezado. Movimientos con iconos de color por categoría. Presupuestos con porcentaje y estado en color + texto. **Gasto por categoría**: dona de partes del todo (decorativa, oculta al lector) + total gastado + leyenda con monto, porcentaje y barra a escala compartida.
-- **Movimientos:** totales exactos del mes (ingresos/gastos) tomados del resumen compartido con Inicio, filtros más livianos.
-- **Metas:** tarjeta bosque con el total ahorrado de las metas activas, barra menta y la acción «Nueva meta»; cada tarjeta de meta es un solo botón (porcentaje, fecha, barra-tallo, Ahorrado/Meta/Faltan). El detalle lista los aportes como filas con acción de eliminar.
-- **Presupuestos:** tarjeta bosque con lo gastado frente al total de límites y cuántos están en alerta; categorías sin presupuesto en filas compactas con «Definir».
-- **Perfil:** cada ajuste con su tono; la zona de riesgo usa `expenseTint`.
-- **Acceso y bienvenida:** anillos de crecimiento discretos en la esquina (recortados al ancho de la pantalla), Monedin sobre un disco salvia; los pasos de la bienvenida se apoyan en un disco salvia con anillos.
-- **Widgets:** vista previa en vivo del widget de resumen que respeta «Ocultar montos».
-
-Reglas que se mantienen: el verde bosque solo en acción o dato principal; el brote solo en progreso; Monedin solo en momentos con intención; ninguna cifra se anima.
+Reglas que se mantienen: verde solo en acción o dato principal; brote solo en progreso; Monedin solo con intención; ninguna cifra se anima; nada se comunica solo con color.
