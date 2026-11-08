@@ -13,7 +13,7 @@ import { AppText } from "./AppText";
 import { IconButton } from "./IconButton";
 import { GlassSurface } from "./Glass";
 import { fontFamily } from "../theme/fonts";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export const tabItems = [
   { name: "index", label: "Inicio", icon: House },
   { name: "movements", label: "Movimientos", icon: ArrowLeftRight },
@@ -43,6 +43,7 @@ export function TabBar({
   onTab(name: string): void;
   onRegister(): void;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState("");
   const inset = useSafeAreaInsets();
   function tab({ name, label, icon: Icon }: (typeof tabItems)[number]) {

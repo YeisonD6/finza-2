@@ -8,7 +8,7 @@ import { categoryIcon } from "./categoryIcon";
 import { categoryTone } from "./categoryTheme";
 import { amountLabel } from "../formatting/money";
 import { dayLabel } from "../formatting/dates";
-import { colors, radii } from "../theme/tokens";
+import { colors, radii, useThemeRefresh } from "../theme/tokens";
 export function MovementRow({
   movement,
   category = "Categoría",
@@ -32,6 +32,7 @@ export function MovementRow({
   /** Drop the divider on the last row of a group. */
   last?: boolean;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState(false);
   const { fontScale, width: windowWidth } = useWindowDimensions();
   const [width, setWidth] = useState(windowWidth - 40);

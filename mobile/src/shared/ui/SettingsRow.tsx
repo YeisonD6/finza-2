@@ -4,7 +4,13 @@ import type { LucideIcon } from "lucide-react-native";
 import { ChevronRight } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { DecorativeIcon } from "./DecorativeIcon";
-import { colors, radii, shadows, type CategoryTone } from "../theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  type CategoryTone,
+  useThemeRefresh,
+} from "../theme/tokens";
 
 /** One tappable settings line: icon tile, title, optional detail, chevron. */
 export function SettingsRow({
@@ -25,6 +31,7 @@ export function SettingsRow({
   palette?: CategoryTone;
   onPress(): void;
 }) {
+  useThemeRefresh();
   const danger = tone === "danger";
   return (
     <Pressable
@@ -86,6 +93,7 @@ export function SettingsGroup({
   title: string;
   children: ReactNode;
 }) {
+  useThemeRefresh();
   const rows = Children.toArray(children).filter(Boolean);
   return (
     <View style={{ gap: 8 }}>

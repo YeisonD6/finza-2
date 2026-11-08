@@ -9,7 +9,7 @@ import {
   monthName,
   shiftMonth,
 } from "../../../shared/formatting/dates";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 
 const CHART_HEIGHT = 112;
 const toCents = (value: string) =>
@@ -53,6 +53,7 @@ export function trendBars(
  * shared scale; the figures are spoken as text, so the chart itself is decorative.
  */
 export function MonthlyTrend({ month }: { month: string }) {
+  useThemeRefresh();
   const months = useSixMonths(month);
   if (months.some((item) => !item.data)) return null;
   const rows = months.map((item) => item.data as DashboardSummary);
@@ -189,6 +190,7 @@ export function MonthlySpendCard({
   month: string;
   onOpen(): void;
 }) {
+  useThemeRefresh();
   const months = useSixMonths(month);
   // The card (and its «Ver análisis», the only way into Análisis from Inicio) always
   // renders; the bars only when all six months are loaded and something was spent.

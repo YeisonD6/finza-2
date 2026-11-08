@@ -1,7 +1,8 @@
+import { useSyncExternalStore } from "react";
 /**
  * «Vidrio de bosque» (v4): one palette per system scheme. `colors` and
- * `categoryPalette` are mutated in place by `applyColorScheme`, and the root layout
- * remounts the tree when the scheme changes, so every inline style re-reads them.
+ * `categoryPalette` are mutated in place by `applyColorScheme`; components that read
+ * them call `useThemeRefresh()` so they re-render (never remount) on a change.
  * Fill tokens (forest*, dangerFill) hold light text; ink tokens (accent, danger,
  * expense, ink*) are for text and icons on the ground or a surface. Contrast ratios
  * are listed in docs/engineering/design-system.md.
@@ -128,7 +129,18 @@ export function getColorScheme() {
 /** Registers a rebuild for values derived from the palette at module scope. */
 export function onColorScheme(listener: () => void) {
   schemeListeners.add(listener);
-  return () => schemeListeners.delete(listener);
+  return () => {
+    schemeListeners.delete(listener);
+  };
+}
+/**
+ * Re-renders the calling component when the scheme changes, without remounting it,
+ * so inline styles re-read the swapped palette and local state (an unsaved form,
+ * the selected month, the navigation stack) survives. Every component that reads
+ * `colors`, `styles`, `categoryPalette` or the scheme during render calls it.
+ */
+export function useThemeRefresh() {
+  return useSyncExternalStore(onColorScheme, getColorScheme, getColorScheme);
 }
 /** Swaps the palette in place; returns true when it changed. */
 export function applyColorScheme(scheme: ColorScheme) {

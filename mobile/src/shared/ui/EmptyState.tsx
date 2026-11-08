@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { Monedin } from "../brand/Monedin";
 import { AppText } from "./AppText";
 import { AppButton } from "./AppButton";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function EmptyState({
   title,
   message,
@@ -16,6 +16,7 @@ export function EmptyState({
   onAction?(): void;
   active?: boolean;
 }) {
+  useThemeRefresh();
   return (
     <View style={{ alignItems: "center", paddingVertical: 24, gap: 16 }}>
       <Monedin size="md" motion={active ? "idle" : "none"} />

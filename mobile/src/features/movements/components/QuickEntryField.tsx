@@ -8,7 +8,7 @@ import { Banner } from "../../../shared/ui/Banner";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { parseQuickEntry } from "../../quick-entry/parser";
 import { announce } from "../../../shared/accessibility/announcements";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 import type { useMovementDraft } from "./useMovementDraft";
 /**
  * «almuerzo 18 mil ayer» fills the form for review. It sits behind one pill so the
@@ -19,6 +19,7 @@ export function QuickEntryField({
 }: {
   draft: ReturnType<typeof useMovementDraft>;
 }) {
+  useThemeRefresh();
   const [open, setOpen] = useState(false),
     [text, setText] = useState(""),
     [explanation, setExplanation] = useState("");

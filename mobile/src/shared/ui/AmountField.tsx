@@ -8,7 +8,7 @@ import { Text, TextInput, View } from "react-native";
 import { TextField } from "./TextField";
 import { AmountInput } from "./AmountInput";
 import { AppText } from "./AppText";
-import { typography, colors } from "../theme/tokens";
+import { typography, colors, useThemeRefresh } from "../theme/tokens";
 import { fontFamily } from "../theme/fonts";
 const amountHint =
   "Monto en pesos colombianos (COP). Mayor que cero. Usa coma o punto decimal, sin separadores de miles.";
@@ -22,6 +22,7 @@ export const AmountField = forwardRef<
     hero?: boolean;
   }
 >(function AmountField({ hero = false, ...props }, ref) {
+  useThemeRefresh();
   // A text input does not size to its content, so a hidden twin measures the figure.
   const [width, setWidth] = useState(48);
   const heroText = {

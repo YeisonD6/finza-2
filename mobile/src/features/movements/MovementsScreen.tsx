@@ -14,7 +14,12 @@ import { MovementFilters } from "./components/MovementFilters";
 import type { Movement } from "./types";
 import { groupByDay, type DayGroup } from "./domain";
 import { formatCOP } from "../../shared/formatting/money";
-import { colors, radii, shadows } from "../../shared/theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 import { useTabBarSpace } from "../../shared/ui/TabBar";
 export function MovementsScreen({
   initialMonth,
@@ -25,6 +30,9 @@ export function MovementsScreen({
   onEdit(record: Movement): void;
   active?: boolean;
 }) {
+  // The list only re-renders rows when its data changes; the scheme makes a theme
+  // change count too.
+  const scheme = useThemeRefresh();
   const f = useMovementList(initialMonth, active);
   const tabSpace = useTabBarSpace();
   const list = useRef<FlatList<DayGroup>>(null);
@@ -56,6 +64,7 @@ export function MovementsScreen({
           <FlatList
             ref={list}
             data={groups}
+            extraData={scheme}
             keyExtractor={(group) => group.day}
             contentContainerStyle={{
               padding: 20,

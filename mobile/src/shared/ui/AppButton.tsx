@@ -4,7 +4,7 @@ import { Animated, Pressable, type PressableProps } from "react-native";
 import { Check } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { styles } from "./styles";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 import { durations, easeOut, useReducedMotion } from "../theme/motion";
 import { tapLight } from "../theme/haptics";
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -33,6 +33,7 @@ export function AppButton({
   dangerGhost?: boolean;
   size?: "sm" | "md";
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState(false);
   const scale = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();

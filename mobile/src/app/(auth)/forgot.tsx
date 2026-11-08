@@ -6,7 +6,7 @@ import { auth } from "../../features/auth/runtime";
 import { AppButton, FormField } from "../../shared/ui/AuthControls";
 import { AppText } from "../../shared/ui/AppText";
 import { Monedin } from "../../shared/brand/Monedin";
-import { colors, radii } from "../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../shared/theme/tokens";
 import { error as errorHaptic } from "../../shared/theme/haptics";
 import {
   announce,
@@ -17,6 +17,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const RESEND_SECONDS = 30;
 
 export default function ForgotPassword() {
+  useThemeRefresh();
   const params = useLocalSearchParams<{ email?: string }>();
   const [email, setEmail] = useState(params.email ?? "");
   const [busy, setBusy] = useState(false);

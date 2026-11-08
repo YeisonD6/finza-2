@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 import { AppText } from "./AppText";
 import { tapLight } from "../theme/haptics";
 import { fontFamily } from "../theme/fonts";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 
 /**
  * Two or three words, the chosen one in ink with a 2 px underline. Quieter than a
@@ -22,6 +22,7 @@ export function UnderlineTabs<T extends string>({
   disabled?: boolean;
   label: string;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState<T | null>(null);
   return (
     <View

@@ -1,8 +1,9 @@
 import { View } from "react-native";
 import { AppText } from "../../../shared/ui/AppText";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 
 export function AuthDivider({ label }: { label: string }) {
+  useThemeRefresh();
   return (
     <View
       style={{ flexDirection: "row", alignItems: "center", gap: 12 }}

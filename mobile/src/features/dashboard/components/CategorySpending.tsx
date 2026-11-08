@@ -8,7 +8,7 @@ import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { categoryIcon } from "../../../shared/ui/categoryIcon";
 import { formatCOP, sumAmounts } from "../../../shared/formatting/money";
 import { categoryTone } from "../../../shared/ui/categoryTheme";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 type Expense = components["schemas"]["ExpenseByCategory"];
 /** Integer cents stay exact even at the API maximum. Only the final pixel ratio is numeric. */
 export const cents = (value: string) => BigInt(value.replace(".", ""));
@@ -34,6 +34,7 @@ function Donut({
 }: {
   slices: { key: string; share: number; color: string }[];
 }) {
+  useThemeRefresh();
   const radius = (SIZE - STROKE) / 2;
   const circumference = 2 * Math.PI * radius;
   const total = slices.reduce((acc, slice) => acc + slice.share, 0) || 1;
@@ -86,6 +87,7 @@ export function CategorySpending({
   items: Expense[];
   categories?: Category[];
 }) {
+  useThemeRefresh();
   const bars = categoryBars(items);
   if (!bars.length) return null;
   const summary = `Gasto por categoría: ${bars.map((item) => `${item.name} ${formatCOP(item.total).replace("$ ", "")} pesos, ${item.share_percent.replace(".", ",")} por ciento`).join("; ")}`;

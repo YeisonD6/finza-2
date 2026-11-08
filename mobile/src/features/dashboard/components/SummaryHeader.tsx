@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react-native";
 import type { DashboardSummary } from "../api";
 import { AppText } from "../../../shared/ui/AppText";
 import { AmountText } from "../../../shared/ui/AmountText";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 import { formatCOP, amountLabel } from "../../../shared/formatting/money";
 import { monthName, shiftMonth } from "../../../shared/formatting/dates";
 import { cents } from "./CategorySpending";
@@ -21,6 +21,7 @@ export function spentShare(income: string, expense: string): number | null {
  * used to sit on screen travel in the spoken label instead.
  */
 export function SummaryHeader({ data }: { data: DashboardSummary }) {
+  useThemeRefresh();
   const { delta, percent, reason } = data.comparison;
   const comparison =
     delta === null

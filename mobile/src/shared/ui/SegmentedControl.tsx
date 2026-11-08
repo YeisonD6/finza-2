@@ -5,7 +5,7 @@ import { AppText } from "./AppText";
 import { DecorativeIcon } from "./DecorativeIcon";
 import { tapLight } from "../theme/haptics";
 import { fontFamily } from "../theme/fonts";
-import { colors, radii, shadows } from "../theme/tokens";
+import { colors, radii, shadows, useThemeRefresh } from "../theme/tokens";
 
 /**
  * Lighter than a row of solid buttons: a sage track with the chosen segment raised in
@@ -28,6 +28,7 @@ export function SegmentedControl<T extends string>({
   disabled?: boolean;
   label: string;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState<T | null>(null);
   return (
     <View

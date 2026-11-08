@@ -6,12 +6,13 @@ import { AppText } from "../../../shared/ui/AppText";
 import { SproutProgress } from "../../../shared/ui/SproutProgress";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { formatCOP } from "../../../shared/formatting/money";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 
 export const goalPercentText = (value: string) =>
   value.replace(".", ",").replace(/,00$/, "");
 
 function Stat({ label, value }: { label: string; value: string }) {
+  useThemeRefresh();
   return (
     <View style={{ flexGrow: 1, flexBasis: 90, gap: 2 }}>
       <AppText variant="caption" style={{ color: colors.inkMuted }}>
@@ -26,6 +27,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 /** Goal summary: name, deadline, percent, sprout bar and the three figures that matter. */
 export function GoalProgress({ goal }: { goal: Goal }) {
+  useThemeRefresh();
   const completed = goal.status === "completed";
   return (
     <>

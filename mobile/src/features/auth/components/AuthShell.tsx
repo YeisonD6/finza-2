@@ -15,7 +15,7 @@ import { Monedin } from "../../../shared/brand/Monedin";
 import { AppText } from "../../../shared/ui/AppText";
 import { IconButton } from "../../../shared/ui/IconButton";
 import { focusAccessibility } from "../../../shared/accessibility/announcements";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 import { useEntrance } from "../../../shared/theme/entrance";
 
 /**
@@ -40,6 +40,7 @@ export function AuthShell({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  useThemeRefresh();
   const heading = useRef<ElementRef<typeof Text>>(null);
   const block = useEntrance(3);
   useEffect(() => {

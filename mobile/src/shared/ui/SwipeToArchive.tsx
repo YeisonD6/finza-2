@@ -14,7 +14,7 @@ import { AppText } from "./AppText";
 import { DecorativeIcon } from "./DecorativeIcon";
 import { tapLight } from "../theme/haptics";
 import { useReducedMotion } from "../theme/motion";
-import { colors, curves } from "../theme/tokens";
+import { colors, curves, useThemeRefresh } from "../theme/tokens";
 
 /** Distance (pt) past which letting go asks to archive. */
 export const ARCHIVE_THRESHOLD = 96;
@@ -46,6 +46,7 @@ export function SwipeToArchive({
   children:
     ReactNode | ((guard: (press: () => void) => () => void) => ReactNode);
 }) {
+  useThemeRefresh();
   const reduced = useReducedMotion();
   const offset = useSharedValue(0);
   const armed = useSharedValue(false);

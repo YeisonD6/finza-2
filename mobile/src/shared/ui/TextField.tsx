@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { styles } from "./styles";
 import { AppText } from "./AppText";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 
 export type TextFieldProps = TextInputProps & {
   label: string;
@@ -48,6 +48,7 @@ export const TextField = forwardRef<
   },
   ref,
 ) {
+  useThemeRefresh();
   const id = useId();
   const [focused, setFocused] = useState(false);
   const labelId = `field-${id}-label`;

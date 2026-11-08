@@ -16,7 +16,7 @@ import { useTabBarSpace } from "./TabBar";
 import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
 import { fontFamily } from "../theme/fonts";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function Screen({
   title,
   children,
@@ -46,6 +46,7 @@ export function Screen({
   active?: boolean;
   showBackAction?: boolean;
 }) {
+  useThemeRefresh();
   const heading = useRef<ElementRef<typeof Text>>(null);
   const tabSpace = useTabBarSpace();
   useEffect(() => {

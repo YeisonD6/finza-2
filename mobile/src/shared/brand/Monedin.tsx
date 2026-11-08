@@ -13,7 +13,12 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { curves, durations, getColorScheme } from "../theme/tokens";
+import {
+  curves,
+  durations,
+  getColorScheme,
+  useThemeRefresh,
+} from "../theme/tokens";
 import { useReducedMotion } from "../theme/motion";
 import { success } from "../theme/haptics";
 
@@ -45,6 +50,7 @@ export function Monedin({
   motion?: "none" | "idle" | "appear" | "celebrate";
   haptic?: boolean;
 }) {
+  useThemeRefresh();
   const reduced = useReducedMotion();
   const side = sizes[size];
   const live = !reduced && motion !== "none";

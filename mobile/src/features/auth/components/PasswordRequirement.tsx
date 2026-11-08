@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { CircleCheck, Circle } from "lucide-react-native";
 import { AppText } from "../../../shared/ui/AppText";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 
 /** Live requirement: icon shape and text change, not only color. */
 export function PasswordRequirement({
@@ -12,6 +12,7 @@ export function PasswordRequirement({
   met: boolean;
   label: string;
 }) {
+  useThemeRefresh();
   const Icon = met ? CircleCheck : Circle;
   return (
     <View

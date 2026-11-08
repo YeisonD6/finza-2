@@ -11,7 +11,7 @@ import { useTabBarSpace } from "../../shared/ui/TabBar";
 import { announce } from "../../shared/accessibility/announcements";
 import { formatCOP } from "../movements/domain";
 import { monthName } from "../../shared/formatting/dates";
-import { colors } from "../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../shared/theme/tokens";
 import type { Category, Movement } from "../movements/types";
 import { useDashboardQuery } from "./api";
 import { SummaryHeader } from "./components/SummaryHeader";
@@ -54,6 +54,7 @@ export function DashboardScreen({
   /** Shows the confirm-your-email reminder (never blocks the dashboard). */
   emailUnconfirmed?: boolean;
 }) {
+  useThemeRefresh();
   const tabSpace = useTabBarSpace();
   const skipSummary = useRef(silentInitialSummary),
     silenced = useRef(false);

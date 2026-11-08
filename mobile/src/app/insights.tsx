@@ -8,9 +8,10 @@ import { useCategoriesQuery } from "../features/movements/api";
 import { DashboardInsights } from "../features/dashboard/components/DashboardInsights";
 import { spentShare } from "../features/dashboard/components/SummaryHeader";
 import { monthLabel } from "../shared/formatting/dates";
-import { colors } from "../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../shared/theme/tokens";
 /** Everything Inicio leaves out to stay minimal: tips, budgets, goals, trend, categories. */
 export default function Insights() {
+  useThemeRefresh();
   const financial = useFinancial();
   const categories = useCategoriesQuery();
   const query = useDashboardQuery(financial.month);

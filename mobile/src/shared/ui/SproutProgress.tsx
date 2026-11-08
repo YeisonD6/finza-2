@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, View, Platform } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { AppText } from "./AppText";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 import { durations, easeOut, useReducedMotion } from "../theme/motion";
 export function SproutProgress({
   value,
@@ -21,6 +21,7 @@ export function SproutProgress({
   delay?: number;
   kind?: "budget" | "goal";
 }) {
+  useThemeRefresh();
   const now = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
   const status =
     value > 100 ? "Excedido" : value >= 80 ? "Cerca del límite" : "Al día";

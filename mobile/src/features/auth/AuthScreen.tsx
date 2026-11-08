@@ -7,7 +7,7 @@ import { IconButton } from "../../shared/ui/IconButton";
 import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
 import { AppButton, FormField } from "../../shared/ui/AuthControls";
 import { Feedback } from "../../shared/ui/Feedback";
-import { colors } from "../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../shared/theme/tokens";
 import {
   error as errorHaptic,
   success as successHaptic,
@@ -46,6 +46,7 @@ export function AuthScreen({
   initialRegister?: boolean;
   onRetrySession?(): void;
 } = {}) {
+  useThemeRefresh();
   const [register, setRegister] = useState(initialRegister);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

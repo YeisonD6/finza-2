@@ -11,7 +11,7 @@ import { AppButton, FormField } from "../../shared/ui/AuthControls";
 import { AppText } from "../../shared/ui/AppText";
 import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
 import { Feedback } from "../../shared/ui/Feedback";
-import { colors, radii } from "../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../shared/theme/tokens";
 import { error as errorHaptic } from "../../shared/theme/haptics";
 import {
   announce,
@@ -30,6 +30,7 @@ const LOST = [
  * re-enter it. Nothing happens until both match.
  */
 export default function DeleteAccount() {
+  useThemeRefresh();
   const profile = useSelector((s: RootState) => s.auth.profile);
   const hasPassword = profile?.has_password !== false;
   const email = profile?.email ?? "";

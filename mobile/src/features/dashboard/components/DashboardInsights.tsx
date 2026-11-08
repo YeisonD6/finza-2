@@ -13,7 +13,7 @@ import { AppText } from "../../../shared/ui/AppText";
 import { AppButton } from "../../../shared/ui/AppButton";
 import { QueryState } from "../../../shared/ui/QueryState";
 import { Monedin } from "../../../shared/brand/Monedin";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 export function DashboardInsights({
   data,
   categories,
@@ -23,6 +23,7 @@ export function DashboardInsights({
   categories: Category[];
   allowMascot?: boolean;
 }) {
+  useThemeRefresh();
   const query = useBudgetsQuery(data.month);
   const budgets = query.isError ? undefined : query.currentData?.items;
   const tip = budgets && allowMascot ? monedinTip(data, budgets) : null;

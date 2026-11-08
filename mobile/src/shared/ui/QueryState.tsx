@@ -2,7 +2,7 @@ import { ActivityIndicator } from "react-native";
 import { AppText } from "./AppText";
 import { AppButton } from "./AppButton";
 import { Banner } from "./Banner";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function QueryState({
   loading,
   error,
@@ -12,6 +12,7 @@ export function QueryState({
   error?: boolean;
   retry(): void;
 }) {
+  useThemeRefresh();
   if (error)
     return (
       <>

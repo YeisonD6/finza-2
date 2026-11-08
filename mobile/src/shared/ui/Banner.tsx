@@ -3,7 +3,7 @@ import { Animated } from "react-native";
 import { useAnnouncement } from "../accessibility/announcements";
 import { AppText } from "./AppText";
 import { Monedin } from "../brand/Monedin";
-import { colors, radii } from "../theme/tokens";
+import { colors, radii, useThemeRefresh } from "../theme/tokens";
 import { durations, easeOut, useReducedMotion } from "../theme/motion";
 import { error, success } from "../theme/haptics";
 export function Banner({
@@ -17,6 +17,7 @@ export function Banner({
   announce?: boolean;
   celebrate?: boolean;
 }) {
+  useThemeRefresh();
   useAnnouncement(announce ? message : "");
   const reduced = useReducedMotion();
   const opacity = useRef(new Animated.Value(0)).current;

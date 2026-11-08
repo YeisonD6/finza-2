@@ -7,7 +7,12 @@ import Svg, { Circle } from "react-native-svg";
 import { Monedin } from "../../shared/brand/Monedin";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
-import { colors, durations, radii } from "../../shared/theme/tokens";
+import {
+  colors,
+  durations,
+  radii,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 import { easeOut, useReducedMotion } from "../../shared/theme/motion";
 import { useEntrance } from "../../shared/theme/entrance";
 
@@ -17,6 +22,7 @@ import { useEntrance } from "../../shared/theme/entrance";
  * and the paper sheet rises with the promise and the two ways in.
  */
 function GrowthRings({ size }: { size: number }) {
+  useThemeRefresh();
   const reduced = useReducedMotion();
   const grow = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -73,6 +79,7 @@ function GrowthRings({ size }: { size: number }) {
 }
 
 export default function Welcome() {
+  useThemeRefresh();
   const { width, height, fontScale } = useWindowDimensions();
   const block = useEntrance(4, { delay: 160 });
   const reduced = useReducedMotion();

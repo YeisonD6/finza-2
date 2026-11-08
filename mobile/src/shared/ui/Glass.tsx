@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { BlurView } from "expo-blur";
 import Svg, { Circle, Defs, RadialGradient, Stop } from "react-native-svg";
-import { colors, getColorScheme } from "../theme/tokens";
+import { colors, getColorScheme, useThemeRefresh } from "../theme/tokens";
 
 /** iOS «Reducir transparencia»; Android and web report false. */
 export function useReduceTransparency() {
@@ -44,6 +44,7 @@ export function GlassSurface({
   style,
   ...props
 }: ViewProps & { children?: ReactNode; style?: StyleProp<ViewStyle> }) {
+  useThemeRefresh();
   const reduce = useReduceTransparency();
   const blur = Platform.OS !== "android" && !reduce;
   return (
@@ -96,6 +97,7 @@ export function AmbientGlow({
   right?: number;
   color?: string;
 }) {
+  useThemeRefresh();
   const id = `glow${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const opacity = getColorScheme() === "dark" ? 0.55 : 1;
   return (

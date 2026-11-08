@@ -11,7 +11,7 @@ import { IconButton } from "./IconButton";
 import { AppText } from "./AppText";
 import { bogotaToday, validMonth } from "../../features/movements/domain";
 import { monthLabel, shiftMonth } from "../formatting/dates";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function MonthSwitcher({
   month,
   onChange,
@@ -23,6 +23,7 @@ export function MonthSwitcher({
   inverse?: boolean;
   disabled?: boolean;
 }) {
+  useThemeRefresh();
   const [expanded, setExpanded] = useState(false),
     [input, setInput] = useState(month),
     [error, setError] = useState("");
