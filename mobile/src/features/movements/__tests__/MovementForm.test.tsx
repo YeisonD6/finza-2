@@ -335,6 +335,9 @@ test("quick entry fills without saving, announces explanation and focuses amount
     .mockImplementation(() => {});
   const announcement = jest.spyOn(announcements, "announce");
   await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Escribir como frase" }),
+  );
   await fireEvent.changeText(
     screen.getByLabelText("Escribe o dicta tu movimiento"),
     "almuerzo 18 mil ayer",
@@ -363,6 +366,9 @@ test("quick entry missing amount explains and focuses amount; editing has no qui
     .spyOn(TextInput.prototype, "focus")
     .mockImplementation(() => {});
   await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Escribir como frase" }),
+  );
   await fireEvent.changeText(
     screen.getByLabelText("Escribe o dicta tu movimiento"),
     "almuerzo",

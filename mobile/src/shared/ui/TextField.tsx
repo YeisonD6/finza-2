@@ -22,6 +22,9 @@ export type TextFieldProps = TextInputProps & {
   error?: string;
   hint?: string;
   trailing?: ReactNode;
+  leading?: ReactNode;
+  /** Centres the visible label (the large amount field). */
+  centeredLabel?: boolean;
   inputContainerStyle?: StyleProp<ViewStyle>;
 };
 export const TextField = forwardRef<
@@ -33,6 +36,8 @@ export const TextField = forwardRef<
     error,
     hint,
     trailing,
+    leading,
+    centeredLabel = false,
     inputContainerStyle,
     accessibilityHint,
     accessibilityState,
@@ -48,7 +53,14 @@ export const TextField = forwardRef<
   const labelId = `field-${id}-label`;
   return (
     <View style={{ gap: 8, flexShrink: 0 }}>
-      <Text allowFontScaling nativeID={labelId} style={styles.label}>
+      <Text
+        allowFontScaling
+        nativeID={labelId}
+        style={[
+          styles.label,
+          centeredLabel && { textAlign: "center", color: colors.inkMuted },
+        ]}
+      >
         {label}
       </Text>
       <View
@@ -60,6 +72,7 @@ export const TextField = forwardRef<
           inputContainerStyle,
         ]}
       >
+        {leading}
         <TextInput
           {...props}
           allowFontScaling
