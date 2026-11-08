@@ -17,6 +17,8 @@ Exploración y tableros aprobados: artefacto «Vidrio de bosque» (Inicio claro/
 
 Fuente única: `mobile/src/shared/theme/tokens.ts`. La app sigue el esquema del sistema (`userInterfaceStyle: "automatic"`). `ThemeRoot` (`src/app/_layout.tsx`) lee `useColorScheme()`, llama a `applyColorScheme()` —que reemplaza la paleta en el mismo objeto `colors`— y remonta el árbol con `key={scheme}` para que todos los estilos en línea vuelvan a leerla.
 
+**Limitación conocida:** como el cambio de esquema remonta el árbol, un formulario abierto sin guardar (por ejemplo Registrar) se pierde si el sistema cambia de claro a oscuro en ese momento. Evitarlo exige pasar el tema por contexto a cada componente; queda como mejora pendiente.
+
 **División semántica (nueva en v4):** los tokens de **relleno** (`forest*`, `dangerFill`) llevan texto claro encima; los tokens de **tinta** (`accent`, `danger`, `expense`, `ink*`) son para texto e iconos sobre el fondo o una superficie. En claro `accent` y `forest700` coinciden; en oscuro `accent` es menta y `forest700` sigue siendo un relleno profundo.
 
 Contrastes calculados con la fórmula de luminancia relativa WCAG 2.x (script en el repositorio de trabajo, no inventados). «Tarjeta» es el vidrio compuesto sobre el fondo: `#F6F8F7` en claro y `#191E1C` en oscuro.
@@ -64,6 +66,7 @@ En v4 `progress` pasó de `#5E8B6A` a `#5A8767`: con la pista nueva el anterior 
 | `progress` | `#7FC49A` | Barra-tallo | 6.67:1 sobre `track` |
 | `track` | `#26302B` | Pista | — |
 | `borderStrong` | `#6B766F` | Bordes de control | 4.07:1 fondo · 3.57:1 tarjeta |
+| `mint` | `#CFE3D2` | Barras y presionado sobre tarjetas bosque (igual que en claro) | 3.23:1 sobre la pista de la tarjeta `forest700` · texto `forest700` encima 4.73:1 |
 | `glowA` | `#2F7464` al 55 % | Resplandor de fondo | Ver nota |
 
 **Nota sobre el resplandor:** `AmbientGlow` es un degradado radial estático cuyo centro cae en la esquina superior derecha, detrás del área segura. En su punto máximo `ink`, `accent` y `expense` siguen sobre 5:1 en ambos modos, e `inkMuted` sobre 4.5:1 (5.66 claro, 4.53 oscuro); `inkSubtle` baja a 3.91:1 (claro) y 3.61:1 (oscuro), por eso **no se coloca texto `inkSubtle` en esa esquina**. Fuera del centro el degradado se desvanece al fondo.
@@ -136,6 +139,7 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en etiquetas; la 
 | `MovementRow` | Fila de movimiento | Un solo foco con resumen completo |
 | `TabBar` | Barra de vidrio **flotante**: solo la pestaña activa muestra su palabra (icono + nombre en píldora `sage100`); «+» central | role `tab`, `selected`, nombres hablados en todas |
 | `Screen` | Pantalla con título, resplandor y relleno inferior para la barra (`TabBarSpaceContext`); el pie de los formularios ya no es una franja blanca | Foco al título al entrar |
+| `SwipeToArchive` | Deslizar una fila a la izquierda para archivar (Movimientos): umbral de 96 pt, resistencia pasado el umbral, toque háptico al cruzarlo, un *flick* rápido también cuenta; al soltar pide confirmación y la fila vuelve con un resorte | La acción «Archivar» del lector de pantalla y el botón del detalle siguen disponibles; el soltar no cuenta como toque en la fila |
 | `Monedin` | Rig 2.5D de la mascota (sección 6) | Decorativo (`accessible={false}`) |
 
 ## 6. Monedin
@@ -166,6 +170,7 @@ Herramientas: `Animated` de React Native (`useNativeDriver: true`) para la inter
 | Monedin aparece | Raro / deleite | `scale 0.94→1` + opacidad 320 ms `easeOut` | Solo opacidad 200 ms |
 | Monedin en reposo | Raro (bienvenida, vacíos) | Respiración + parpadeo + inclinación (sección 6) | Estático, sin párpados ni sensor |
 | Monedin celebra | Raro (meta, primer movimiento) | Salto con resorte `damping 14, stiffness 160` + giro ±6°, una vez; háptico | Solo háptico + mensaje |
+| Deslizar para archivar | Ocasional / feedback y continuidad | La fila sigue al dedo (Gesture Handler 3 + Reanimated en el hilo de UI); vuelve con resorte `damping 22, stiffness 260`; la franja «Archivar» crece de 85 % a 100 % con el avance | Vuelta con `timing` 150 ms `easeOut`, sin resorte |
 | Fondo y vidrio | Siempre visible | **Estáticos**: el resplandor no se mueve | — |
 
 ## 8. Voz y contenido
@@ -177,6 +182,8 @@ Español de Colombia, tú. Montos `$ 1.245.000`. Fechas «7 nov 2026», «Hoy»,
 - **Inicio:** título FINZA pequeño, avatar de vidrio, selector de mes. Protagonista: «Flujo neto del mes» en cifra ligera grande; debajo, una sola línea con flecha + «Ingresos» y «Gastos»; la comparación con el mes anterior como pie. Tarjeta de vidrio «Gasto por mes» (seis barras, el mes en curso en `accent`) con «Ver análisis». «Recientes» con tres movimientos y «Ver todos». Sin atajos ni encabezado bosque.
 - **Análisis** (`/insights`, nuevo): frase de cuánto se ha gastado del ingreso, consejo de Monedin, presupuestos, metas, tendencia y dona por categoría (lo que en v3 estaba en Inicio).
 - **Registrar:** hoja modal con «Gasto · Ingreso» subrayados, «Monto» como cifra de 60 px centrada, píldora «Escribir como frase» (lápiz; despliega el campo de frase con estado *expandido* anunciado), categorías en una fila desplazable, fecha en píldoras «Hoy · Ayer · Otra fecha», nota opcional y «Guardar gasto» en píldora. Se usa el teclado numérico del sistema en vez de un teclado propio: conserva dictado, lectores de pantalla y teclados externos.
+- **Movimientos:** además, cada fila se desliza a la izquierda para archivar (con confirmación).
+- **Inicio → Análisis:** la tarjeta «Gasto por mes» y su «Ver análisis» siempre se muestran; sin gastos en seis meses dice «Aún no hay gastos en los últimos seis meses.» y si falla un mes anterior se oculta solo el gráfico.
 - **Movimientos, Metas, Presupuestos, Perfil:** heredan el fondo con resplandor, las tarjetas de vidrio, los botones en píldora y la barra flotante; su estructura no cambió en v4.
 - **Acceso y bienvenida:** Monedin `hero` con el rig sobre anillos estáticos.
 

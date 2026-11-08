@@ -31,13 +31,14 @@ Complementa el [informe de ingeniería inversa de MonAi](reverse-engineering-mon
 | Resplandor de fondo estático | Decisión propia (rompe la regla de Origin) | `AmbientGlow` en `shared/ui/Glass.tsx` |
 | Registrar como hoja: cifra grande, Gasto/Ingreso subrayados, frase detrás de un lápiz | Cashcaded (hojas), MonAi (frase libre) | `features/movements/MovementForm.tsx`, `QuickEntryField.tsx`, `shared/ui/UnderlineTabs.tsx` |
 | Monedin con volumen y vida (respira, parpadea, se inclina) | Cashcaded (objeto 3D héroe) aplicado a la mascota propia | `shared/brand/Monedin.tsx` |
+| Deslizar para archivar | Material del curso (semana 10) | `shared/ui/SwipeToArchive.tsx`, `features/movements/MovementsScreen.tsx` |
 
 ## 4. Material del curso dentro del diseño
 
 | Tema | Qué pide | Estado en FINZA |
 |---|---|---|
 | Semana 10 · Reanimated | Animaciones en el hilo de UI | **Hecho** para Monedin: respiración, parpadeo, salto y lectura del sensor de gravedad corren en el hilo de UI. Las cifras **no** se animan por regla (los datos que se leen no se mueven por estilo); la interfaz restante sigue con `Animated` + `useNativeDriver`. |
-| Semana 10 · Gestos | Deslizar con umbral, cancelación y resorte | **Pendiente**: deslizar un movimiento para archivarlo (Gesture Handler ya está instalado). Hoy se archiva desde el detalle con confirmación. |
+| Semana 10 · Gestos | Deslizar con umbral, cancelación y resorte | **Hecho**: en Movimientos cada fila se desliza a la izquierda (`shared/ui/SwipeToArchive.tsx`, Gesture Handler 3 `usePanGesture` + Reanimated). Umbral de 96 pt con resistencia, *flick* rápido, cancelación al soltar antes del umbral o al desplazarse en vertical, vuelta con resorte y confirmación antes de archivar. Probado con las utilidades de Gesture Handler (`swipe-to-archive.test.tsx`). |
 | Semana 6 · Reduce Motion | Versión quieta de todo | **Hecho**: Monedin queda estático (sin párpados ni sensor) y «aparecer» es solo un fundido; el fondo nunca se mueve. Probado en `design-system.test.tsx`. |
 | Semana 6 · Reducir transparencia | Alternativa al vidrio | **Hecho** en iOS: `GlassSurface` pasa a `surface` sólido. Android no expone la preferencia y usa siempre el relleno denso. |
 | Semana 6 · TalkBack / VoiceOver | Texto equivalente, objetivos ≥ 48 dp | **Hecho**: cada ficha y gráfica tiene etiqueta hablada; la pestaña activa se anuncia como seleccionada; el lápiz de Registrar anuncia si está expandido. Contrastes en [design-system.md](design-system.md). |
@@ -46,9 +47,9 @@ Complementa el [informe de ingeniería inversa de MonAi](reverse-engineering-mon
 
 ## 5. Verificación
 
-- 134 pruebas de Jest pasan (`npm test` en `mobile/`), typecheck sin errores.
+- 141 pruebas de Jest pasan (`npm test` en `mobile/`), typecheck sin errores.
 - Revisión visual en web (375×812) de Inicio, Movimientos, Metas, Perfil, Registrar y bienvenida en claro y oscuro.
-- El bundle de Android compila con Metro; **falta** comprobar en un teléfono real el desenfoque, el sensor de inclinación y el rendimiento del rig.
+- El bundle de Android compila con Metro; **falta** comprobar en un teléfono real el desenfoque, el sensor de inclinación, el rendimiento del rig y la sensación del gesto de deslizar.
 
 ## 6. Conclusiones
 
