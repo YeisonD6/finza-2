@@ -29,7 +29,7 @@ export function ActionCard({
         minHeight: 48,
         borderRadius: radii.lg,
         borderWidth: 2,
-        borderColor: focused ? colors.forest700 : colors.transparent,
+        borderColor: focused ? colors.accent : colors.transparent,
         opacity: pressed ? 0.7 : 1,
       })}
     >

@@ -335,7 +335,7 @@ export default function Onboarding() {
                 height: 8,
                 borderRadius: 4,
                 backgroundColor:
-                  step === index ? colors.forest700 : colors.border,
+                  step === index ? colors.accent : colors.border,
               }}
             />
           ))}

@@ -30,7 +30,7 @@ export function MonthSwitcher({
   const prev = shiftMonth(month, -1),
     next = shiftMonth(month, 1),
     max = bogotaToday().slice(0, 7);
-  const color = inverse ? colors.onForest : colors.forest700;
+  const color = inverse ? colors.onForest : colors.accent;
   return (
     <View style={{ gap: 8 }}>
       <View

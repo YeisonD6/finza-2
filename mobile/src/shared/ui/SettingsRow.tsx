@@ -57,7 +57,7 @@ export function SettingsRow({
           icon={icon}
           size={20}
           strokeWidth={1.75}
-          color={danger ? colors.danger : (palette?.ink ?? colors.forest700)}
+          color={danger ? colors.danger : (palette?.ink ?? colors.accent)}
         />
       </View>
       <View style={{ flex: 1, gap: 2 }}>

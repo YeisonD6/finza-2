@@ -132,7 +132,7 @@ export function BudgetsScreen() {
                   onPress={() => open(b.category_id)}
                 >
                   <BudgetProgress budget={b} />
-                  <AppText variant="label" style={{ color: colors.forest700 }}>
+                  <AppText variant="label" style={{ color: colors.accent }}>
                     Editar presupuesto
                   </AppText>
                 </ActionCard>

@@ -57,7 +57,7 @@ export default function VerifyEmail() {
     return (
       <AuthShell title="Confirmando tu correo" mascot={false}>
         <View style={{ paddingVertical: 24 }}>
-          <ActivityIndicator color={colors.forest700} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       </AuthShell>
     );

@@ -24,7 +24,7 @@ export function QueryState({
     );
   return loading ? (
     <>
-      <ActivityIndicator color={colors.forest700} />
+      <ActivityIndicator color={colors.accent} />
       <AppText>Cargando…</AppText>
     </>
   ) : null;

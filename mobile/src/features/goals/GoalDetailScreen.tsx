@@ -137,7 +137,7 @@ export function GoalDetailScreen({ id }: { id: string }) {
                     <DecorativeIcon
                       icon={PiggyBank}
                       size={20}
-                      color={colors.forest700}
+                      color={colors.accent}
                     />
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>

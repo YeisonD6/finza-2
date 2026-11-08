@@ -140,7 +140,7 @@ export function MovementRow({
       style={({ pressed }) => [
         style,
         { opacity: pressed ? 0.7 : 1 },
-        focused && { borderColor: colors.forest700, borderWidth: 2 },
+        focused && { borderColor: colors.accent, borderWidth: 2 },
       ]}
     >
       {content}

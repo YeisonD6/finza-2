@@ -69,7 +69,7 @@ export function VerifyEmailBanner({ email }: { email: string }) {
       }}
     >
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-        <DecorativeIcon icon={MailCheck} size={22} color={colors.forest700} />
+        <DecorativeIcon icon={MailCheck} size={22} color={colors.accent} />
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="subhead" accessibilityRole="header">
             Confirma tu correo

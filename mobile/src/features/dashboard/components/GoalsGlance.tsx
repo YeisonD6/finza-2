@@ -87,11 +87,7 @@ export function GoalsGlance() {
                   backgroundColor: colors.sage100,
                 }}
               >
-                <DecorativeIcon
-                  icon={Sprout}
-                  size={20}
-                  color={colors.forest700}
-                />
+                <DecorativeIcon icon={Sprout} size={20} color={colors.accent} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <AppText variant="subhead">{goal.name}</AppText>

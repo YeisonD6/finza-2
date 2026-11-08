@@ -43,7 +43,7 @@ export function GoalProgress({ goal }: { goal: Goal }) {
           <DecorativeIcon
             icon={completed ? CircleCheck : Sprout}
             size={22}
-            color={completed ? colors.onForest : colors.forest700}
+            color={completed ? colors.onForest : colors.accent}
           />
         </View>
         <View style={{ flex: 1, gap: 2 }}>

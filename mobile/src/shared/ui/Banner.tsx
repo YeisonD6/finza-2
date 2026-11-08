@@ -71,7 +71,7 @@ export function Banner({
       ) : null}
       <AppText
         accessibilityRole={tone === "error" ? "alert" : "text"}
-        style={{ color: tone === "error" ? colors.danger : colors.forest700 }}
+        style={{ color: tone === "error" ? colors.danger : colors.accent }}
       >
         {shown}
       </AppText>

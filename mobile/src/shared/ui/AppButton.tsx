@@ -93,7 +93,7 @@ export function AppButton({
             : variant === "danger"
               ? dangerGhost
                 ? colors.transparent
-                : colors.danger
+                : colors.dangerFill
               : variant === "primary"
                 ? state.pressed
                   ? colors.forest900
@@ -135,7 +135,7 @@ export function AppButton({
                 ? colors.onForest
                 : variant === "danger"
                   ? colors.danger
-                  : colors.forest700,
+                  : colors.accent,
               flexShrink: 1,
               textAlign: "center",
               textDecorationLine: focused ? "underline" : "none",

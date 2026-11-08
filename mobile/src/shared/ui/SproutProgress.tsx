@@ -115,7 +115,7 @@ export function SproutProgress({
             >
               <Path
                 d="M14 26V12M14 17C4 17 3 10 4 5C12 5 16 10 14 17ZM14 13C14 5 19 2 25 3C25 11 21 15 14 13Z"
-                stroke={colors.forest700}
+                stroke={colors.accent}
                 strokeWidth={1.75}
                 fill={colors.sage100}
               />
