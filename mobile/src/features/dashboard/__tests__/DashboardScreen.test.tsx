@@ -12,7 +12,11 @@ let mockQuery: {
   isError: boolean;
   refetch: typeof mockRefetch;
 };
-jest.mock("../api", () => ({ useDashboardQuery: () => mockQuery }));
+let mockQueryFor: ((month: string) => typeof mockQuery) | undefined;
+jest.mock("../api", () => ({
+  useDashboardQuery: (month: string) =>
+    mockQueryFor ? mockQueryFor(month) : mockQuery,
+}));
 let mockGoals: unknown[] = [];
 jest.mock("../../goals/api", () => ({
   useGoalsQuery: () => ({
@@ -62,6 +66,7 @@ const props = {
 };
 beforeEach(() => {
   jest.clearAllMocks();
+  mockQueryFor = undefined;
   mockQuery = {
     currentData: fixture(),
     isFetching: false,
@@ -200,4 +205,29 @@ test("large decimal strings are displayed exactly without Number conversion", as
       "Flujo neto del mes: Monto de $ 1.999.999.999.999.999,68 pesos colombianos",
     ),
   ).toBeTruthy();
+});
+
+test("Análisis stays reachable when nothing was spent", async () => {
+  const onOpenInsights = jest.fn();
+  mockQuery.currentData = fixture({
+    expense: "0.00",
+    net: "1000.00",
+    recent_movements: [],
+  });
+  await render(<DashboardScreen {...props} onOpenInsights={onOpenInsights} />);
+  expect(
+    screen.getByText("Aún no hay gastos en los últimos seis meses."),
+  ).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Ver análisis" }));
+  expect(onOpenInsights).toHaveBeenCalledTimes(1);
+});
+
+test("Análisis stays reachable when an earlier month fails to load", async () => {
+  const onOpenInsights = jest.fn();
+  mockQueryFor = (month) =>
+    month === props.month ? mockQuery : { ...mockQuery, isError: true };
+  await render(<DashboardScreen {...props} onOpenInsights={onOpenInsights} />);
+  expect(screen.queryByTestId(`spend-${props.month}`)).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Ver análisis" }));
+  expect(onOpenInsights).toHaveBeenCalledTimes(1);
 });
