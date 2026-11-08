@@ -15,9 +15,9 @@ Exploración y tableros aprobados: artefacto «Vidrio de bosque» (Inicio claro/
 
 ## 1. Color
 
-Fuente única: `mobile/src/shared/theme/tokens.ts`. La app sigue el esquema del sistema (`userInterfaceStyle: "automatic"`). `ThemeRoot` (`src/app/_layout.tsx`) lee `useColorScheme()`, llama a `applyColorScheme()` —que reemplaza la paleta en el mismo objeto `colors`— y remonta el árbol con `key={scheme}` para que todos los estilos en línea vuelvan a leerla.
+Fuente única: `mobile/src/shared/theme/tokens.ts`. La app sigue el esquema del sistema (`userInterfaceStyle: "automatic"`). `ThemeRoot` (`src/app/_layout.tsx`) lee `useColorScheme()` y llama a `applyColorScheme()`, que reemplaza la paleta en el mismo objeto `colors` y avisa a los suscriptores. Cada componente que lee la paleta llama a `useThemeRefresh()` (un `useSyncExternalStore` sobre el esquema) y se vuelve a dibujar sin remontarse; la lista de Movimientos además pasa el esquema como `extraData`.
 
-**Limitación conocida:** como el cambio de esquema remonta el árbol, un formulario abierto sin guardar (por ejemplo Registrar) se pierde si el sistema cambia de claro a oscuro en ese momento. Evitarlo exige pasar el tema por contexto a cada componente; queda como mejora pendiente.
+**Cambio de tema sin pérdida:** como nada se remonta, un formulario abierto (por ejemplo Registrar), el mes elegido y la pila de navegación sobreviven al cambio de claro a oscuro. Lo comprueba `MovementForm.test.tsx` («a theme change re-colours the open form…»). Regla para componentes nuevos: si leen `colors`, `styles`, `categoryTone`, `categoryPalette` o `getColorScheme`, llaman a `useThemeRefresh()` al principio.
 
 **División semántica (nueva en v4):** los tokens de **relleno** (`forest*`, `dangerFill`) llevan texto claro encima; los tokens de **tinta** (`accent`, `danger`, `expense`, `ink*`) son para texto e iconos sobre el fondo o una superficie. En claro `accent` y `forest700` coinciden; en oscuro `accent` es menta y `forest700` sigue siendo un relleno profundo.
 

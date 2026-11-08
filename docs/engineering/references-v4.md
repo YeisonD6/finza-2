@@ -47,7 +47,7 @@ Complementa el [informe de ingeniería inversa de MonAi](reverse-engineering-mon
 
 ## 5. Verificación
 
-- 141 pruebas de Jest pasan (`npm test` en `mobile/`), typecheck sin errores.
+- 142 pruebas de Jest pasan (`npm test` en `mobile/`), typecheck sin errores.
 - Revisión visual en web (375×812) de Inicio, Movimientos, Metas, Perfil, Registrar y bienvenida en claro y oscuro.
 - El bundle de Android compila con Metro; **falta** comprobar en un teléfono real el desenfoque, el sensor de inclinación, el rendimiento del rig y la sensación del gesto de deslizar.
 
