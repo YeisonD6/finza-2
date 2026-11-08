@@ -12,7 +12,7 @@ const lightColors = {
   forest700: "#1E4634",
   forest600: "#2D5E46",
   accent: "#1E4634",
-  progress: "#5E8B6A",
+  progress: "#5A8767",
   sage300: "#A8BFA3",
   sage100: "#E0E9E2",
   mint: "#CFE3D2",
