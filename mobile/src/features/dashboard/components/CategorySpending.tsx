@@ -123,10 +123,7 @@ export function CategorySpending({
           <AppText variant="label" style={{ color: colors.inkMuted }}>
             Total gastado
           </AppText>
-          <AppText
-            variant="heading"
-            style={{ fontVariant: ["tabular-nums"] }}
-          >
+          <AppText variant="heading" style={{ fontVariant: ["tabular-nums"] }}>
             {formatCOP(total)}
           </AppText>
           <AppText variant="caption" style={{ color: colors.inkMuted }}>
@@ -167,7 +164,8 @@ export function CategorySpending({
                     fontVariant: ["tabular-nums"],
                   }}
                 >
-                  {formatCOP(item.total)} · {item.share_percent.replace(".", ",")} %
+                  {formatCOP(item.total)} ·{" "}
+                  {item.share_percent.replace(".", ",")} %
                 </AppText>
               </View>
             </View>
