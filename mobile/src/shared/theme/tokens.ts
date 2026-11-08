@@ -214,6 +214,8 @@ export const durations = {
   entrance: 320,
   sheet: 420,
   idleCycle: 2400,
+  /** Half of Monedin's breath (in or out); a full breath is ~3.4 s. */
+  breath: 1700,
 } as const;
 export const curves = {
   easeOut: [0.23, 1, 0.32, 1],
