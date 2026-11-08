@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronLeft, X } from "lucide-react-native";
 import { focusAccessibility } from "../accessibility/announcements";
 import { IconButton } from "./IconButton";
+import { AmbientGlow } from "./Glass";
+import { useTabBarSpace } from "./TabBar";
 import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
 import { fontFamily } from "../theme/fonts";
@@ -45,6 +47,7 @@ export function Screen({
   showBackAction?: boolean;
 }) {
   const heading = useRef<ElementRef<typeof Text>>(null);
+  const tabSpace = useTabBarSpace();
   useEffect(() => {
     if (!active) return;
     const frame = requestAnimationFrame(() =>
@@ -109,7 +112,6 @@ export function Screen({
           {title}
         </AppText>
       ) : null}
-
     </View>
   );
   return (
@@ -123,6 +125,7 @@ export function Screen({
       ]}
       style={styles.screen}
     >
+      <AmbientGlow />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -131,7 +134,10 @@ export function Screen({
           children(header)
         ) : scroll ? (
           <ScrollView
-            contentContainerStyle={styles.content}
+            contentContainerStyle={[
+              styles.content,
+              tabSpace ? { paddingBottom: tabSpace } : null,
+            ]}
             keyboardShouldPersistTaps="handled"
           >
             {header}
@@ -148,11 +154,10 @@ export function Screen({
         {footer ? (
           <View
             style={{
-              padding: 16,
+              paddingHorizontal: 20,
+              paddingTop: 8,
+              paddingBottom: 16,
               gap: 8,
-              backgroundColor: colors.surface,
-              borderTopWidth: 1,
-              borderColor: colors.border,
             }}
           >
             {footer}

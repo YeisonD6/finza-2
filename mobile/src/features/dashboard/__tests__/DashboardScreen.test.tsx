@@ -88,7 +88,9 @@ test("readable financial summary, negative flow, comparison and actions", async 
   expect(screen.getByText(/Flujo negativo: los gastos superan/)).toBeTruthy();
   expect(screen.getByText("$ 750 menos que enero (150 %)")).toBeTruthy();
   expect(screen.getByText(/150 %/)).toBeTruthy();
-  expect(screen.getByText(/mes calendario completo anterior/)).toBeTruthy();
+  expect(
+    screen.getByLabelText(/mes calendario completo anterior/),
+  ).toBeTruthy();
   expect(screen.getByLabelText(/Gasto de menos.*2024-02-29/)).toBeTruthy();
   expect(announcement).toHaveBeenCalledWith(
     expect.stringContaining("$ -250,00 COP"),

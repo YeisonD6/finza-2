@@ -13,6 +13,7 @@ import type { Movement } from "./types";
 import { groupByDay, type DayGroup } from "./domain";
 import { formatCOP } from "../../shared/formatting/money";
 import { colors, radii, shadows } from "../../shared/theme/tokens";
+import { useTabBarSpace } from "../../shared/ui/TabBar";
 export function MovementsScreen({
   initialMonth,
   onEdit,
@@ -23,6 +24,7 @@ export function MovementsScreen({
   active?: boolean;
 }) {
   const f = useMovementList(initialMonth, active);
+  const tabSpace = useTabBarSpace();
   const list = useRef<FlatList<DayGroup>>(null);
   useEffect(() => {
     list.current?.scrollToOffset({ offset: 0, animated: false });
@@ -50,7 +52,11 @@ export function MovementsScreen({
           ref={list}
           data={groups}
           keyExtractor={(group) => group.day}
-          contentContainerStyle={{ padding: 20, gap: 16 }}
+          contentContainerStyle={{
+            padding: 20,
+            gap: 16,
+            paddingBottom: 20 + tabSpace,
+          }}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
             <View style={{ gap: 16 }}>
