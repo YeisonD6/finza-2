@@ -15,6 +15,7 @@ import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
 import { fontFamily } from "../theme/fonts";
 import { colors } from "../theme/tokens";
+import { LiquidBackdrop } from "./LiquidBackdrop";
 export function Screen({
   title,
   children,
@@ -109,7 +110,6 @@ export function Screen({
           {title}
         </AppText>
       ) : null}
-
     </View>
   );
   return (
@@ -123,6 +123,7 @@ export function Screen({
       ]}
       style={styles.screen}
     >
+      <LiquidBackdrop active={active} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

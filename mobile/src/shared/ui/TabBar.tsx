@@ -13,6 +13,7 @@ import { AppText } from "./AppText";
 import { IconButton } from "./IconButton";
 import { fontFamily } from "../theme/fonts";
 import { colors, radii, shadows } from "../theme/tokens";
+import { GlassSurface } from "./GlassSurface";
 export const tabItems = [
   { name: "index", label: "Inicio", icon: House },
   { name: "movements", label: "Movimientos", icon: ArrowLeftRight },
@@ -104,16 +105,16 @@ export function TabBar({
     );
   }
   return (
-    <View
+    <GlassSurface
       style={{
         flexDirection: "row",
         alignItems: "center",
         paddingTop: 8,
         paddingBottom: Math.max(inset.bottom, 8),
         paddingHorizontal: 0,
-        backgroundColor: colors.surface,
-        borderTopWidth: 1,
-        borderColor: colors.border,
+        marginHorizontal: 8,
+        marginBottom: 4,
+        borderRadius: 28,
       }}
     >
       {tabs(tabItems.slice(0, 2))}
@@ -123,9 +124,12 @@ export function TabBar({
         variant="primary"
         color={colors.onForest}
         onPress={onRegister}
-        style={[{ borderRadius: radii.pill, marginHorizontal: 2 }, shadows.floating]}
+        style={[
+          { borderRadius: radii.pill, marginHorizontal: 2 },
+          shadows.floating,
+        ]}
       />
       {tabs(tabItems.slice(2))}
-    </View>
+    </GlassSurface>
   );
 }

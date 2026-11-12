@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Animated, Image } from "react-native";
 import { durations, easeInOut, useReducedMotion } from "../theme/motion";
 import { success } from "../theme/haptics";
-const sizes = { sm: 56, md: 120, hero: 200 } as const;
+const sizes = { sm: 56, md: 120, auth: 156, hero: 200 } as const;
 export function Monedin({
   size = "md",
   motion = "none",
@@ -89,7 +89,7 @@ export function Monedin({
                 {
                   translateY: value.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, motion === "celebrate" ? -12 : -4],
+                    outputRange: [0, motion === "celebrate" ? -12 : -7],
                   }),
                 },
                 {

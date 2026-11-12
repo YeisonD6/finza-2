@@ -13,7 +13,7 @@ export const colors = {
   sage100: "#E2EBDF",
   mint: "#CFE3D2",
   track: "#E8E4DA",
-  ground: "#F5F3EE",
+  ground: "#EDF5F0",
   surface: "#FFFFFF",
   cream: "#F3E6DE",
   creamInk: "#3B2F2A",
@@ -47,7 +47,8 @@ export const categoryPalette = {
   other: { tint: "#EEE2EC", ink: "#673660", chart: "#8C5683" },
   custom: { tint: "#ECE8DF", ink: "#4A514B", chart: "#7A7F78" },
 } as const;
-export type CategoryTone = (typeof categoryPalette)[keyof typeof categoryPalette];
+export type CategoryTone =
+  (typeof categoryPalette)[keyof typeof categoryPalette];
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -89,11 +90,11 @@ export const typography = {
 } as const;
 export const shadows = {
   card: {
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowColor: colors.forest700,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 3,
   },
   floating: {
     shadowColor: colors.forest700,

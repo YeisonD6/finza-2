@@ -23,6 +23,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 import { HeroRings } from "./components/HeroRings";
+import { LiquidBackdrop } from "../../shared/ui/LiquidBackdrop";
 export function DashboardScreen({
   month,
   onMonthChange,
@@ -94,6 +95,7 @@ export function DashboardScreen({
           overflow: "hidden",
         }}
       >
+        <LiquidBackdrop dark active={active} />
         <HeroRings />
         <View
           style={{

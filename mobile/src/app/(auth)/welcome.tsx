@@ -10,6 +10,8 @@ import { AppButton } from "../../shared/ui/AppButton";
 import { colors, durations, radii } from "../../shared/theme/tokens";
 import { easeOut, useReducedMotion } from "../../shared/theme/motion";
 import { useEntrance } from "../../shared/theme/entrance";
+import { LiquidBackdrop } from "../../shared/ui/LiquidBackdrop";
+import { glassStyle } from "../../shared/ui/GlassSurface";
 
 /**
  * First screen for guests. One authored moment: growth rings open behind
@@ -91,6 +93,7 @@ export default function Welcome() {
   const ringSize = Math.min(width * 0.92, compact ? 280 : 360);
   return (
     <View style={{ flex: 1, backgroundColor: colors.forest950 }}>
+      <LiquidBackdrop dark />
       <StatusBar style="light" />
       <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
         <View style={{ paddingHorizontal: 24, paddingTop: 12 }}>
@@ -117,7 +120,11 @@ export default function Welcome() {
       </SafeAreaView>
       <Animated.View
         style={{
-          backgroundColor: colors.ground,
+          ...glassStyle,
+          backgroundColor: "rgba(244,250,245,0.94)",
+          width: "100%",
+          maxWidth: 600,
+          alignSelf: "center",
           borderTopLeftRadius: radii.xl,
           borderTopRightRadius: radii.xl,
           paddingHorizontal: 24,

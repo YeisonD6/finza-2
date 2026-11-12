@@ -90,7 +90,12 @@ export const TextField = forwardRef<
           }}
           style={[
             styles.input,
-            { flex: 1, borderWidth: 0, backgroundColor: colors.transparent },
+            {
+              flex: 1,
+              minWidth: 0,
+              borderWidth: 0,
+              backgroundColor: colors.transparent,
+            },
             style,
           ]}
         />

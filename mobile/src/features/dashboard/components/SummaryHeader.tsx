@@ -119,6 +119,8 @@ export function SummaryHeader({ data }: { data: DashboardSummary }) {
               gap: 6,
               borderRadius: radii.control,
               backgroundColor: colors.forestGlass,
+              borderWidth: 1,
+              borderColor: colors.forestGlassStrong,
             }}
           >
             <View

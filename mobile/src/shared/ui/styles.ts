@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     color: palette.ink,
-    backgroundColor: palette.surface,
+    backgroundColor: "rgba(255,255,255,0.72)",
     minHeight: 56,
   },
   inputError: { borderColor: palette.danger, borderWidth: 2 },
