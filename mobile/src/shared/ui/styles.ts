@@ -48,7 +48,7 @@ function buildStyles() {
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.md,
       color: palette.ink,
-      backgroundColor: palette.surface,
+      backgroundColor: palette.glassStrong,
       minHeight: 56,
     },
     inputError: { borderColor: palette.danger, borderWidth: 2 },

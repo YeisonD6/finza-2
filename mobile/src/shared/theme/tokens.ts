@@ -18,7 +18,7 @@ const lightColors = {
   sage100: "#E0E9E2",
   mint: "#CFE3D2",
   track: "#DCE3DE",
-  ground: "#E9EEEA",
+  ground: "#EDF5F0",
   surface: "#FFFFFF",
   cream: "#F3E6DE",
   creamInk: "#3B2F2A",
@@ -202,10 +202,10 @@ export const typography = {
 export const shadows = {
   card: {
     shadowColor: "#1B3326",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 3,
   },
   floating: {
     shadowColor: "#143325",

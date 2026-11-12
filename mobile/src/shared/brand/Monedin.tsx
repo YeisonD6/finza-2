@@ -22,7 +22,7 @@ import {
 import { useReducedMotion } from "../theme/motion";
 import { success } from "../theme/haptics";
 
-const sizes = { sm: 56, md: 120, hero: 200 } as const;
+const sizes = { sm: 56, md: 120, auth: 156, hero: 200 } as const;
 /** monedin@3x.png is 761 × 768; the eyes below are measured on that file. */
 const SOURCE = { width: 761, height: 768 };
 const EYES = [

@@ -4,12 +4,13 @@ import {
   ActivityIndicator,
   Animated,
   Pressable,
+  View,
   type PressableProps,
 } from "react-native";
 import { Check } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { styles } from "./styles";
-import { colors, useThemeRefresh } from "../theme/tokens";
+import { colors, shadows, useThemeRefresh } from "../theme/tokens";
 import { durations, easeOut, useReducedMotion } from "../theme/motion";
 import { tapLight } from "../theme/haptics";
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -110,10 +111,33 @@ export function AppButton({
           // Busy keeps full strength: the spinner says "working", not "unavailable".
           opacity: blocked && !working ? 0.6 : 1,
         },
+        solid && !blocked && shadows.card,
+        solid && {
+          borderTopColor: "rgba(255,255,255,0.24)",
+          borderBottomColor: "rgba(0,0,0,0.16)",
+        },
+        variant === "secondary" && {
+          borderColor: colors.glassBorder,
+          backgroundColor: colors.sage100,
+        },
         focused && styles.buttonFocused,
         typeof style === "function" ? style(state) : style,
       ]}
     >
+      {solid ? (
+        <View
+          pointerEvents="none"
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: 1,
+            left: 16,
+            right: 16,
+            height: 1,
+            backgroundColor: "rgba(255,255,255,0.16)",
+          }}
+        />
+      ) : null}
       <Animated.View
         style={{
           flexDirection: "row",

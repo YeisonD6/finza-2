@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronLeft, X } from "lucide-react-native";
 import { focusAccessibility } from "../accessibility/announcements";
 import { IconButton } from "./IconButton";
-import { AmbientGlow } from "./Glass";
+import { LiquidBackdrop } from "./LiquidBackdrop";
 import { useTabBarSpace } from "./TabBar";
 import { AppText, type TextVariant } from "./AppText";
 import { styles } from "./styles";
@@ -126,7 +126,7 @@ export function Screen({
       ]}
       style={styles.screen}
     >
-      <AmbientGlow />
+      <LiquidBackdrop active={active} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

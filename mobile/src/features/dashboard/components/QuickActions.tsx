@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react-native";
 import { PiggyBank, Plus, Target } from "lucide-react-native";
 import { AppText } from "../../../shared/ui/AppText";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
+import { GlassSurface } from "../../../shared/ui/GlassSurface";
 import {
   categoryPalette,
   colors,
@@ -59,11 +60,10 @@ export function QuickActions({
     },
   ];
   return (
-    <View
+    <GlassSurface
       style={[
         {
           flexDirection: "row",
-          backgroundColor: colors.surface,
           borderRadius: radii.lg,
           paddingVertical: 12,
           paddingHorizontal: 8,
@@ -114,6 +114,6 @@ export function QuickActions({
           </AppText>
         </Pressable>
       ))}
-    </View>
+    </GlassSurface>
   );
 }

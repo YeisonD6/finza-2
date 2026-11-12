@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react-native";
 import type { DashboardSummary } from "../api";
 import { AppText } from "../../../shared/ui/AppText";
 import { AmountText } from "../../../shared/ui/AmountText";
-import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 import {
   formatCOP,
   amountLabel,
@@ -80,7 +80,17 @@ export function SummaryHeader({ data }: { data: DashboardSummary }) {
         ].map((item) => (
           <View
             key={item.name}
-            style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 6,
+              padding: 10,
+              borderRadius: radii.control,
+              backgroundColor: colors.glass,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+            }}
           >
             <DecorativeIcon
               icon={item.icon}

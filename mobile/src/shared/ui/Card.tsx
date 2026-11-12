@@ -1,15 +1,10 @@
-import { View, type ViewProps } from "react-native";
-import {
-  colors,
-  radii,
-  shadows,
-  spacing,
-  useThemeRefresh,
-} from "../theme/tokens";
+import { type ViewProps } from "react-native";
+import { colors, radii, spacing, useThemeRefresh } from "../theme/tokens";
+import { GlassSurface } from "./GlassSurface";
 export function Card({ style, ...props }: ViewProps) {
   useThemeRefresh();
   return (
-    <View
+    <GlassSurface
       {...props}
       style={[
         {
@@ -21,7 +16,6 @@ export function Card({ style, ...props }: ViewProps) {
           padding: spacing.xl,
           gap: spacing.md,
         },
-        shadows.card,
         style,
       ]}
     />
