@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated } from "react-native";
+import { Animated, View } from "react-native";
+import { CircleAlert, CircleCheck } from "lucide-react-native";
+import { DecorativeIcon } from "./DecorativeIcon";
 import { useAnnouncement } from "../accessibility/announcements";
 import { AppText } from "./AppText";
 import { Monedin } from "../brand/Monedin";
@@ -70,12 +72,25 @@ export function Banner({
       {celebrate ? (
         <Monedin size="sm" motion="celebrate" haptic={false} />
       ) : null}
-      <AppText
-        accessibilityRole={tone === "error" ? "alert" : "text"}
-        style={{ color: tone === "error" ? colors.danger : colors.accent }}
-      >
-        {shown}
-      </AppText>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
+        {tone === "status" ? null : (
+          <DecorativeIcon
+            icon={tone === "error" ? CircleAlert : CircleCheck}
+            size={20}
+            strokeWidth={2}
+            color={tone === "error" ? colors.danger : colors.accent}
+          />
+        )}
+        <AppText
+          accessibilityRole={tone === "error" ? "alert" : "text"}
+          style={{
+            flex: 1,
+            color: tone === "error" ? colors.danger : colors.accent,
+          }}
+        >
+          {shown}
+        </AppText>
+      </View>
     </Animated.View>
   );
 }

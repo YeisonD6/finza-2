@@ -228,6 +228,8 @@ export const durations = {
   entrance: 320,
   sheet: 420,
   idleCycle: 2400,
+  /** One half of the skeleton pulse (dim → bright or back). */
+  skeleton: 900,
   /** Half of Monedin's breath (in or out); a full breath is ~3.4 s. */
   breath: 1700,
 } as const;

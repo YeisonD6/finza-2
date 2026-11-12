@@ -54,7 +54,9 @@ test("button forwards label, hint, role, value and selection; busy blocks activa
   ).toEqual(expect.objectContaining({ disabled: true, busy: true }));
   await fireEvent.press(screen.getByRole("button", { name: "Guardar" }));
   expect(press).not.toHaveBeenCalled();
-  expect(screen.getByText("Procesando…")).toBeTruthy();
+  // Busy keeps the action's name (with a spinner) instead of a generic label.
+  expect(screen.getByText("Guardar")).toBeTruthy();
+  expect(screen.queryByText("Procesando…")).toBeNull();
 });
 
 test("button exposes keyboard focus visually and propagates native events", async () => {

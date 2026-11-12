@@ -1,6 +1,11 @@
 import { DecorativeIcon } from "./DecorativeIcon";
 import { useRef, useState, type ReactNode } from "react";
-import { Animated, Pressable, type PressableProps } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  Pressable,
+  type PressableProps,
+} from "react-native";
 import { Check } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { styles } from "./styles";
@@ -102,7 +107,8 @@ export function AppButton({
                 : variant === "secondary"
                   ? colors.sage100
                   : colors.transparent,
-          opacity: blocked ? 0.6 : 1,
+          // Busy keeps full strength: the spinner says "working", not "unavailable".
+          opacity: blocked && !working ? 0.6 : 1,
         },
         focused && styles.buttonFocused,
         typeof style === "function" ? style(state) : style,
@@ -118,7 +124,12 @@ export function AppButton({
           transform: [{ scale: reduced ? 1 : scale }],
         }}
       >
-        {active ? (
+        {working ? (
+          <ActivityIndicator
+            size="small"
+            color={solid ? colors.onForest : colors.accent}
+          />
+        ) : active ? (
           <DecorativeIcon
             icon={Check}
             size={16}
@@ -142,7 +153,7 @@ export function AppButton({
               textDecorationLine: focused ? "underline" : "none",
             }}
           >
-            {working ? "Procesando…" : title}
+            {title || "Procesando…"}
           </AppText>
         ) : null}
       </Animated.View>

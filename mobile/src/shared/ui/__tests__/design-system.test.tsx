@@ -266,3 +266,20 @@ test.each([1, 2])(
     dimensions.mockRestore();
   },
 );
+
+test("loading states are one announced skeleton, not a spinner and text", async () => {
+  const { QueryState } = require("../QueryState");
+  await render(<QueryState loading retry={() => {}} />);
+  const group = screen.getByRole("progressbar", { name: "Cargando…" });
+  expect(group.props.accessibilityState).toEqual({ busy: true });
+  expect(screen.queryByText("Cargando…")).toBeNull();
+});
+
+test("success and error banners carry an icon, so meaning is not color alone", async () => {
+  const { Banner } = require("../Banner");
+  const view = await render(
+    <Banner message="Movimiento guardado" tone="success" announce={false} />,
+  );
+  expect(view.toJSON()).toBeTruthy();
+  expect(JSON.stringify(view.toJSON())).toMatch(/svg|Svg|lucide/i);
+});
