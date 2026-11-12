@@ -1,4 +1,4 @@
-# FINZA — Documento técnico final (Fase 3)
+# FINZA 
 
 **Asignatura:** Desarrollo de Aplicaciones Móviles · Universidad de La Sabana, Facultad de Ingeniería  
 **Equipo:** Isabela Benítez, Juan David Rubio, Yeison David Niño Arias.  
