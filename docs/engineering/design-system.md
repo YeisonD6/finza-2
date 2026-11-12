@@ -124,7 +124,7 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en etiquetas; la 
 | Componente | Responsabilidad | Accesibilidad |
 |---|---|---|
 | `AppText` | Variantes tipográficas | Escalado, `lineHeight` |
-| `AppButton` | `primary` · `secondary` · `ghost` · `danger` (fondo `dangerFill`), en píldora | role `button`, `accessibilityState`, 52 dp |
+| `AppButton` | `primary` · `secondary` · `ghost` · `danger` (fondo `dangerFill`), en píldora. Ocupado: rueda pequeña **y el mismo nombre de la acción** («Guardar gasto»), a plena opacidad | role `button`, `accessibilityState` (`busy`), 52 dp |
 | `IconButton` | Acción solo icono | `accessibilityLabel` obligatorio, 48 dp |
 | `Card` | Vidrio translúcido con borde y radio 24 | Agrupa contenido relacionado |
 | `GlassSurface` / `AmbientGlow` | Vidrio flotante / luz de fondo estática | El resplandor se oculta al lector |
@@ -135,6 +135,8 @@ Reglas: `allowFontScaling` siempre activo; sin `numberOfLines` en etiquetas; la 
 | `CategoryChip` | Selección de categoría en píldora | role `radio`, `selected` |
 | `TextField` | Etiqueta persistente, error asociado; ranuras `leading`/`trailing` | label, pista con error, foco al primer inválido |
 | `SproutProgress` | Barra-tallo con brote | role `progressbar`, `accessibilityValue` |
+| `Banner` | Aviso en línea; `success` y `error` llevan icono (círculo con check / alerta), `status` no | El significado no depende solo del color (WCAG 1.4.1); los errores son `alert` |
+| `Skeleton` (`SkeletonList`, `SkeletonSummary`) | Bloques con la forma del contenido mientras carga la primera vez; las recargas con datos visibles son silenciosas | Un solo `progressbar` «Cargando…» por grupo, `busy`; los bloques no se leen |
 | `MonthSwitcher` | ‹ Mes › con límites | Etiquetas «Mes anterior: …» |
 | `MovementRow` | Fila de movimiento | Un solo foco con resumen completo |
 | `TabBar` | Barra de vidrio **flotante**: solo la pestaña activa muestra su palabra (icono + nombre en píldora `sage100`); «+» central | role `tab`, `selected`, nombres hablados en todas |
@@ -167,6 +169,8 @@ Herramientas: `Animated` de React Native (`useNativeDriver: true`) para la inter
 | Cifras | Lectura de datos | **Sin conteo animado** | — |
 | Barra-tallo | Ocasional / estado | `scaleX` 280 ms, escalonado 40 ms | Estado final |
 | Banner de éxito | Ocasional / feedback | `translateY −16→0`, 240 ms; sale 200 ms; háptico | Solo opacidad |
+| Esqueleto de carga | Primera carga / estado | Pulso de opacidad 0,55↔1, 900 ms por mitad, `easeInOut`, en bucle | Quieto al 70 % |
+| Actualizar Inicio | Ocasional | Tirar hacia abajo (`RefreshControl`) en lugar del botón «Actualizar resumen» | Nativo del sistema |
 | Monedin aparece | Raro / deleite | `scale 0.94→1` + opacidad 320 ms `easeOut` | Solo opacidad 200 ms |
 | Monedin en reposo | Raro (bienvenida, vacíos) | Respiración + parpadeo + inclinación (sección 6) | Estático, sin párpados ni sensor |
 | Monedin celebra | Raro (meta, primer movimiento) | Salto con resorte `damping 14, stiffness 160` + giro ±6°, una vez; háptico | Solo háptico + mensaje |
@@ -188,3 +192,14 @@ Español de Colombia, tú. Montos `$ 1.245.000`. Fechas «7 nov 2026», «Hoy»,
 - **Acceso y bienvenida:** Monedin `hero` con el rig sobre anillos estáticos.
 
 Reglas que se mantienen: verde solo en acción o dato principal; brote solo en progreso; Monedin solo con intención; ninguna cifra se anima; nada se comunica solo con color.
+
+## 10. Refinamiento del 12 nov 2026
+
+Auditoría en web (375×812) de todas las pantallas con la cuenta de demostración, contra el API real:
+
+- **Inicio:** el aviso «Confirma tu correo» pasó **debajo** del flujo neto (antes empujaba la cifra hacia abajo); la carga muestra un esqueleto con la forma del resumen; el botón «Actualizar resumen» se reemplazó por tirar hacia abajo.
+- **Movimientos:** el texto «Cargando movimientos…» solo aparece como esqueleto en la primera carga; al recargar con filas visibles no hay ruido.
+- **Porcentajes:** un único formato (`percentText` en `shared/formatting/money.ts`): coma decimal y sin ceros finales («32,5 %», «40 %»), igual en metas, categorías y comparación mensual, también en el texto hablado.
+- **Botones ocupados:** conservan el nombre de la acción con una rueda, en vez de «Procesando…».
+- **Avisos:** éxito y error con icono.
+- **Donut de categorías:** gira con `transform="rotate(-90 c c)"`; `rotation`/`origin` generaban un atributo DOM inválido en web.
