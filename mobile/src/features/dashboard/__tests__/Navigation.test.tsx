@@ -502,7 +502,7 @@ test("goal creation routes to detail, contribution updates progress without chan
   expect(await screen.findByText("¡Meta cumplida!")).toBeTruthy();
   expect(
     screen.getByRole("progressbar", {
-      value: { text: "100,00 % · Completada" },
+      value: { text: "100 % · Completada" },
     }),
   ).toBeTruthy();
   expect(

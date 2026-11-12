@@ -21,10 +21,21 @@ export function sumAmounts(values: string[]) {
   const total = values.reduce((acc, value) => {
     const negative = value.startsWith("-");
     const [whole, fraction = ""] = value.replace(/^-/, "").split(".");
-    const cents = BigInt(whole || "0") * 100n + BigInt((fraction + "00").slice(0, 2));
+    const cents =
+      BigInt(whole || "0") * 100n + BigInt((fraction + "00").slice(0, 2));
     return acc + (negative ? -cents : cents);
   }, 0n);
   const negative = total < 0n;
   const abs = negative ? -total : total;
   return `${negative ? "-" : ""}${abs / 100n}.${(abs % 100n).toString().padStart(2, "0")}`;
 }
+
+/**
+ * A decimal percent string from the API ("32.50", "-7.10") in Spanish form without
+ * noise: "32,5", "-7,1", "40". Trailing zeros carry no information for the reader.
+ */
+export const percentText = (value: string) =>
+  value
+    .replace(".", ",")
+    .replace(/(,\d*?)0+$/, "$1")
+    .replace(/,$/, "");

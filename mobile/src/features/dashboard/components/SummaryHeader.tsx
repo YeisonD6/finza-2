@@ -5,7 +5,11 @@ import type { DashboardSummary } from "../api";
 import { AppText } from "../../../shared/ui/AppText";
 import { AmountText } from "../../../shared/ui/AmountText";
 import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
-import { formatCOP, amountLabel } from "../../../shared/formatting/money";
+import {
+  formatCOP,
+  amountLabel,
+  percentText,
+} from "../../../shared/formatting/money";
 import { monthName, shiftMonth } from "../../../shared/formatting/dates";
 import { cents } from "./CategorySpending";
 
@@ -26,7 +30,7 @@ export function SummaryHeader({ data }: { data: DashboardSummary }) {
   const comparison =
     delta === null
       ? "Sin datos del mes anterior"
-      : `${formatCOP(delta.replace(/^-/, ""))} ${delta === "0.00" ? "sin cambio frente a" : delta.startsWith("-") ? "menos que" : "más que"} ${monthName(shiftMonth(data.month, -1))}${reason === "comparable" && percent !== null ? ` (${percent.replace(/^-/, "").replace(".", ",").replace(/,00$/, "")} %)` : ""}`;
+      : `${formatCOP(delta.replace(/^-/, ""))} ${delta === "0.00" ? "sin cambio frente a" : delta.startsWith("-") ? "menos que" : "más que"} ${monthName(shiftMonth(data.month, -1))}${reason === "comparable" && percent !== null ? ` (${percentText(percent.replace(/^-/, ""))} %)` : ""}`;
   const baseline =
     reason === "zero_baseline"
       ? " El flujo anterior fue cero; se muestra la diferencia absoluta, sin porcentaje."
