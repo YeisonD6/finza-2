@@ -17,6 +17,7 @@ import {
   announce,
   useDeferredFocus,
 } from "../../shared/accessibility/announcements";
+import { PrivateScreen } from "../../shared/ui/PrivateScreen";
 
 const LOST = [
   "Todos tus movimientos y categorías personales",
@@ -29,7 +30,7 @@ const LOST = [
  * accounts). The typed e-mail confirms intent; accounts with a password also
  * re-enter it. Nothing happens until both match.
  */
-export default function DeleteAccount() {
+function DeleteAccountScreen() {
   useThemeRefresh();
   const profile = useSelector((s: RootState) => s.auth.profile);
   const hasPassword = profile?.has_password !== false;
@@ -159,5 +160,14 @@ export default function DeleteAccount() {
         onPress={() => router.back()}
       />
     </AuthShell>
+  );
+}
+
+/** Private: without a session this opens sign-in instead of failing requests. */
+export default function DeleteAccount() {
+  return (
+    <PrivateScreen>
+      <DeleteAccountScreen />
+    </PrivateScreen>
   );
 }

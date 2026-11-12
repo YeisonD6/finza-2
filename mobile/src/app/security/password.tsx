@@ -19,9 +19,10 @@ import {
   announce,
   useDeferredFocus,
 } from "../../shared/accessibility/announcements";
+import { PrivateScreen } from "../../shared/ui/PrivateScreen";
 
 /** Change the password, or create a first one for Google/Apple accounts. */
-export default function ChangePassword() {
+function ChangePasswordScreen() {
   const profile = useSelector((s: RootState) => s.auth.profile);
   const hasPassword = profile?.has_password !== false;
   const [current, setCurrent] = useState("");
@@ -114,5 +115,14 @@ export default function ChangePassword() {
       <Feedback message={saved} tone="success" announce={false} />
       <AppButton title="Guardar" onPress={save} busy={busy} />
     </AuthShell>
+  );
+}
+
+/** Private: without a session this opens sign-in instead of failing requests. */
+export default function ChangePassword() {
+  return (
+    <PrivateScreen>
+      <ChangePasswordScreen />
+    </PrivateScreen>
   );
 }

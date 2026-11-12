@@ -9,8 +9,9 @@ import { DashboardInsights } from "../features/dashboard/components/DashboardIns
 import { spentShare } from "../features/dashboard/components/SummaryHeader";
 import { monthLabel } from "../shared/formatting/dates";
 import { colors, useThemeRefresh } from "../shared/theme/tokens";
+import { PrivateScreen } from "../shared/ui/PrivateScreen";
 /** Everything Inicio leaves out to stay minimal: tips, budgets, goals, trend, categories. */
-export default function Insights() {
+function InsightsScreen() {
   useThemeRefresh();
   const financial = useFinancial();
   const categories = useCategoriesQuery();
@@ -38,5 +39,14 @@ export default function Insights() {
         <DashboardInsights data={data} categories={categories.data ?? []} />
       ) : null}
     </Screen>
+  );
+}
+
+/** Private: without a session this opens sign-in instead of failing requests. */
+export default function Insights() {
+  return (
+    <PrivateScreen>
+      <InsightsScreen />
+    </PrivateScreen>
   );
 }
