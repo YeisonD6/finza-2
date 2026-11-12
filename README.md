@@ -1,79 +1,131 @@
-# Finza
+# FINZA
 
-Monolito modular: FastAPI + PostgreSQL y Expo/React Native + Redux Toolkit/RTK Query.
+_Tus cuentas claras, con Monedin a tu lado._
 
-## Documentación
+App móvil de finanzas personales en pesos colombianos: registra ingresos y gastos en segundos, muestra el flujo neto del mes y en qué categorías se va el dinero, y ayuda a cumplir presupuestos y metas de ahorro. Está diseñada para usarse también con lector de pantalla y letra grande.
 
-- [Arquitectura](docs/superpowers/specs/2026-10-30-finza-mvp-architecture-design.md)
-- [Revisión técnica vinculante](docs/architecture/technical-review.md): dinero, fechas, seguridad, accesibilidad y prioridades.
-- [Plan de la primera entrega](docs/superpowers/plans/2026-10-30-finza-first-delivery.md): archivos, responsables, pruebas y aceptación.
-- [Avance y limitaciones](docs/architecture/progress.md).
-- [Componentes y evidencia de accesibilidad](docs/accessibility/first-delivery.md): pruebas automáticas y recorridos nativos aún pendientes por pantalla.
+**Documento técnico final:** [docs/entrega-final/FINZA-documento-final.md](docs/entrega-final/FINZA-documento-final.md) (y su PDF en la misma carpeta).
 
-## Desarrollo local (PowerShell)
+## Funcionalidades
 
-Requisitos: Python 3.12, Node 24 LTS (>=24.3), npm y Docker Compose para PostgreSQL. Expo SDK 58 y sus dependencias siguen la matriz oficial bundledNativeModules y package-lock. No asumir que Expo Go de otra versión es compatible: usar un development build si corresponde.
+- Registro e inicio de sesión con correo y contraseña, recuperación de contraseña y verificación de correo. Google y Apple están programados y se ocultan mientras no haya credenciales.
+- Inicio: flujo neto del mes, ingresos, gastos, comparación con el mes anterior y últimos movimientos. Deslizar hacia abajo actualiza.
+- Registrar movimientos con un formulario o escribiendo en español («almuerzo 18 mil»); el texto se interpreta en el teléfono.
+- Movimientos por mes con filtros; deslizar una fila a la izquierda la archiva (también hay botón «Archivar movimiento»).
+- Presupuestos mensuales por categoría con estado en texto: al día, cerca del límite, excedido.
+- Metas de ahorro con abonos y porcentaje de avance.
+- Análisis del gasto por categoría con una dona que también se lee en texto.
+- Modo claro y oscuro, Monedin animado y widgets de Android (solo en development build).
 
-Las rutas están en `mobile/src/app`; el store en `mobile/src/core`. El Node global de esta máquina es 20: para los comandos móviles seleccionar Node24. Durante la preparación se usó el ejecutable disponible `C:/Users/ACER/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe`; no se cambió la instalación global.
+## Arquitectura
 
-Desde la raíz:
+```text
+Teléfono (Expo / React Native)  ── HTTP JSON + token ──>  API FastAPI  ── SQL ──>  PostgreSQL 17
+```
 
-```powershell
-python -m venv backend/.venv
-backend/.venv/Scripts/python -m pip install -r backend/requirements.lock.txt
-Copy-Item infra/.env.example infra/.env
-# Cambiar POSTGRES_PASSWORD en infra/.env (solo desarrollo; sin símbolos URL reservados).
+| Carpeta                    | Contenido                                                                                                                        |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `mobile/src/app`           | Pantallas; cada archivo es una ruta de Expo Router: `(auth)`, `(tabs)`, `movement`, `goal`, `budgets`, `security`, `insights`    |
+| `mobile/src/features`      | Lógica por función: `auth`, `dashboard`, `movements`, `quick-entry`, `budgets`, `goals`, `widgets`                               |
+| `mobile/src/shared`        | Componentes (`ui`), tema y animaciones (`theme`), Monedin (`brand`), cliente de la API (`api`), formato de dinero (`formatting`) |
+| `mobile/src/core/store.ts` | Redux Toolkit + RTK Query                                                                                                        |
+| `backend/app/modules`      | Un módulo por tema: `identity`, `users`, `movements`, `dashboard`, `budgets`, `goals`, `audit`                                   |
+| `backend/migrations`       | Migraciones Alembic `001_identity` a `006_email_verification`                                                                    |
+| `infra/compose.yaml`       | PostgreSQL + migraciones + API con Docker                                                                                        |
+| `docs/`                    | Arquitectura, diseño, accesibilidad, decisiones y entrega final                                                                  |
+
+Detalle: [arquitectura](docs/engineering/architecture.md), [decisiones](docs/delivery/decisions.md), [sistema de diseño](docs/engineering/design-system.md), [autenticación](docs/engineering/auth.md), [widgets](docs/engineering/widgets.md).
+
+## Requisitos
+
+- Python 3.12 y Node 24 LTS con npm.
+- PostgreSQL 17, local o con Docker Compose.
+- Para el teléfono: **Expo Go para SDK 58**, en la misma red Wi-Fi que el computador.
+
+## Variables de entorno
+
+Nunca se suben a Git: `.env` y `.env.local` están en `.gitignore`. Cada carpeta tiene su plantilla `.env.example`.
+
+| Archivo              | Variable                                           | Para qué                                                                                                  |
+| -------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `backend/.env.local` | `DATABASE_URL`                                     | Conexión a PostgreSQL, dialecto `postgresql+psycopg://`                                                   |
+|                      | `JWT_SECRET`                                       | Clave aleatoria de al menos 32 bytes: `python -c "import secrets; print(secrets.token_urlsafe(48))"`      |
+|                      | `FINZA_MAIL_MODE`                                  | `log` en desarrollo: los enlaces de correo se escriben en la consola de la API                            |
+|                      | `FINZA_CORS_ORIGINS`                               | Solo para la vista web de desarrollo, por ejemplo `http://localhost:8081`                                 |
+|                      | `FINZA_GOOGLE_CLIENT_IDS`, `FINZA_APPLE_AUDIENCES` | Opcionales: activan Google y Apple                                                                        |
+| `infra/.env`         | `POSTGRES_PASSWORD`, `JWT_SECRET`                  | Solo si se usa Docker Compose                                                                             |
+| `mobile/.env.local`  | `EXPO_PUBLIC_API_URL`                              | Vacía o `auto`: la app usa la IP del computador que corre Metro. Emulador Android: `http://10.0.2.2:8000` |
+|                      | `EXPO_PUBLIC_API_PORT`                             | Puerto de la API cuando se usa `auto` (8000 por defecto)                                                  |
+
+Las variables `EXPO_PUBLIC_` quedan dentro de la app: nunca pongas secretos en ellas.
+
+## Cómo ejecutarlo
+
+### 1. Base de datos y API
+
+**Opción A, con Docker Compose** (base de datos, migraciones y API en el puerto 8000):
+
+```bash
+cp infra/.env.example infra/.env   # cambiar POSTGRES_PASSWORD y JWT_SECRET
 docker compose --env-file infra/.env -f infra/compose.yaml up --build -d
 ```
 
-API: http://localhost:8000/docs. Health `/health/live`; readiness `/health/ready` responde 503 si PostgreSQL no está disponible. Compose es exclusivamente desarrollo, no configuración de producción.
+**Opción B, sin Docker** (PostgreSQL ya instalado):
 
-Alternativa sin Docker para trabajar en API/dominio (readiness seguirá 503):
-
-```powershell
+```bash
 cd backend
-.venv/Scripts/python -m uvicorn app.main:app --reload --host 0.0.0.0
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.lock.txt
+cp .env.example .env.local         # completar DATABASE_URL, JWT_SECRET y FINZA_MAIL_MODE=log
+set -a && . ./.env.local && set +a
+.venv/bin/python -m alembic upgrade head
+.venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Si hay PostgreSQL instalado por separado, definir DATABASE_URL con dialecto postgresql+psycopg. No publicar esa variable ni guardar credenciales en git.
+En Windows, usar `.venv\Scripts\python` y definir las variables en PowerShell con `$env:NOMBRE="valor"`.
 
-Móvil, en otra terminal:
+La documentación interactiva queda en http://localhost:8000/docs. `GET /health/ready` responde 503 si PostgreSQL no está disponible.
 
-```powershell
+### 2. Cuenta de demostración
+
+Con la API corriendo, desde `backend/`:
+
+```bash
+FINZA_API_URL=http://127.0.0.1:8000 .venv/bin/python -m scripts.seed_demo
+```
+
+Crea `demo@finza.app` con movimientos, presupuestos y metas. La contraseña está documentada en `backend/scripts/seed_demo.py`.
+
+### 3. App móvil
+
+```bash
 cd mobile
 npm ci
-Copy-Item .env.example .env
-npm start
+npx expo start
 ```
 
-Para Android emulado, API en http://10.0.2.2:8000. En teléfono físico con Expo Go, deja EXPO_PUBLIC_API_URL vacía o en `auto`: la app usa la IP del computador que sirve Metro (puerto `EXPO_PUBLIC_API_PORT`, 8000 por defecto), así que sigue funcionando si cambias de Wi-Fi; ambos dispositivos deben compartir red. La URL es pública en el bundle; nunca poner secretos en EXPO_PUBLIC_. El shell inicial no requiere API para mostrar la pantalla.
+Escanea el QR con Expo Go: con la cámara en iPhone o desde la propia Expo Go en Android. Si la API no usa el puerto 8000, crea `mobile/.env.local` con `EXPO_PUBLIC_API_URL=auto` y `EXPO_PUBLIC_API_PORT=<puerto>` y reinicia Metro. Si cambias de red, reinicia Metro y escanea el QR nuevo.
 
-## Verificación
+## Pruebas
 
-Tras iniciar sesión, la app abre el dashboard mensual. Permite registrar un movimiento y volver al resumen actualizado, o abrir el listado para editar/archivar. En Swagger usar Authorize y `GET /api/v1/dashboard/summary?month=2024-02` para consultar el mismo resumen. Importes COP como cadenas, comparación con el mes calendario anterior y cinco últimos activos propios del mes. Lista de comprobaciones manuales: [dashboard/TalkBack](docs/accessibility/dashboard-checklist.md).
-
-```powershell
-cd backend
-.venv/Scripts/python -m pytest -q
-.venv/Scripts/python -m ruff check app tests
-cd ../mobile
-npm test
-npm run typecheck
-npm run export:android
+```bash
+cd backend && .venv/bin/python -m pytest -q && .venv/bin/python -m ruff check app tests migrations
+cd mobile && npm test && npm run typecheck
 ```
 
-La prueba de readiness PostgreSQL se omite si DATABASE_URL no está definida. Las pruebas de migración/registro/concurrencia crean y eliminan una base aislada y requieren FINZA_PG_ADMIN_URL con permiso CREATE DATABASE. CI configura ambas variables con su PostgreSQL de pruebas; nunca usar credenciales de producción.
+Las pruebas de PostgreSQL necesitan `DATABASE_URL` y `FINZA_PG_ADMIN_URL` (un usuario con permiso para crear bases de datos). GitHub Actions ([quality.yml](.github/workflows/quality.yml)) corre todo en cada cambio, además de `npm run export:android`.
 
-Las migraciones vigentes son `001_identity`, `002_sessions` y `003_movements` (categorías, movimientos COP y auditoría). Desde backend ejecutar `.venv/Scripts/python -m alembic upgrade head` con DATABASE_URL configurada. Compose prepara primero la base, luego ejecuta Alembic y finalmente arranca API. Docker/Compose todavía no se pudieron ejecutar en esta máquina; conexión y migraciones sí se verificaron directamente contra PostgreSQL 18 local.
+Si cambia la API, regenera el contrato: desde `backend/`, `.venv/bin/python -m scripts.export_openapi`; luego desde `mobile/`, `npm run api:types`.
 
-El backend ofrece `POST /api/v1/auth/register` con JSON `{"email":"laura@example.com","password":"una contraseña larga"}`. Devuelve id, email normalizado y moneda COP; no inicia sesión. Login (`POST /api/v1/auth/login`) recibe las mismas credenciales y devuelve access_token/refresh_token. Refresh y logout reciben `{"refresh_token":"..."}`; `GET /api/v1/me` requiere Bearer access_token.
+## Accesibilidad
 
-Antes de usar auth, establecer JWT_SECRET aleatorio de al menos 32 bytes en la terminal; puede generarse con `backend/.venv/Scripts/python -c "import secrets; print(secrets.token_urlsafe(48))"`. Guardarlo localmente fuera de Git. backend/.env.example documenta variables; la API lee el entorno y no carga archivos .env sola. Para Compose definir JWT_SECRET también en infra/.env. No hay clave insegura por defecto.
+- Etiquetas, roles y estados nativos (`accessibilityLabel`, `accessibilityRole`, `accessibilityState`) en botones, campos, filas y gráficas. Cada fila de movimiento se lee como un solo elemento.
+- Texto con contraste de 4,5:1 o más y gráficos y bordes de 3:1 o más, en modo claro y oscuro ([tabla de contraste](docs/engineering/design-system.md)).
+- Controles de 48 dp o más, fuente escalable y nada que dependa solo del color: los gastos llevan signo y los presupuestos dicen su estado en texto.
+- Errores anunciados con foco en el primer campo inválido; los guardados se anuncian.
+- Con «Reducir movimiento», las animaciones quedan quietas. Hay vibración háptica en confirmaciones y errores.
+- Pendiente: recorrido completo con TalkBack y VoiceOver en un teléfono real ([listas de verificación](docs/accessibility/)).
 
-Movimientos privados: GET/POST `/api/v1/categories`, GET/POST `/api/v1/movements`, GET/PATCH/DELETE `/api/v1/movements/{id}`. GET permite month (YYYY-MM), type, category_id, limit (1–100), cursor; responde items/next_cursor/month. POST usa amount cadena, currency COP, occurred_on YYYY-MM-DD, category_id, nota opcional y client_request_id UUID. Reintentar sin cambiar contenido ni UUID es idempotente; editar usa PATCH y archivar usa DELETE. No usar owner_id enviado por cliente.
+## Equipo
 
-Regenerar contrato desde backend: `.venv/Scripts/python -m scripts.export_openapi`; luego desde mobile: `npm run api:types`. Incluye auth, /me, categorías y movimientos; el módulo móvil usa tipos generados. TypeScript se mantiene en 5.9 por compatibilidad del generador OpenAPI7; es la única exclusión explícita de la comprobación de versiones Expo.
-
-## Límites actuales
-
-Autenticación y movimientos backend/móvil implementados y probados automáticamente, incluyendo cliente TypeScript contra API/PG reales, reinicio del proceso API e aislamiento de sesiones/caché/recursos. Desde mobile ejecutar `npm test`, `npm run typecheck` y `npm run export:android`. La prueba hardware Android/TalkBack/SecureStore y Apple sigue pendiente. **Dashboard financiero es la siguiente tarea (4)**. Ver CONTINUE.md y progress.md para resultados y límites de dependencias.
+Isabela Benítez · Juan David Rubio · Yeison — Desarrollo de Aplicaciones Móviles, Universidad de La Sabana, 2026.
