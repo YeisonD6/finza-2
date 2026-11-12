@@ -8,6 +8,7 @@ import { Banner } from "../../shared/ui/Banner";
 import { MovementRow } from "../../shared/ui/MovementRow";
 import { SwipeToArchive } from "../../shared/ui/SwipeToArchive";
 import { EmptyState } from "../../shared/ui/EmptyState";
+import { SkeletonList } from "../../shared/ui/Skeleton";
 import { monthName, dayLabel } from "../../shared/formatting/dates";
 import { useMovementList } from "./components/useMovementList";
 import { MovementFilters } from "./components/MovementFilters";
@@ -81,9 +82,10 @@ export function MovementsScreen({
                   tone={f.failed ? "error" : "success"}
                   announce={f.failed}
                 />
-                <Banner
-                  message={f.query.isFetching ? "Cargando movimientos…" : ""}
-                />
+                {/* First load only: a refetch behind visible rows stays silent. */}
+                {f.query.isFetching && f.rows.length === 0 ? (
+                  <SkeletonList rows={4} label="Cargando movimientos…" />
+                ) : null}
                 {f.query.error ? (
                   <>
                     <Banner

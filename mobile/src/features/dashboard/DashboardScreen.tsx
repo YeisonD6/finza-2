@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
 import { Screen } from "../../shared/ui/Screen";
@@ -7,6 +7,7 @@ import { Banner } from "../../shared/ui/Banner";
 import { MonthSwitcher } from "../../shared/ui/MonthSwitcher";
 import { MovementRow } from "../../shared/ui/MovementRow";
 import { EmptyState } from "../../shared/ui/EmptyState";
+import { SkeletonSummary } from "../../shared/ui/Skeleton";
 import { useTabBarSpace } from "../../shared/ui/TabBar";
 import { announce } from "../../shared/accessibility/announcements";
 import { formatCOP } from "../movements/domain";
@@ -83,6 +84,18 @@ export function DashboardScreen({
   const content = (heading: ReactNode) => (
     <ScrollView
       keyboardShouldPersistTaps="handled"
+      // Pull to refresh replaces the old «Actualizar resumen» button; every
+      // mutation already invalidates this query, so it is rarely needed.
+      refreshControl={
+        <RefreshControl
+          refreshing={!!data && query.isFetching}
+          onRefresh={() => {
+            void query.refetch();
+          }}
+          tintColor={colors.accent}
+          colors={[colors.forest700]}
+        />
+      }
       contentContainerStyle={{
         paddingHorizontal: 24,
         paddingTop: 8,
@@ -127,7 +140,6 @@ export function DashboardScreen({
         </View>
         <MonthSwitcher month={month} onChange={onMonthChange} />
       </View>
-      {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
       <Banner
         message={
           silentInitialSummary
@@ -142,13 +154,10 @@ export function DashboardScreen({
       />
       <MonthTransition month={month}>
         {data ? <SummaryHeader data={data} /> : null}
-        {query.isFetching ? (
-          <View style={{ gap: 8, paddingVertical: 24 }}>
-            <ActivityIndicator color={colors.accent} />
-            <AppText style={{ color: colors.inkMuted }}>Cargando…</AppText>
-          </View>
-        ) : null}
+        {!data && query.isFetching ? <SkeletonSummary /> : null}
       </MonthTransition>
+      {/* After the figure, not above it: the month's number is what Inicio is for. */}
+      {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
       {query.isError ? (
         <View style={{ gap: 12 }}>
           <Banner
@@ -218,14 +227,6 @@ export function DashboardScreen({
           </View>
         </>
       ) : null}
-      <AppButton
-        title="Actualizar resumen"
-        variant="ghost"
-        busy={query.isFetching}
-        onPress={() => {
-          void query.refetch();
-        }}
-      />
     </ScrollView>
   );
   return (

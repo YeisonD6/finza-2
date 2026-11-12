@@ -172,11 +172,9 @@ test("loading a new month never presents data from the preceding query", async (
     isFetching: true,
   };
   await render(<DashboardScreen {...props} month="2024-03" />);
-  expect(screen.getByText("Cargando…")).toBeTruthy();
+  // A skeleton shaped like the hero, announced once as «Cargando…».
+  expect(screen.getByRole("progressbar", { name: "Cargando…" })).toBeTruthy();
   expect(screen.queryByLabelText(/Flujo neto del mes:/)).toBeNull();
-  expect(
-    screen.getByRole("button", { name: "Actualizar resumen" }),
-  ).toBeDisabled();
 });
 
 test("refresh error hides stale data and exposes a retry", async () => {
