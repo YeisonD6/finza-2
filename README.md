@@ -46,7 +46,7 @@ Copy-Item .env.example .env
 npm start
 ```
 
-Para Android emulado, API en http://10.0.2.2:8000. En teléfono físico, EXPO_PUBLIC_API_URL usa la IP LAN del computador; ambos dispositivos deben compartir red. La URL es pública en el bundle; nunca poner secretos en EXPO_PUBLIC_. El shell inicial no requiere API para mostrar la pantalla.
+Para Android emulado, API en http://10.0.2.2:8000. En teléfono físico con Expo Go, deja EXPO_PUBLIC_API_URL vacía o en `auto`: la app usa la IP del computador que sirve Metro (puerto `EXPO_PUBLIC_API_PORT`, 8000 por defecto), así que sigue funcionando si cambias de Wi-Fi; ambos dispositivos deben compartir red. La URL es pública en el bundle; nunca poner secretos en EXPO_PUBLIC_. El shell inicial no requiere API para mostrar la pantalla.
 
 ## Verificación
 

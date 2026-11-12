@@ -127,12 +127,12 @@ Los archivos versionados `backend/.env.example` y `mobile/.env.example` contiene
 | `FINZA_RESET_LINK_BASE`   | Base de recuperación; `finza://reset-password`.                                                                                |
 | `FINZA_VERIFY_LINK_BASE`  | Base de confirmación; `finza://verify-email`.                                                                                  |
 
-| Mobile                              | Uso / plantilla                                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `EXPO_PUBLIC_API_URL`               | API accesible desde el dispositivo; plantilla `http://localhost:8000`, fallback del runtime `http://10.0.2.2:8000`. |
-| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`  | Client ID OAuth Web usado por Google como audiencia; vacío oculta Google.                                           |
-| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`  | Client ID OAuth iOS; requerido adicionalmente para mostrar Google en iOS.                                           |
-| `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` | ID iOS invertido, suministrado como `iosUrlScheme` al plugin en `app.config.js`; requiere reconstruir el binario.   |
+| Mobile                              | Uso / plantilla                                                                                                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_API_URL`               | API accesible desde el dispositivo; plantilla `http://localhost:8000`. Vacía o `auto` en desarrollo: host de Metro + `EXPO_PUBLIC_API_PORT` (8000). Sin host: `http://10.0.2.2:8000`. |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`  | Client ID OAuth Web usado por Google como audiencia; vacío oculta Google.                                                                                                             |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`  | Client ID OAuth iOS; requerido adicionalmente para mostrar Google en iOS.                                                                                                             |
+| `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` | ID iOS invertido, suministrado como `iosUrlScheme` al plugin en `app.config.js`; requiere reconstruir el binario.                                                                     |
 
 ## Configurar credenciales
 
