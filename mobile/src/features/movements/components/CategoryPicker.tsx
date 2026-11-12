@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { spacing } from "../../../shared/theme/tokens";
 import { AppText } from "../../../shared/ui/AppText";
 import { AppButton } from "../../../shared/ui/AppButton";
 import { CategoryChip } from "../../../shared/ui/CategoryChip";
@@ -41,7 +42,18 @@ export function CategoryPicker({
           />
         </>
       ) : null}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+      {/* One scrolling row bled to the screen edges keeps the sheet short. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        style={{ marginHorizontal: -spacing.xl, flexGrow: 0 }}
+        contentContainerStyle={{
+          paddingHorizontal: spacing.xl,
+          gap: 8,
+          alignItems: "center",
+        }}
+      >
         {f.categories
           .filter((c) => c.movement_type === f.type)
           .map((c) => (
@@ -66,9 +78,10 @@ export function CategoryPicker({
           title="+ Nueva categoría"
           variant="secondary"
           disabled={f.busy}
+          accessibilityState={{ expanded: adding }}
           onPress={() => setAdding(!adding)}
         />
-      </View>
+      </ScrollView>
       {f.fields.category_id ? (
         <AppText accessibilityRole="alert">{f.fields.category_id}</AppText>
       ) : null}

@@ -9,16 +9,19 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { useReducedMotion } from "../theme/motion";
+import { getColorScheme, useThemeRefresh } from "../theme/tokens";
 
 /** Two continuous currents, animated on the native thread without re-rendering the form. */
 export function LiquidBackdrop({
-  dark = false,
+  dark: darkOverride,
   active = true,
 }: {
   dark?: boolean;
   active?: boolean;
 }) {
-  const id = useId().replace(/:/g, "");
+  useThemeRefresh();
+  const dark = darkOverride ?? getColorScheme() === "dark";
+  const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const reduced = useReducedMotion();
   const phase = useRef(new Animated.Value(0)).current;
   const [foreground, setForeground] = useState(

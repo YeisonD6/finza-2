@@ -6,7 +6,7 @@ import { colors } from "../theme/tokens";
 export function IconButton({
   icon: Icon,
   accessibilityLabel,
-  color = colors.forest700,
+  color = colors.accent,
   style,
   ...props
 }: Omit<ComponentProps<typeof AppButton>, "title" | "icon"> & {

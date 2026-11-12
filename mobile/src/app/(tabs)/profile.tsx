@@ -25,13 +25,18 @@ import {
   LayoutGrid,
 } from "lucide-react-native";
 import { SettingsGroup, SettingsRow } from "../../shared/ui/SettingsRow";
-import { categoryPalette, colors } from "../../shared/theme/tokens";
+import {
+  categoryPalette,
+  colors,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 
 const PROVIDER_NAMES: Record<string, string> = {
   google: "Google",
   apple: "Apple",
 };
 export default function Profile() {
+  useThemeRefresh();
   const [welcomeError, setWelcomeError] = useState("");
   const [information, setInformation] = useState<
     "privacy" | "accessibility" | null

@@ -19,6 +19,7 @@ import {
   radii,
   shadows,
   type CategoryTone,
+  useThemeRefresh,
 } from "../shared/theme/tokens";
 import { WidgetPreview } from "../features/widgets/WidgetPreview";
 import { announce } from "../shared/accessibility/announcements";
@@ -55,6 +56,7 @@ const HOW_TO =
     : "Mantén presionado un espacio vacío de tu pantalla de inicio, toca Widgets y busca FINZA.";
 
 function Section({ children }: { children: React.ReactNode }) {
+  useThemeRefresh();
   return (
     <View
       style={[
@@ -73,6 +75,7 @@ function Section({ children }: { children: React.ReactNode }) {
 }
 
 export default function Widgets() {
+  useThemeRefresh();
   const [hidden, setHidden] = useState(getHideAmounts);
   // The widget's eye button can change the setting while this screen is open.
   useFocusEffect(useCallback(() => setHidden(getHideAmounts()), []));

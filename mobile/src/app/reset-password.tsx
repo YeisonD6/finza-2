@@ -11,7 +11,7 @@ import { AppButton } from "../shared/ui/AuthControls";
 import { Feedback } from "../shared/ui/Feedback";
 import { AppText } from "../shared/ui/AppText";
 import { Monedin } from "../shared/brand/Monedin";
-import { colors } from "../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../shared/theme/tokens";
 import {
   error as errorHaptic,
   success as successHaptic,
@@ -23,6 +23,7 @@ import {
 
 /** Opened from the e-mailed link finza://reset-password?token=… */
 export default function ResetPassword() {
+  useThemeRefresh();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [value, setValue] = useState("");
   const [confirm, setConfirm] = useState("");

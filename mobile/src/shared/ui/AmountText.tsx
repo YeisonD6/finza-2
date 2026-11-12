@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { AppText } from "./AppText";
 import { formatCOP, amountLabel } from "../formatting/money";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function AmountText({
   value,
   tone = "neutral",
@@ -14,6 +14,7 @@ export function AmountText({
   suffix?: React.ReactNode;
   tone?: "neutral" | "income" | "expense" | "auto";
 }) {
+  useThemeRefresh();
   const kind =
     tone === "auto" ? (value.startsWith("-") ? "expense" : "income") : tone;
   const signed =

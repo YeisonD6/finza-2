@@ -1,35 +1,37 @@
-import { useContext, useEffect, useRef, type ReactNode } from "react";
-import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
-import { DashboardInsights } from "./components/DashboardInsights";
+import { useEffect, useRef, type ReactNode } from "react";
+import { Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
 import { Screen } from "../../shared/ui/Screen";
 import { Banner } from "../../shared/ui/Banner";
-import { Card } from "../../shared/ui/Card";
 import { MonthSwitcher } from "../../shared/ui/MonthSwitcher";
 import { MovementRow } from "../../shared/ui/MovementRow";
 import { EmptyState } from "../../shared/ui/EmptyState";
+import { SkeletonSummary } from "../../shared/ui/Skeleton";
+import { useTabBarSpace } from "../../shared/ui/TabBar";
 import { announce } from "../../shared/accessibility/announcements";
 import { formatCOP } from "../movements/domain";
 import { monthName } from "../../shared/formatting/dates";
-import { colors, radii } from "../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../shared/theme/tokens";
 import type { Category, Movement } from "../movements/types";
 import { useDashboardQuery } from "./api";
 import { SummaryHeader } from "./components/SummaryHeader";
 import { MonthTransition } from "./components/MonthTransition";
+import { MonthlySpendCard } from "./components/MonthlyTrend";
 import { VerifyEmailBanner } from "../auth/components/VerifyEmailBanner";
-import { QuickActions } from "./components/QuickActions";
 import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaInsetsContext } from "react-native-safe-area-context";
-import { HeroRings } from "./components/HeroRings";
-import { LiquidBackdrop } from "../../shared/ui/LiquidBackdrop";
+/**
+ * Inicio (v4, «Vidrio de bosque»): one large figure, one chart and the last three
+ * movements. Budgets, goals, categories and Monedin's tips live in Análisis, one tap
+ * away, so the first screen answers a single question: how is my month going?
+ */
 export function DashboardScreen({
   month,
   onMonthChange,
   onRegister,
   onOpenMovements,
   onProfile,
+  onOpenInsights = () => router.push("/insights"),
   email,
   categories = [],
   onEdit,
@@ -43,6 +45,7 @@ export function DashboardScreen({
   onRegister(): void;
   onOpenMovements(): void;
   onProfile(): void;
+  onOpenInsights?(): void;
   email: string;
   categories?: Category[];
   onEdit?(record: Movement): void;
@@ -52,8 +55,8 @@ export function DashboardScreen({
   /** Shows the confirm-your-email reminder (never blocks the dashboard). */
   emailUnconfirmed?: boolean;
 }) {
-  // Context read (not the hook) so the screen also renders outside a provider, as in tests.
-  const topInset = useContext(SafeAreaInsetsContext)?.top ?? 0;
+  useThemeRefresh();
+  const tabSpace = useTabBarSpace();
   const skipSummary = useRef(silentInitialSummary),
     silenced = useRef(false);
   const query = useDashboardQuery(month);
@@ -78,25 +81,29 @@ export function DashboardScreen({
       );
     }
   }, [data, query.isFetching, query.isError, active]);
-  const headerContent = (heading: ReactNode) => (
+  const content = (heading: ReactNode) => (
     <ScrollView
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ paddingBottom: 24, gap: 20 }}
+      // Pull to refresh replaces the old «Actualizar resumen» button; every
+      // mutation already invalidates this query, so it is rarely needed.
+      refreshControl={
+        <RefreshControl
+          refreshing={!!data && query.isFetching}
+          onRefresh={() => {
+            void query.refetch();
+          }}
+          tintColor={colors.accent}
+          colors={[colors.forest700]}
+        />
+      }
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingTop: 8,
+        paddingBottom: Math.max(tabSpace, 24),
+        gap: 28,
+      }}
     >
-      <View
-        style={{
-          backgroundColor: colors.forest700,
-          borderBottomLeftRadius: radii.xl,
-          borderBottomRightRadius: radii.xl,
-          paddingHorizontal: 20,
-          paddingTop: topInset + 12,
-          paddingBottom: 60,
-          gap: 8,
-          overflow: "hidden",
-        }}
-      >
-        <LiquidBackdrop dark active={active} />
-        <HeroRings />
+      <View style={{ gap: 4 }}>
         <View
           style={{
             flexDirection: "row",
@@ -117,164 +124,114 @@ export function DashboardScreen({
               borderRadius: 22,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: colors.sage300,
-              borderWidth: 2,
-              borderColor: colors.forestGlassStrong,
-              opacity: pressed ? 0.8 : 1,
+              backgroundColor: colors.glass,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              opacity: pressed ? 0.7 : 1,
             })}
           >
             <AppText
               variant="subhead"
-              style={{ color: colors.forest900, fontWeight: "700" }}
+              style={{ color: colors.accent, fontWeight: "800" }}
             >
               {email.slice(0, 1).toUpperCase()}
             </AppText>
           </Pressable>
         </View>
-        <MonthSwitcher month={month} onChange={onMonthChange} inverse />
-        <MonthTransition month={month}>
-          {data ? <SummaryHeader data={data} /> : null}
-          {query.isFetching ? (
-            <View style={{ gap: 8 }}>
-              <ActivityIndicator color={colors.onForest} />
-              <AppText style={{ color: colors.onForest }}>Cargando…</AppText>
-            </View>
-          ) : null}
-        </MonthTransition>
+        <MonthSwitcher month={month} onChange={onMonthChange} />
       </View>
-      {/* Quick actions overlap the header's lower edge: one surface leads into the next. */}
-      <View style={{ paddingHorizontal: 20, gap: 20, marginTop: -56 }}>
-        <QuickActions
-          onRegister={onRegister}
-          onBudgets={() => router.push("/budgets")}
-          onNewGoal={() => router.push("/goal/new")}
-        />
-        {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
-        <Banner
-          message={
-            silentInitialSummary
-              ? firstMovement
-                ? `¡Primer movimiento de ${monthName(month)}!`
-                : "Movimiento guardado"
-              : ""
-          }
-          tone="success"
-          announce={false}
-          celebrate={firstMovement && !!data?.recent_movements.length}
-        />
-        {query.isError ? (
-          <>
-            <Banner
-              message="No se pudo cargar el dashboard. Reintenta con conexión."
-              tone="error"
-            />
-            <AppButton
-              title="Reintentar"
-              onPress={() => {
-                void query.refetch();
+      <Banner
+        message={
+          silentInitialSummary
+            ? firstMovement
+              ? `¡Primer movimiento de ${monthName(month)}!`
+              : "Movimiento guardado"
+            : ""
+        }
+        tone="success"
+        announce={false}
+        celebrate={firstMovement && !!data?.recent_movements.length}
+      />
+      <MonthTransition month={month}>
+        {data ? <SummaryHeader data={data} /> : null}
+        {!data && query.isFetching ? <SkeletonSummary /> : null}
+      </MonthTransition>
+      {/* After the figure, not above it: the month's number is what Inicio is for. */}
+      {emailUnconfirmed ? <VerifyEmailBanner email={email} /> : null}
+      {query.isError ? (
+        <View style={{ gap: 12 }}>
+          <Banner
+            message="No se pudo cargar el dashboard. Reintenta con conexión."
+            tone="error"
+          />
+          <AppButton
+            title="Reintentar"
+            onPress={() => {
+              void query.refetch();
+            }}
+          />
+        </View>
+      ) : null}
+      {data ? (
+        <>
+          <MonthlySpendCard month={data.month} onOpen={onOpenInsights} />
+          <View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
               }}
-            />
-          </>
-        ) : null}
-        {data ? (
-          <>
-            <Card>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 8,
-                }}
+            >
+              <AppText
+                variant="subhead"
+                accessibilityRole="header"
+                style={{ flex: 1 }}
               >
-                <AppText
-                  variant="heading"
-                  accessibilityRole="header"
-                  style={{ flex: 1 }}
-                >
-                  Tus movimientos
-                </AppText>
-                <AppButton
-                  title="Ver todos"
-                  variant="ghost"
-                  size="sm"
-                  onPress={onOpenMovements}
-                />
-              </View>
-              {data.recent_movements.length === 0 ? (
-                <EmptyState
-                  active={active}
-                  title={`Aún no hay movimientos en ${monthName(month)}`}
-                  message="Registra tu primer movimiento."
-                  action="Registrar el primero"
-                  onAction={onRegister}
-                />
-              ) : (
-                data.recent_movements.slice(0, 5).map((row, index) => {
-                  const category = categories.find(
-                    (c) => c.id === row.category_id,
-                  );
-                  return (
-                    <MovementRow
-                      key={row.id}
-                      movement={row}
-                      category={category?.name}
-                      isSystem={category?.is_system}
-                      index={index}
-                      onPress={onEdit ? () => onEdit(row) : undefined}
-                    />
-                  );
-                })
-              )}
-            </Card>
-            <DashboardInsights
-              data={data}
-              categories={categories}
-              allowMascot={!firstMovement}
-            />
-          </>
-        ) : null}
-        <AppButton
-          title="Actualizar resumen"
-          variant="ghost"
-          busy={query.isFetching}
-          onPress={() => {
-            void query.refetch();
-          }}
-        />
-      </View>
+                Recientes
+              </AppText>
+              <AppButton
+                title="Ver todos"
+                variant="ghost"
+                size="sm"
+                onPress={onOpenMovements}
+              />
+            </View>
+            {data.recent_movements.length === 0 ? (
+              <EmptyState
+                active={active}
+                title={`Aún no hay movimientos en ${monthName(month)}`}
+                message="Registra tu primer movimiento."
+                action="Registrar el primero"
+                onAction={onRegister}
+              />
+            ) : (
+              data.recent_movements.slice(0, 3).map((row, index, rows) => {
+                const category = categories.find(
+                  (c) => c.id === row.category_id,
+                );
+                return (
+                  <MovementRow
+                    key={row.id}
+                    movement={row}
+                    category={category?.name}
+                    isSystem={category?.is_system}
+                    index={index}
+                    last={index === rows.length - 1}
+                    onPress={onEdit ? () => onEdit(row) : undefined}
+                  />
+                );
+              })
+            )}
+          </View>
+        </>
+      ) : null}
     </ScrollView>
   );
   return (
-    <Screen
-      title="FINZA"
-      titleVariant="label"
-      variant="forest"
-      active={active}
-      focusKey={month}
-    >
-      {(heading: ReactNode) => (
-        <>
-          {/* Light icons over the forest header, only while Inicio is the visible tab. */}
-          {active ? <StatusBar style="light" /> : null}
-          {headerContent(heading)}
-          {/* Forest strip behind the status bar so its light icons stay legible once the
-              header scrolls away. */}
-          {topInset ? (
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: topInset,
-                backgroundColor: colors.forest700,
-              }}
-            />
-          ) : null}
-        </>
-      )}
+    <Screen title="FINZA" titleVariant="label" active={active} focusKey={month}>
+      {(heading: ReactNode) => content(heading)}
     </Screen>
   );
 }

@@ -5,27 +5,44 @@ import {
   type ViewProps,
   type ViewStyle,
 } from "react-native";
-import { colors, radii, shadows } from "../theme/tokens";
+import {
+  colors,
+  onColorScheme,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../theme/tokens";
+import { useReduceTransparency } from "./Glass";
 
 // Native uses translucent layers and a specular edge. Web adds background blur.
-export const glassStyle: ViewStyle = {
-  backgroundColor: "rgba(255,255,255,0.82)",
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.94)",
-  borderBottomColor: "rgba(138,179,162,0.35)",
-  borderRadius: radii.lg,
-  ...shadows.card,
-  ...Platform.select({
-    web: {
-      backdropFilter: "blur(22px) saturate(135%)",
-      WebkitBackdropFilter: "blur(22px) saturate(135%)",
-    } as ViewStyle,
-  }),
-};
+function buildGlassStyle(): ViewStyle {
+  return {
+    backgroundColor: colors.glassStrong,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+    borderBottomColor: colors.border,
+    borderRadius: radii.lg,
+    ...shadows.card,
+    ...Platform.select({
+      web: {
+        backdropFilter: "blur(22px) saturate(135%)",
+        WebkitBackdropFilter: "blur(22px) saturate(135%)",
+      } as ViewStyle,
+    }),
+  };
+}
+export const glassStyle = buildGlassStyle();
+onColorScheme(() => Object.assign(glassStyle, buildGlassStyle()));
 
 export function GlassSurface({ children, style, ...props }: ViewProps) {
+  useThemeRefresh();
+  const reduce = useReduceTransparency();
+  const radius = StyleSheet.flatten(style)?.borderRadius ?? radii.lg;
   return (
-    <View {...props} style={[glassStyle, style]}>
+    <View
+      {...props}
+      style={[glassStyle, style, reduce && { backgroundColor: colors.surface }]}
+    >
       <View
         pointerEvents="none"
         aria-hidden
@@ -33,7 +50,7 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
         importantForAccessibility="no-hide-descendants"
         style={[
           StyleSheet.absoluteFill,
-          { borderRadius: radii.lg, overflow: "hidden" },
+          { borderRadius: radius, overflow: "hidden" },
         ]}
       >
         <View
@@ -43,7 +60,7 @@ export function GlassSurface({ children, style, ...props }: ViewProps) {
             left: 20,
             right: 20,
             height: 1,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.glassBorder,
           }}
         />
       </View>

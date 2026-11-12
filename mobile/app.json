@@ -15,6 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "co.edu.unisabana.finza"
-    }
+    },
+    "userInterfaceStyle": "automatic"
   }
 }

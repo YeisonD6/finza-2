@@ -16,7 +16,12 @@ import { categoryTone } from "../../shared/ui/categoryTheme";
 import Svg, { Circle } from "react-native-svg";
 import { SproutProgress } from "../../shared/ui/SproutProgress";
 import { markOnboarded } from "../../features/auth/storage";
-import { colors, radii, shadows } from "../../shared/theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 import { useReducedMotion } from "../../shared/theme/motion";
 
 /** Four short steps that show the product with sample data instead of describing it. */
@@ -46,6 +51,7 @@ function Sample({
   children: ReactNode;
   dark?: boolean;
 }) {
+  useThemeRefresh();
   return (
     <View
       importantForAccessibility="no-hide-descendants"
@@ -67,6 +73,7 @@ function Sample({
 }
 
 function StepVisual({ step }: { step: number }) {
+  useThemeRefresh();
   if (step === 0)
     return (
       <Sample dark>
@@ -195,6 +202,7 @@ function StepVisual({ step }: { step: number }) {
 
 /** Soft sage disc and growth rings behind each sample, so the step has a place to sit. */
 function Stage({ children }: { children: ReactNode }) {
+  useThemeRefresh();
   const { width } = useWindowDimensions();
   const size = Math.min(width * 0.95, 380);
   return (
@@ -233,6 +241,7 @@ function Stage({ children }: { children: ReactNode }) {
 }
 
 export default function Onboarding() {
+  useThemeRefresh();
   const profile = useSelector((s: RootState) => s.auth.profile);
   const [step, setStep] = useState(0);
   const scroll = useRef<ElementRef<typeof ScrollView>>(null);
@@ -334,8 +343,7 @@ export default function Onboarding() {
                 width: step === index ? 24 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor:
-                  step === index ? colors.forest700 : colors.border,
+                backgroundColor: step === index ? colors.accent : colors.border,
               }}
             />
           ))}

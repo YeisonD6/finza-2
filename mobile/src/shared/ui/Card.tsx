@@ -1,12 +1,18 @@
 import { type ViewProps } from "react-native";
-import { spacing } from "../theme/tokens";
+import { colors, radii, spacing, useThemeRefresh } from "../theme/tokens";
 import { GlassSurface } from "./GlassSurface";
 export function Card({ style, ...props }: ViewProps) {
+  useThemeRefresh();
   return (
     <GlassSurface
       {...props}
       style={[
         {
+          // Frosted fill over the ambient light; no live blur needed for static cards.
+          backgroundColor: colors.glass,
+          borderWidth: 1,
+          borderColor: colors.glassBorder,
+          borderRadius: radii.lg,
           padding: spacing.xl,
           gap: spacing.md,
         },

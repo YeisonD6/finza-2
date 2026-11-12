@@ -5,13 +5,19 @@ import { AppText } from "../../../shared/ui/AppText";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { amountLabel, formatCOP } from "../../../shared/formatting/money";
 import { monthName } from "../../../shared/formatting/dates";
-import { colors, radii, shadows } from "../../../shared/theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../../../shared/theme/tokens";
 
 /**
  * Month totals above the list. Comes from the dashboard summary (shared cache with
  * Inicio), so it is exact for the whole month even while the list is paginated or filtered.
  */
 export function MonthTotals({ month }: { month: string }) {
+  useThemeRefresh();
   const query = useDashboardQuery(month);
   const data = query.isError ? undefined : query.currentData;
   if (!data || data.month !== month) return null;

@@ -2,13 +2,14 @@ import { View } from "react-native";
 import { useDashboardQuery, type DashboardSummary } from "../api";
 import { AppText } from "../../../shared/ui/AppText";
 import { Card } from "../../../shared/ui/Card";
+import { AppButton } from "../../../shared/ui/AppButton";
 import { formatCOP } from "../../../shared/formatting/money";
 import {
   monthLabel,
   monthName,
   shiftMonth,
 } from "../../../shared/formatting/dates";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 
 const CHART_HEIGHT = 112;
 const toCents = (value: string) =>
@@ -52,6 +53,7 @@ export function trendBars(
  * shared scale; the figures are spoken as text, so the chart itself is decorative.
  */
 export function MonthlyTrend({ month }: { month: string }) {
+  useThemeRefresh();
   const months = useSixMonths(month);
   if (months.some((item) => !item.data)) return null;
   const rows = months.map((item) => item.data as DashboardSummary);
@@ -173,6 +175,110 @@ export function MonthlyTrend({ month }: { month: string }) {
           })}
         </View>
       </View>
+    </Card>
+  );
+}
+
+/**
+ * Inicio's only chart: spending per month for the last six months, current month in
+ * the accent colour. The figures are spoken as one summary, so the bars are decorative.
+ */
+export function MonthlySpendCard({
+  month,
+  onOpen,
+}: {
+  month: string;
+  onOpen(): void;
+}) {
+  useThemeRefresh();
+  const months = useSixMonths(month);
+  // The card (and its «Ver análisis», the only way into Análisis from Inicio) always
+  // renders; the bars only when all six months are loaded and something was spent.
+  const ready = months.every((item) => item.data);
+  const rows = ready ? months.map((item) => item.data as DashboardSummary) : [];
+  const max = rows.reduce(
+    (top, row) => (toCents(row.expense) > top ? toCents(row.expense) : top),
+    0n,
+  );
+  const summary = `Gasto de los últimos 6 meses. ${rows
+    .map(
+      (row, index) =>
+        `${monthLabel(months[index].month)}: ${formatCOP(row.expense)}`,
+    )
+    .join(". ")}`;
+  return (
+    <Card style={{ gap: 16 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+        }}
+      >
+        <AppText variant="subhead" accessibilityRole="header">
+          Gasto por mes
+        </AppText>
+        <AppButton
+          title="Ver análisis"
+          variant="ghost"
+          size="sm"
+          onPress={onOpen}
+        />
+      </View>
+      {ready && max === 0n ? (
+        <AppText style={{ color: colors.inkMuted }}>
+          Aún no hay gastos en los últimos seis meses.
+        </AppText>
+      ) : null}
+      {ready && max > 0n ? (
+        <View
+          accessible
+          accessibilityLabel={summary}
+          style={{ flexDirection: "row", alignItems: "flex-end", gap: 10 }}
+        >
+          {rows.map((row, index) => {
+            const current = index === rows.length - 1;
+            const share = Number((toCents(row.expense) * 1000n) / max) / 1000;
+            return (
+              <View
+                key={months[index].month}
+                importantForAccessibility="no-hide-descendants"
+                accessibilityElementsHidden
+                style={{ flex: 1, alignItems: "center", gap: 6 }}
+              >
+                <View
+                  style={{
+                    height: 72,
+                    width: "100%",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <View
+                    testID={`spend-${months[index].month}`}
+                    style={{
+                      height: Math.max(4, share * 72),
+                      borderRadius: 8,
+                      backgroundColor: current
+                        ? colors.accent
+                        : colors.borderStrong,
+                    }}
+                  />
+                </View>
+                <AppText
+                  variant="caption"
+                  style={{
+                    color: current ? colors.ink : colors.inkMuted,
+                    fontWeight: current ? "700" : "500",
+                  }}
+                >
+                  {monthName(months[index].month).slice(0, 3)}
+                </AppText>
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
     </Card>
   );
 }

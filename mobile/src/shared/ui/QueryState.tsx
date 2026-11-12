@@ -1,8 +1,7 @@
-import { ActivityIndicator } from "react-native";
-import { AppText } from "./AppText";
 import { AppButton } from "./AppButton";
 import { Banner } from "./Banner";
-import { colors } from "../theme/tokens";
+import { SkeletonList } from "./Skeleton";
+import { useThemeRefresh } from "../theme/tokens";
 export function QueryState({
   loading,
   error,
@@ -12,6 +11,7 @@ export function QueryState({
   error?: boolean;
   retry(): void;
 }) {
+  useThemeRefresh();
   if (error)
     return (
       <>
@@ -22,10 +22,5 @@ export function QueryState({
         <AppButton title="Reintentar" onPress={retry} />
       </>
     );
-  return loading ? (
-    <>
-      <ActivityIndicator color={colors.forest700} />
-      <AppText>Cargando…</AppText>
-    </>
-  ) : null;
+  return loading ? <SkeletonList rows={3} /> : null;
 }

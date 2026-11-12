@@ -1,7 +1,7 @@
 import { ActionCard } from "../../shared/ui/ActionCard";
 import { View } from "react-native";
 import { formatCOP, sumAmounts } from "../../shared/formatting/money";
-import { colors, radii } from "../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../shared/theme/tokens";
 import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
 import { categoryIcon } from "../../shared/ui/categoryIcon";
 import { categoryTone } from "../../shared/ui/categoryTheme";
@@ -34,6 +34,7 @@ export function budgetsOverview(items: Budget[]) {
   };
 }
 function BudgetsSummary({ items }: { items: Budget[] }) {
+  useThemeRefresh();
   const o = budgetsOverview(items);
   const alerts = [
     o.exceeded ? `${o.exceeded} excedido${o.exceeded > 1 ? "s" : ""}` : null,
@@ -87,6 +88,7 @@ function BudgetsSummary({ items }: { items: Budget[] }) {
   );
 }
 export function BudgetsScreen() {
+  useThemeRefresh();
   const [month, setMonth] = useState(bogotaToday().slice(0, 7));
   const query = useBudgetsQuery(month),
     categories = useCategoriesQuery();
@@ -132,7 +134,7 @@ export function BudgetsScreen() {
                   onPress={() => open(b.category_id)}
                 >
                   <BudgetProgress budget={b} />
-                  <AppText variant="label" style={{ color: colors.forest700 }}>
+                  <AppText variant="label" style={{ color: colors.accent }}>
                     Editar presupuesto
                   </AppText>
                 </ActionCard>

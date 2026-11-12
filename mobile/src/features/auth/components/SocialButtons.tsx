@@ -1,7 +1,7 @@
 import { ActivityIndicator, Platform, Pressable, View } from "react-native";
 import { AppText } from "../../../shared/ui/AppText";
 import { GoogleMark } from "../../../shared/brand/GoogleMark";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 import type { SocialAvailability } from "../social";
 
 type AppleModule = typeof import("expo-apple-authentication");
@@ -26,6 +26,7 @@ export function SocialButtons({
   onApple(): void;
   onGoogle(): void;
 }) {
+  useThemeRefresh();
   if (!available.apple && !available.google) return null;
   return (
     <View style={{ gap: 12 }}>

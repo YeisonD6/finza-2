@@ -5,13 +5,14 @@ import { targetDateLabel } from "../domain";
 import { AppText } from "../../../shared/ui/AppText";
 import { SproutProgress } from "../../../shared/ui/SproutProgress";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
-import { formatCOP } from "../../../shared/formatting/money";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { formatCOP, percentText } from "../../../shared/formatting/money";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 
-export const goalPercentText = (value: string) =>
-  value.replace(".", ",").replace(/,00$/, "");
+/** Kept as the goals' name for the shared percent format. */
+export const goalPercentText = percentText;
 
 function Stat({ label, value }: { label: string; value: string }) {
+  useThemeRefresh();
   return (
     <View style={{ flexGrow: 1, flexBasis: 90, gap: 2 }}>
       <AppText variant="caption" style={{ color: colors.inkMuted }}>
@@ -26,6 +27,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 /** Goal summary: name, deadline, percent, sprout bar and the three figures that matter. */
 export function GoalProgress({ goal }: { goal: Goal }) {
+  useThemeRefresh();
   const completed = goal.status === "completed";
   return (
     <>
@@ -43,7 +45,7 @@ export function GoalProgress({ goal }: { goal: Goal }) {
           <DecorativeIcon
             icon={completed ? CircleCheck : Sprout}
             size={22}
-            color={completed ? colors.onForest : colors.forest700}
+            color={completed ? colors.onForest : colors.accent}
           />
         </View>
         <View style={{ flex: 1, gap: 2 }}>
@@ -74,7 +76,7 @@ export function GoalProgress({ goal }: { goal: Goal }) {
       <SproutProgress
         kind="goal"
         value={Number(goal.percent)}
-        text={`${goal.percent.replace(".", ",")} % · ${completed ? "Completada" : "En progreso"}`}
+        text={`${goalPercentText(goal.percent)} % · ${completed ? "Completada" : "En progreso"}`}
         caption={completed ? "¡Lo lograste!" : "En progreso"}
       />
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>

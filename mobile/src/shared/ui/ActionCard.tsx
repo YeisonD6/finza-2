@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Pressable } from "react-native";
 import { Card } from "./Card";
-import { colors, radii } from "../theme/tokens";
+import { colors, radii, useThemeRefresh } from "../theme/tokens";
 import { tapLight } from "../theme/haptics";
 /** A single focus target with a complete spoken summary and a visible action. */
 export function ActionCard({
@@ -13,6 +13,7 @@ export function ActionCard({
   onPress(): void;
   children: ReactNode;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState(false);
   return (
     <Pressable
@@ -29,7 +30,7 @@ export function ActionCard({
         minHeight: 48,
         borderRadius: radii.lg,
         borderWidth: 2,
-        borderColor: focused ? colors.forest700 : colors.transparent,
+        borderColor: focused ? colors.accent : colors.transparent,
         opacity: pressed ? 0.7 : 1,
       })}
     >

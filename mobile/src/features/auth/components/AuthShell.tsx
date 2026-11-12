@@ -17,7 +17,7 @@ import { GlassSurface } from "../../../shared/ui/GlassSurface";
 import { AppText } from "../../../shared/ui/AppText";
 import { IconButton } from "../../../shared/ui/IconButton";
 import { focusAccessibility } from "../../../shared/accessibility/announcements";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 import { useEntrance } from "../../../shared/theme/entrance";
 
 /**
@@ -41,6 +41,7 @@ export function AuthShell({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  useThemeRefresh();
   const heading = useRef<ElementRef<typeof Text>>(null);
   const block = useEntrance(3);
   const { height, fontScale } = useWindowDimensions();
@@ -99,7 +100,7 @@ export function AuthShell({
                 disabled={backDisabled}
                 onPress={onBack}
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.6)",
+                  backgroundColor: colors.glass,
                   borderRadius: 24,
                   borderWidth: 1,
                   borderColor: colors.surface,
@@ -108,7 +109,7 @@ export function AuthShell({
             ) : null}
             <AppText
               variant="label"
-              style={{ color: colors.forest700, letterSpacing: 3 }}
+              style={{ color: colors.accent, letterSpacing: 3 }}
             >
               FINZA
             </AppText>
@@ -120,7 +121,7 @@ export function AuthShell({
               ref={heading}
               variant="hero"
               accessibilityRole="header"
-              style={{ textAlign: "center", color: colors.forest950 }}
+              style={{ textAlign: "center", color: colors.ink }}
             >
               {title}
             </AppText>

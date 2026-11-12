@@ -1,6 +1,6 @@
 import { DecorativeIcon } from "./DecorativeIcon";
-import { useState } from "react";
-import { Pressable, View, useWindowDimensions } from "react-native";
+import { createContext, useContext, useState } from "react";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   House,
@@ -11,15 +11,29 @@ import {
 } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { IconButton } from "./IconButton";
+import { GlassSurface } from "./Glass";
 import { fontFamily } from "../theme/fonts";
-import { colors, radii, shadows } from "../theme/tokens";
-import { GlassSurface } from "./GlassSurface";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export const tabItems = [
   { name: "index", label: "Inicio", icon: House },
   { name: "movements", label: "Movimientos", icon: ArrowLeftRight },
   { name: "goals", label: "Metas", icon: Sprout },
   { name: "profile", label: "Perfil", icon: UserRound },
 ] as const;
+const BAR_HEIGHT = 64;
+/** Bottom space a tab screen leaves so its last row clears the floating bar. */
+export function tabBarSpace(bottomInset: number) {
+  return BAR_HEIGHT + Math.max(bottomInset, 12) + 28;
+}
+export const TabBarSpaceContext = createContext(0);
+export function useTabBarSpace() {
+  return useContext(TabBarSpaceContext);
+}
+/**
+ * Floating glass bar. Only the selected tab shows its label (icon + word in a tinted
+ * pill), so the state never depends on colour alone; the others are icons with
+ * spoken names. Registering sits in the middle as the single primary action.
+ */
 export function TabBar({
   active,
   onTab,
@@ -29,107 +43,111 @@ export function TabBar({
   onTab(name: string): void;
   onRegister(): void;
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState("");
-  const { fontScale } = useWindowDimensions();
-  const largeText = fontScale > 1.2;
   const inset = useSafeAreaInsets();
-  function tabs(items: readonly (typeof tabItems)[number][]) {
+  function tab({ name, label, icon: Icon }: (typeof tabItems)[number]) {
+    const selected = active === name;
     return (
-      <View style={{ flex: 1, flexDirection: largeText ? "column" : "row" }}>
-        {items.map(({ name, label, icon: Icon }) => (
-          <Pressable
-            key={name}
-            onFocus={() => setFocused(name)}
-            onBlur={() => setFocused("")}
-            accessibilityLabel={label}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active === name }}
-            onPress={() => onTab(name)}
-            style={({ pressed }) => ({
-              minWidth: 48,
-              minHeight: 48,
-              paddingVertical: 4,
-              flexGrow: largeText ? 0 : 1,
-              flexBasis: largeText ? "auto" : 0,
-              flexShrink: 0,
-              alignItems: "center",
-              gap: 4,
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <View
-              style={{
-                width: 60,
-                height: 32,
-                // Half the height: Android drops oversized radii (999) when the fill changes.
-                borderRadius: 16,
-                // Keyboard focus ring on the pill, so it costs no label width.
-                borderWidth: 2,
-                borderColor:
-                  focused === name ? colors.forest700 : colors.transparent,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor:
-                  active === name ? colors.sage100 : colors.transparent,
-              }}
-            >
-              <DecorativeIcon
-                icon={Icon}
-                size={20}
-                strokeWidth={active === name ? 2 : 1.75}
-                color={active === name ? colors.forest700 : colors.inkMuted}
-              />
-            </View>
+      <Pressable
+        key={name}
+        onFocus={() => setFocused(name)}
+        onBlur={() => setFocused("")}
+        accessibilityLabel={label}
+        accessibilityRole="tab"
+        accessibilityState={{ selected }}
+        onPress={() => onTab(name)}
+        style={({ pressed }) => ({
+          minWidth: 48,
+          minHeight: 48,
+          flexGrow: selected ? 0 : 1,
+          flexShrink: selected ? 1 : 0,
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: pressed ? 0.7 : 1,
+        })}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            height: 44,
+            paddingHorizontal: selected ? 14 : 10,
+            // Half the height: Android drops oversized radii when the fill changes.
+            borderRadius: 22,
+            borderWidth: 2,
+            borderColor: focused === name ? colors.accent : colors.transparent,
+            backgroundColor: selected ? colors.sage100 : colors.transparent,
+            maxWidth: "100%",
+          }}
+        >
+          <DecorativeIcon
+            icon={Icon}
+            size={22}
+            strokeWidth={selected ? 2.25 : 1.75}
+            color={selected ? colors.accent : colors.inkMuted}
+          />
+          {selected ? (
             <AppText
               variant="caption"
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.85}
+              maxFontSizeMultiplier={1.3}
               style={{
-                textAlign: "center",
-                color: active === name ? colors.forest700 : colors.inkMuted,
+                flexShrink: 1,
+                color: colors.accent,
                 fontSize: 12,
                 lineHeight: 16,
                 letterSpacing: -0.2,
-                alignSelf: "stretch",
-                fontFamily:
-                  active === name ? fontFamily.heading : fontFamily.caption,
-                fontWeight: active === name ? "700" : "500",
+                fontFamily: fontFamily.heading,
+                fontWeight: "700",
               }}
             >
               {label}
             </AppText>
-          </Pressable>
-        ))}
-      </View>
+          ) : null}
+        </View>
+      </Pressable>
     );
   }
   return (
-    <GlassSurface
+    <View
+      pointerEvents="box-none"
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        paddingTop: 8,
-        paddingBottom: Math.max(inset.bottom, 8),
-        paddingHorizontal: 0,
-        marginHorizontal: 8,
-        marginBottom: 4,
-        borderRadius: 28,
+        position: "absolute",
+        left: 20,
+        right: 20,
+        bottom: Math.max(inset.bottom, 12),
+        borderRadius: BAR_HEIGHT / 2,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.16,
+        shadowRadius: 24,
+        elevation: 8,
       }}
     >
-      {tabs(tabItems.slice(0, 2))}
-      <IconButton
-        icon={Plus}
-        accessibilityLabel="Registrar movimiento"
-        variant="primary"
-        color={colors.onForest}
-        onPress={onRegister}
-        style={[
-          { borderRadius: radii.pill, marginHorizontal: 2 },
-          shadows.floating,
-        ]}
-      />
-      {tabs(tabItems.slice(2))}
-    </GlassSurface>
+      <GlassSurface
+        style={{
+          height: BAR_HEIGHT,
+          borderRadius: BAR_HEIGHT / 2,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 8,
+        }}
+      >
+        {tabItems.slice(0, 2).map(tab)}
+        <IconButton
+          icon={Plus}
+          accessibilityLabel="Registrar movimiento"
+          variant="primary"
+          color={colors.onForest}
+          onPress={onRegister}
+          style={{ borderRadius: 24, marginHorizontal: 2 }}
+        />
+        {tabItems.slice(2).map(tab)}
+      </GlassSurface>
+    </View>
   );
 }
