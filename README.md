@@ -128,4 +128,4 @@ Si cambia la API, regenera el contrato: desde `backend/`, `.venv/bin/python -m s
 
 ## Equipo
 
-Isabela Benítez · Juan David Rubio · Yeison — Desarrollo de Aplicaciones Móviles, Universidad de La Sabana, 2026.
+Isabela Benítez · Juan David Rubio · Yeison Niño Arias — Desarrollo de Aplicaciones Móviles, Universidad de La Sabana, 2026.
