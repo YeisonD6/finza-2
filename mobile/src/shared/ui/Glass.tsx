@@ -101,21 +101,40 @@ export function AmbientGlow({
   const id = `glow${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const opacity = getColorScheme() === "dark" ? 0.55 : 1;
   return (
+    // A clip layer the size of the screen: the glow hangs past the edge, and
+    // without it web counts that overflow as scrollable width (the page could
+    // slide sideways when focus moved).
     <View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ position: "absolute", top, right, width: size, height: size }}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: "hidden",
+      }}
     >
-      <Svg width={size} height={size}>
-        <Defs>
-          <RadialGradient id={id} cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor={color} stopOpacity={opacity} />
-            <Stop offset="1" stopColor={color} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={`url(#${id})`} />
-      </Svg>
+      <View
+        style={{ position: "absolute", top, right, width: size, height: size }}
+      >
+        <Svg width={size} height={size}>
+          <Defs>
+            <RadialGradient id={id} cx="50%" cy="50%" r="50%">
+              <Stop offset="0" stopColor={color} stopOpacity={opacity} />
+              <Stop offset="1" stopColor={color} stopOpacity={0} />
+            </RadialGradient>
+          </Defs>
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={size / 2}
+            fill={`url(#${id})`}
+          />
+        </Svg>
+      </View>
     </View>
   );
 }
