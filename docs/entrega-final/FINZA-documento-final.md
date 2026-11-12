@@ -1,7 +1,7 @@
 # FINZA — Documento técnico final (Fase 3)
 
 **Asignatura:** Desarrollo de Aplicaciones Móviles · Universidad de La Sabana, Facultad de Ingeniería  
-**Equipo:** Isabela Benítez, Juan David Rubio, Yeison [apellido]  
+**Equipo:** Isabela Benítez, Juan David Rubio, Yeison David Niño Arias.  
 **Repositorio:** https://github.com/YeisonD6/finza-2 (rama `main`)  
 **Fecha:** 12 de noviembre de 2026
 
