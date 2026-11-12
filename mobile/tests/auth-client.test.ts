@@ -1,6 +1,10 @@
-import { test } from "node:test";
+import { mock, test } from "node:test";
 import assert from "node:assert/strict";
-import { AuthClient } from "../src/features/auth/client";
+import {
+  ApiError,
+  AuthClient,
+  REQUEST_TIMEOUT_MS,
+} from "../src/features/auth/client";
 
 const pair = (suffix = "1") => ({
   access_token: "access" + suffix,
@@ -207,4 +211,36 @@ test("logout still revokes remotely when secure storage deletion fails", async (
   fail = true;
   await assert.rejects(client.logout(), /vault deletion/);
   assert.equal(revoked, true);
+});
+
+test("a server that never answers fails with a readable timeout", async () => {
+  mock.timers.enable({ apis: ["setTimeout"] });
+  try {
+    const client = new AuthClient(
+      "",
+      {
+        get: async () => null,
+        set: async () => {},
+        remove: async () => {},
+      },
+      ((_path: string, init?: RequestInit) =>
+        new Promise<Response>((_, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          );
+        })) as typeof fetch,
+    );
+    const pending = client.login("a@example.com", "una contraseña larga");
+    // Let login reach fetch (and schedule its timer) before moving the clock.
+    for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r));
+    mock.timers.tick(REQUEST_TIMEOUT_MS);
+    await assert.rejects(pending, (error: unknown) => {
+      assert.ok(error instanceof ApiError);
+      assert.equal(error.status, 0);
+      assert.match(error.message, /no respondió a tiempo/);
+      return true;
+    });
+  } finally {
+    mock.timers.reset();
+  }
 });
