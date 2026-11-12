@@ -129,9 +129,15 @@ test("cursor loading appends unique rows and a later failure hides every loaded 
 test("month totals come from the summary of the month on screen", async () => {
   await render(<MovementsScreen initialMonth="2024-02" onEdit={() => {}} />);
   expect(screen.queryByLabelText(/^Totales de/)).toBeNull();
-  mockSummary = { month: "2024-02", income: "3650000.00", expense: "1873600.00" };
+  mockSummary = {
+    month: "2024-02",
+    income: "3650000.00",
+    expense: "1873600.00",
+  };
   await render(<MovementsScreen initialMonth="2024-02" onEdit={() => {}} />);
   expect(screen.getByText("+$ 3.650.000")).toBeTruthy();
   expect(screen.getByText("−$ 1.873.600")).toBeTruthy();
-  expect(screen.getByLabelText(/^Totales de febrero\. Ingresos: Monto de/)).toBeTruthy();
+  expect(
+    screen.getByLabelText(/^Totales de febrero\. Ingresos: Monto de/),
+  ).toBeTruthy();
 });

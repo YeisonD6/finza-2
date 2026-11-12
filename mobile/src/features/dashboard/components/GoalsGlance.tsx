@@ -8,13 +8,14 @@ import { SproutProgress } from "../../../shared/ui/SproutProgress";
 import { formatCOP } from "../../../shared/formatting/money";
 import { Sprout } from "lucide-react-native";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 
 const percentText = (value: string) =>
   value.replace(".", ",").replace(/,00$/, "");
 
 /** Active goals closest to completion, so the dashboard shows what is about to be reached. */
 export function GoalsGlance() {
+  useThemeRefresh();
   const query = useGoalsQuery();
   const goals = query.isError ? undefined : query.currentData;
   if (!Array.isArray(goals)) return null;
@@ -87,11 +88,7 @@ export function GoalsGlance() {
                   backgroundColor: colors.sage100,
                 }}
               >
-                <DecorativeIcon
-                  icon={Sprout}
-                  size={20}
-                  color={colors.forest700}
-                />
+                <DecorativeIcon icon={Sprout} size={20} color={colors.accent} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <AppText variant="subhead">{goal.name}</AppText>

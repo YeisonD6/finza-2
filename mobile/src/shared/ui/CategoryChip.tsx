@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import { AppButton } from "./AppButton";
 import { categoryIcon } from "./categoryIcon";
 import { categoryTone } from "./categoryTheme";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 export function CategoryChip({
   name,
   isSystem = true,
@@ -14,6 +14,7 @@ export function CategoryChip({
   name: string;
   isSystem?: boolean;
 }) {
+  useThemeRefresh();
   const Icon = categoryIcon(name, isSystem);
   const tone = categoryTone(name, isSystem);
   return (

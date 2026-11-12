@@ -1,12 +1,13 @@
 import { forwardRef, type ElementRef } from "react";
 import { Text, type TextProps } from "react-native";
-import { colors, typography } from "../theme/tokens";
+import { colors, typography, useThemeRefresh } from "../theme/tokens";
 import { fontFamily } from "../theme/fonts";
 export type TextVariant = keyof typeof typography;
 export const AppText = forwardRef<
   ElementRef<typeof Text>,
   TextProps & { variant?: TextVariant }
 >(function AppText({ variant = "body", style, ...props }, ref) {
+  useThemeRefresh();
   return (
     <Text
       {...props}

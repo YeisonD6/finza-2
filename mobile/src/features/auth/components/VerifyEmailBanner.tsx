@@ -5,7 +5,7 @@ import { AppText } from "../../../shared/ui/AppText";
 import { AppButton } from "../../../shared/ui/AppButton";
 import { DecorativeIcon } from "../../../shared/ui/DecorativeIcon";
 import { announce } from "../../../shared/accessibility/announcements";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 import { auth } from "../runtime";
 
 // "Ahora no" lasts for this app session only; the reminder returns next launch.
@@ -27,6 +27,7 @@ function serverCanSend() {
  * renders it only for unconfirmed accounts; it hides itself when the server cannot send mail.
  */
 export function VerifyEmailBanner({ email }: { email: string }) {
+  useThemeRefresh();
   const [canSend, setCanSend] = useState(false);
   const [hidden, setHidden] = useState(dismissed);
   const [busy, setBusy] = useState(false);
@@ -69,7 +70,7 @@ export function VerifyEmailBanner({ email }: { email: string }) {
       }}
     >
       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-        <DecorativeIcon icon={MailCheck} size={22} color={colors.forest700} />
+        <DecorativeIcon icon={MailCheck} size={22} color={colors.accent} />
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="subhead" accessibilityRole="header">
             Confirma tu correo

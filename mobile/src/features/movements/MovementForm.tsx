@@ -1,3 +1,4 @@
+import { View } from "react-native";
 import { QuickEntryField } from "./components/QuickEntryField";
 import { useEffect } from "react";
 import { Screen } from "../../shared/ui/Screen";
@@ -5,7 +6,7 @@ import { AppButton } from "../../shared/ui/AppButton";
 import { AmountField } from "../../shared/ui/AmountField";
 import { TextField } from "../../shared/ui/TextField";
 import { Banner } from "../../shared/ui/Banner";
-import { SegmentedControl } from "../../shared/ui/SegmentedControl";
+import { UnderlineTabs } from "../../shared/ui/UnderlineTabs";
 import { CategoryPicker } from "./components/CategoryPicker";
 import { AccountingDateField } from "./components/AccountingDateField";
 import { useMovementDraft } from "./components/useMovementDraft";
@@ -64,8 +65,7 @@ export function MovementForm({
         </>
       }
     >
-      {!initial ? <QuickEntryField draft={f} /> : null}
-      <SegmentedControl
+      <UnderlineTabs
         label="Tipo de movimiento"
         value={f.type}
         options={[
@@ -79,16 +79,20 @@ export function MovementForm({
           f.setCategory("");
         }}
       />
-      <AmountField
-        ref={f.amountRef}
-        value={f.amount}
-        onChangeText={(value) => {
-          f.change();
-          f.setAmount(value);
-        }}
-        error={f.fields.amount}
-        editable={!f.busy}
-      />
+      <View style={{ paddingTop: 16, paddingBottom: 8, flexShrink: 0 }}>
+        <AmountField
+          hero
+          ref={f.amountRef}
+          value={f.amount}
+          onChangeText={(value) => {
+            f.change();
+            f.setAmount(value);
+          }}
+          error={f.fields.amount}
+          editable={!f.busy}
+        />
+      </View>
+      {!initial ? <QuickEntryField draft={f} /> : null}
       <CategoryPicker draft={f} />
       <AccountingDateField draft={f} />
       <TextField

@@ -7,7 +7,12 @@ import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
 import { Monedin } from "../../shared/brand/Monedin";
 import { formatCOP } from "../../shared/formatting/money";
 import { monthName } from "../../shared/formatting/dates";
-import { colors, radii, shadows } from "../../shared/theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 
 const HIDDEN = "••••••";
 
@@ -17,6 +22,7 @@ const HIDDEN = "••••••";
  * native layout (forest card, net, income and expense, Monedin) and the privacy setting.
  */
 export function WidgetPreview({ hidden }: { hidden: boolean }) {
+  useThemeRefresh();
   const month = bogotaToday().slice(0, 7);
   const query = useDashboardQuery(month);
   const data = query.isError ? undefined : query.currentData;

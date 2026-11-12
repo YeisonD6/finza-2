@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  AccessibilityInfo,
-  Animated,
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { AccessibilityInfo, Platform, StyleSheet } from "react-native";
 import { SafeAreaInsetsContext } from "react-native-safe-area-context";
 import {
   act,
@@ -146,12 +141,18 @@ test("reduced motion is static, reacts to preference changes and cleans up its l
         change = callback as (value: boolean) => void;
       return { remove };
     });
-  const loop = jest.spyOn(Animated, "loop");
+  const { withRepeat } = require("react-native-reanimated");
+  withRepeat.mockClear();
+  const lids = () =>
+    screen.queryAllByTestId("monedin-lid", { includeHiddenElements: true });
   const view = await render(<Monedin motion="idle" />);
-  expect(loop).not.toHaveBeenCalled();
+  expect(withRepeat).not.toHaveBeenCalled();
+  expect(lids()).toHaveLength(0);
   await act(() => change(false));
-  await waitFor(() => expect(loop).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(withRepeat).toHaveBeenCalledTimes(1));
+  expect(lids()).toHaveLength(2);
   await act(() => change(true));
+  expect(lids()).toHaveLength(0);
   await view.unmount();
   expect(remove).toHaveBeenCalled();
   listener.mockRestore();
@@ -265,3 +266,20 @@ test.each([1, 2])(
     dimensions.mockRestore();
   },
 );
+
+test("loading states are one announced skeleton, not a spinner and text", async () => {
+  const { QueryState } = require("../QueryState");
+  await render(<QueryState loading retry={() => {}} />);
+  const group = screen.getByRole("progressbar", { name: "Cargando…" });
+  expect(group.props.accessibilityState).toEqual({ busy: true });
+  expect(screen.queryByText("Cargando…")).toBeNull();
+});
+
+test("success and error banners carry an icon, so meaning is not color alone", async () => {
+  const { Banner } = require("../Banner");
+  const view = await render(
+    <Banner message="Movimiento guardado" tone="success" announce={false} />,
+  );
+  expect(view.toJSON()).toBeTruthy();
+  expect(JSON.stringify(view.toJSON())).toMatch(/svg|Svg|lucide/i);
+});

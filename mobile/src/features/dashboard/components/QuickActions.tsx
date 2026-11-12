@@ -8,6 +8,7 @@ import {
   colors,
   radii,
   shadows,
+  useThemeRefresh,
 } from "../../../shared/theme/tokens";
 
 type Action = {
@@ -33,6 +34,7 @@ export function QuickActions({
   onBudgets(): void;
   onNewGoal(): void;
 }) {
+  useThemeRefresh();
   const actions: Action[] = [
     {
       label: "Registrar",
@@ -103,7 +105,7 @@ export function QuickActions({
               size={22}
               strokeWidth={2}
               color={
-                action.primary ? colors.onForest : (action.ink ?? colors.forest700)
+                action.primary ? colors.onForest : (action.ink ?? colors.accent)
               }
             />
           </View>

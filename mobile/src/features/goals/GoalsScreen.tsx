@@ -11,7 +11,12 @@ import { EmptyState } from "../../shared/ui/EmptyState";
 import { QueryState } from "../../shared/ui/QueryState";
 import { Screen } from "../../shared/ui/Screen";
 import { formatCOP, sumAmounts } from "../../shared/formatting/money";
-import { colors, radii, shadows } from "../../shared/theme/tokens";
+import {
+  colors,
+  radii,
+  shadows,
+  useThemeRefresh,
+} from "../../shared/theme/tokens";
 
 /** Saved vs target across active goals, as exact decimal strings. */
 export function goalsTotals(goals: Goal[]) {
@@ -31,6 +36,7 @@ function GoalsSummary({
   goals: Goal[];
   onCreate(): void;
 }) {
+  useThemeRefresh();
   const totals = goalsTotals(goals);
   const target = sumCents(totals.target);
   const share =

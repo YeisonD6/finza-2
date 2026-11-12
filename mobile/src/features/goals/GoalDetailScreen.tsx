@@ -22,7 +22,7 @@ import { AppText } from "../../shared/ui/AppText";
 import { AppButton } from "../../shared/ui/AppButton";
 import { IconButton } from "../../shared/ui/IconButton";
 import { DecorativeIcon } from "../../shared/ui/DecorativeIcon";
-import { colors, radii } from "../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../shared/theme/tokens";
 import { Banner } from "../../shared/ui/Banner";
 import { QueryState } from "../../shared/ui/QueryState";
 import { confirmAction } from "../../shared/ui/confirmAction";
@@ -30,6 +30,7 @@ import { formatCOP } from "../../shared/formatting/money";
 import { useFormFeedback } from "../../shared/forms/useFormFeedback";
 import { announce } from "../../shared/accessibility/announcements";
 export function GoalDetailScreen({ id }: { id: string }) {
+  useThemeRefresh();
   const query = useGoalsQuery(),
     contributions = useGoalContributionsQuery(id);
   const [archive] = useArchiveGoalMutation(),
@@ -137,7 +138,7 @@ export function GoalDetailScreen({ id }: { id: string }) {
                     <DecorativeIcon
                       icon={PiggyBank}
                       size={20}
-                      color={colors.forest700}
+                      color={colors.accent}
                     />
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>

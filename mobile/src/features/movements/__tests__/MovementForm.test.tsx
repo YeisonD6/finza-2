@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react-native";
 import { MovementForm } from "../MovementForm";
 import * as announcements from "../../../shared/accessibility/announcements";
+import { applyColorScheme, colors } from "../../../shared/theme/tokens";
 
 const mockCreate = jest.fn(),
   mockEdit = jest.fn(),
@@ -335,6 +336,9 @@ test("quick entry fills without saving, announces explanation and focuses amount
     .mockImplementation(() => {});
   const announcement = jest.spyOn(announcements, "announce");
   await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Escribir como frase" }),
+  );
   await fireEvent.changeText(
     screen.getByLabelText("Escribe o dicta tu movimiento"),
     "almuerzo 18 mil ayer",
@@ -363,6 +367,9 @@ test("quick entry missing amount explains and focuses amount; editing has no qui
     .spyOn(TextInput.prototype, "focus")
     .mockImplementation(() => {});
   await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Escribir como frase" }),
+  );
   await fireEvent.changeText(
     screen.getByLabelText("Escribe o dicta tu movimiento"),
     "almuerzo",
@@ -375,4 +382,38 @@ test("quick entry missing amount explains and focuses amount; editing has no qui
   expect(focus).toHaveBeenCalled();
   expect(mockCreate).not.toHaveBeenCalled();
   focus.mockRestore();
+});
+
+test("a theme change re-colours the open form without losing what was typed", async () => {
+  await render(<MovementForm onSaved={() => {}} onCancel={() => {}} />);
+  await fireEvent.press(screen.getByRole("tab", { name: "Ingreso" }));
+  await fireEvent.changeText(screen.getByLabelText("Monto"), "45000");
+  await fireEvent.changeText(
+    screen.getByLabelText("Nota (opcional)"),
+    "sigue aquí",
+  );
+  const lightInk = colors.ink;
+  try {
+    await act(async () => {
+      applyColorScheme("dark");
+    });
+    expect(colors.ink).not.toBe(lightInk);
+    // The tree re-rendered with the dark palette…
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree).toContain(colors.ink);
+    expect(tree).not.toContain(lightInk);
+    // …and kept the state: no remount.
+    expect(screen.getByLabelText("Monto").props.value).toBe("45000");
+    expect(screen.getByLabelText("Nota (opcional)").props.value).toBe(
+      "sigue aquí",
+    );
+    expect(
+      screen.getByRole("tab", { name: "Ingreso" }).props.accessibilityState
+        .selected,
+    ).toBe(true);
+  } finally {
+    await act(async () => {
+      applyColorScheme("light");
+    });
+  }
 });

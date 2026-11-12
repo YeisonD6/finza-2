@@ -1,10 +1,15 @@
 import { DecorativeIcon } from "./DecorativeIcon";
 import { useRef, useState, type ReactNode } from "react";
-import { Animated, Pressable, type PressableProps } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  Pressable,
+  type PressableProps,
+} from "react-native";
 import { Check } from "lucide-react-native";
 import { AppText } from "./AppText";
 import { styles } from "./styles";
-import { colors } from "../theme/tokens";
+import { colors, useThemeRefresh } from "../theme/tokens";
 import { durations, easeOut, useReducedMotion } from "../theme/motion";
 import { tapLight } from "../theme/haptics";
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -33,6 +38,7 @@ export function AppButton({
   dangerGhost?: boolean;
   size?: "sm" | "md";
 }) {
+  useThemeRefresh();
   const [focused, setFocused] = useState(false);
   const scale = useRef(new Animated.Value(1)).current;
   const reduced = useReducedMotion();
@@ -93,7 +99,7 @@ export function AppButton({
             : variant === "danger"
               ? dangerGhost
                 ? colors.transparent
-                : colors.danger
+                : colors.dangerFill
               : variant === "primary"
                 ? state.pressed
                   ? colors.forest900
@@ -101,7 +107,8 @@ export function AppButton({
                 : variant === "secondary"
                   ? colors.sage100
                   : colors.transparent,
-          opacity: blocked ? 0.6 : 1,
+          // Busy keeps full strength: the spinner says "working", not "unavailable".
+          opacity: blocked && !working ? 0.6 : 1,
         },
         focused && styles.buttonFocused,
         typeof style === "function" ? style(state) : style,
@@ -117,7 +124,12 @@ export function AppButton({
           transform: [{ scale: reduced ? 1 : scale }],
         }}
       >
-        {active ? (
+        {working ? (
+          <ActivityIndicator
+            size="small"
+            color={solid ? colors.onForest : colors.accent}
+          />
+        ) : active ? (
           <DecorativeIcon
             icon={Check}
             size={16}
@@ -135,13 +147,13 @@ export function AppButton({
                 ? colors.onForest
                 : variant === "danger"
                   ? colors.danger
-                  : colors.forest700,
+                  : colors.accent,
               flexShrink: 1,
               textAlign: "center",
               textDecorationLine: focused ? "underline" : "none",
             }}
           >
-            {working ? "Procesando…" : title}
+            {title || "Procesando…"}
           </AppText>
         ) : null}
       </Animated.View>

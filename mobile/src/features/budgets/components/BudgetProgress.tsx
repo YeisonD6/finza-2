@@ -6,7 +6,7 @@ import { SproutProgress } from "../../../shared/ui/SproutProgress";
 import { categoryIcon } from "../../../shared/ui/categoryIcon";
 import { categoryTone } from "../../../shared/ui/categoryTheme";
 import { formatCOP } from "../../../shared/formatting/money";
-import { colors, radii } from "../../../shared/theme/tokens";
+import { colors, radii, useThemeRefresh } from "../../../shared/theme/tokens";
 export type Budget = components["schemas"]["BudgetStatus"];
 export function budgetState(budget: Budget) {
   return budget.status === "exceeded"
@@ -21,9 +21,9 @@ const statusColor = (budget: Budget) =>
     : budget.status === "warning"
       ? colors.warning
       : colors.forest600;
-const percentText = (value: string) =>
-  `${Math.round(Number(value))} %`;
+const percentText = (value: string) => `${Math.round(Number(value))} %`;
 export function BudgetProgress({ budget }: { budget: Budget }) {
+  useThemeRefresh();
   const tone = categoryTone(budget.category_name, true, budget.category_id);
   return (
     <>

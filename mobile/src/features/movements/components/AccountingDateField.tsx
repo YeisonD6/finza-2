@@ -22,6 +22,7 @@ export function AccountingDateField({
       <AppText variant="label">Fecha contable</AppText>
       <SegmentedControl
         label="Fecha contable"
+        quiet
         value={other ? "other" : f.date === today ? "today" : "yesterday"}
         options={[
           { value: "today", label: "Hoy" },

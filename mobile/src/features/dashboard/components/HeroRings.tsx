@@ -1,12 +1,13 @@
 import { View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { colors } from "../../../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../../../shared/theme/tokens";
 
 /**
  * Static growth rings in the corner of the Inicio header: the same «Brote» motif as the
  * welcome hero, quieter and without motion because Inicio is seen many times a day.
  */
 export function HeroRings() {
+  useThemeRefresh();
   const size = 320;
   return (
     <View

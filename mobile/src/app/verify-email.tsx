@@ -9,7 +9,7 @@ import { AppButton } from "../shared/ui/AuthControls";
 import { AppText } from "../shared/ui/AppText";
 import { Feedback } from "../shared/ui/Feedback";
 import { Monedin } from "../shared/brand/Monedin";
-import { colors } from "../shared/theme/tokens";
+import { colors, useThemeRefresh } from "../shared/theme/tokens";
 import {
   error as errorHaptic,
   success as successHaptic,
@@ -20,6 +20,7 @@ type State = "working" | "done" | "failed";
 
 /** Opened from the e-mailed link finza://verify-email?token=… */
 export default function VerifyEmail() {
+  useThemeRefresh();
   const { token } = useLocalSearchParams<{ token?: string }>();
   const signedIn = useSelector((s: RootState) => Boolean(s.auth.profile));
   const [state, setState] = useState<State>("working");
@@ -57,7 +58,7 @@ export default function VerifyEmail() {
     return (
       <AuthShell title="Confirmando tu correo" mascot={false}>
         <View style={{ paddingVertical: 24 }}>
-          <ActivityIndicator color={colors.forest700} />
+          <ActivityIndicator color={colors.accent} />
         </View>
       </AuthShell>
     );

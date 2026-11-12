@@ -12,7 +12,11 @@ let mockQuery: {
   isError: boolean;
   refetch: typeof mockRefetch;
 };
-jest.mock("../api", () => ({ useDashboardQuery: () => mockQuery }));
+let mockQueryFor: ((month: string) => typeof mockQuery) | undefined;
+jest.mock("../api", () => ({
+  useDashboardQuery: (month: string) =>
+    mockQueryFor ? mockQueryFor(month) : mockQuery,
+}));
 let mockGoals: unknown[] = [];
 jest.mock("../../goals/api", () => ({
   useGoalsQuery: () => ({
@@ -62,6 +66,7 @@ const props = {
 };
 beforeEach(() => {
   jest.clearAllMocks();
+  mockQueryFor = undefined;
   mockQuery = {
     currentData: fixture(),
     isFetching: false,
@@ -88,7 +93,9 @@ test("readable financial summary, negative flow, comparison and actions", async 
   expect(screen.getByText(/Flujo negativo: los gastos superan/)).toBeTruthy();
   expect(screen.getByText("$ 750 menos que enero (150 %)")).toBeTruthy();
   expect(screen.getByText(/150 %/)).toBeTruthy();
-  expect(screen.getByText(/mes calendario completo anterior/)).toBeTruthy();
+  expect(
+    screen.getByLabelText(/mes calendario completo anterior/),
+  ).toBeTruthy();
   expect(screen.getByLabelText(/Gasto de menos.*2024-02-29/)).toBeTruthy();
   expect(announcement).toHaveBeenCalledWith(
     expect.stringContaining("$ -250,00 COP"),
@@ -165,11 +172,9 @@ test("loading a new month never presents data from the preceding query", async (
     isFetching: true,
   };
   await render(<DashboardScreen {...props} month="2024-03" />);
-  expect(screen.getByText("Cargando…")).toBeTruthy();
+  // A skeleton shaped like the hero, announced once as «Cargando…».
+  expect(screen.getByRole("progressbar", { name: "Cargando…" })).toBeTruthy();
   expect(screen.queryByLabelText(/Flujo neto del mes:/)).toBeNull();
-  expect(
-    screen.getByRole("button", { name: "Actualizar resumen" }),
-  ).toBeDisabled();
 });
 
 test("refresh error hides stale data and exposes a retry", async () => {
@@ -198,4 +203,29 @@ test("large decimal strings are displayed exactly without Number conversion", as
       "Flujo neto del mes: Monto de $ 1.999.999.999.999.999,68 pesos colombianos",
     ),
   ).toBeTruthy();
+});
+
+test("Análisis stays reachable when nothing was spent", async () => {
+  const onOpenInsights = jest.fn();
+  mockQuery.currentData = fixture({
+    expense: "0.00",
+    net: "1000.00",
+    recent_movements: [],
+  });
+  await render(<DashboardScreen {...props} onOpenInsights={onOpenInsights} />);
+  expect(
+    screen.getByText("Aún no hay gastos en los últimos seis meses."),
+  ).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Ver análisis" }));
+  expect(onOpenInsights).toHaveBeenCalledTimes(1);
+});
+
+test("Análisis stays reachable when an earlier month fails to load", async () => {
+  const onOpenInsights = jest.fn();
+  mockQueryFor = (month) =>
+    month === props.month ? mockQuery : { ...mockQuery, isError: true };
+  await render(<DashboardScreen {...props} onOpenInsights={onOpenInsights} />);
+  expect(screen.queryByTestId(`spend-${props.month}`)).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Ver análisis" }));
+  expect(onOpenInsights).toHaveBeenCalledTimes(1);
 });

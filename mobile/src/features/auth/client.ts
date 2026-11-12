@@ -26,6 +26,8 @@ export type Vault = {
   set(value: string): Promise<void>;
   remove(): Promise<void>;
 };
+/** How long a request may wait for the server before it fails with a readable error. */
+export const REQUEST_TIMEOUT_MS = 15_000;
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -61,16 +63,34 @@ export class AuthClient {
   }
 
   private async raw(path: string, init: RequestInit = {}): Promise<Response> {
+    // An unreachable server can leave fetch pending for minutes; give up after
+    // REQUEST_TIMEOUT_MS so buttons stop spinning and the error can be read.
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+    const caller = init.signal;
+    const forward = () => controller.abort();
+    if (caller?.aborted) controller.abort();
+    else caller?.addEventListener("abort", forward);
     try {
       return await this.fetcher(this.url + path, {
         ...init,
+        signal: controller.signal,
         headers: { "Content-Type": "application/json", ...init.headers },
       });
     } catch {
       throw new ApiError(
         0,
-        "No se pudo conectar. Revisa tu conexión e intenta de nuevo.",
+        timedOut
+          ? "El servidor no respondió a tiempo. Revisa tu conexión e intenta de nuevo."
+          : "No se pudo conectar. Revisa tu conexión e intenta de nuevo.",
       );
+    } finally {
+      clearTimeout(timer);
+      caller?.removeEventListener("abort", forward);
     }
   }
 
